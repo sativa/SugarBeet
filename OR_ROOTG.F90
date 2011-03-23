@@ -74,7 +74,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 
 
 !	 USE numerical_libraries
-     USE IMSL
+!     USE IMSL
 	 USE CHART
 	 USE public_module	!VARIABLES
 	 USE rootgrowth
