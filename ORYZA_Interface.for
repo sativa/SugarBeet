@@ -41,6 +41,17 @@
       REAL, DIMENSION(0:NL) :: SOILTEMP
       REAL, DIMENSION(2)  :: HARVFRAC
 
+!     ORYZA2000 variables:
+      INTEGER ITASK, IUNITD, IUNITL, IDOY, CROPSTA, DAE
+      CHARACTER*80 FILEI1, FILEI2, FILEIT, ESTAB
+      REAL TIME, DELT, LAT, RDD, TMMN, TMMX
+      REAL NFLF, NSLLV, NRT, RNSTRS, TKLT, ZRTMS
+      REAL LRSTRS, LDSTRS, LESTRS, PCEW, CPEW, TRC, SLA
+      REAL NFLV, LAIROL, ZRT, DVS, LLV, DLDR, WLVG, WST
+      REAL WSO, GSO, GGR, GST, GLV, PLTR, WCL, WL0
+
+      LOGICAL TERMNL
+
       TYPE (ControlType) CONTROL
       TYPE (SoilType)    SOILPROP
       TYPE (SwitchType)  ISWITCH
@@ -118,15 +129,15 @@
       WINDSP= WEATHER % WINDSP
 
 !-----------------------------------------------------------------------
-      CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
-                        OUTPUT, TERMNL, IDOY  , DOY, &
-                        TIME,   DELT,   LAT,    RDD,    TMMN,   TMMX, &
-                        NFLV,   NSLLV,  NRT,	RNSTRS,                 &
-                        ESTAB,  TKLT,   ZRTMS,  CROPSTA, &
-                        LRSTRS, LDSTRS, LESTRS, PCEW,  CPEW, TRC, &
-                        DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
-                        LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
-                        PLTR, WCL, WL0)
+      CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, 
+     &                   OUTPUT, TERMNL, IDOY  , DOY, 
+     &                   TIME,   DELT,   LAT,    RDD,    TMMN,   TMMX, 
+     &                   NFLV,   NSLLV,  NRT,	RNSTRS,                 
+     &                   ESTAB,  TKLT,   ZRTMS,  CROPSTA, 
+     &                   LRSTRS, LDSTRS, LESTRS, PCEW,  CPEW, TRC, 
+     &                   DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, 
+     &                   LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, 
+     &                   GLV, PLTR, WCL, WL0)
 !      KCAN   = KPAR
 !      KEP    = KSRAD
       XLAI   = LAI

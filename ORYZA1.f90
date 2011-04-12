@@ -72,9 +72,9 @@
 !===================================================================*
 !     DECLARATION SECTION                                           *
 !===================================================================*
-      USE CHART
-	  USE Public_Module		!VARIABLES
-	  use RootGrowth
+!CHP      USE CHART
+!CHP	  USE Public_Module		!VARIABLES
+!CHP	  use RootGrowth
       IMPLICIT NONE
  
 !-----Formal parameters
@@ -152,6 +152,11 @@
 !     Used functions
       REAL    LINT2, INSW, NOTNUL, GETOBS, INTGRL, INTGR2
       !&SAVE
+
+!   CHP ADDED THESE VARIABLE DECLARATIONS
+    REAL SROOTL, RMINT, ROPTT, RTBS, RCNL, MAXD, SODT, PV, PNL, PSAND, PCLAY
+    REAL PROOT_NUTRIENT, PBD, PSOC, PSON, PNO3, PNH4
+    
  
 !===================================================================*
 !     INITIALIZATION SECTION                                        *
