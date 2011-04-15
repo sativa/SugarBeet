@@ -72,9 +72,8 @@
 !===================================================================*
 !     DECLARATION SECTION                                           *
 !===================================================================*
-!CHP      USE CHART
-	  USE Public_Module		!VARIABLES
-!CHP	  use RootGrowth
+ 	  USE Public_Module		!VARIABLES
+	  use RootGrowth
       IMPLICIT NONE
  
 !-----Formal parameters
@@ -129,7 +128,7 @@
       REAL    WSO   , WSOI  , WSTS    , WSTR   
       REAL    ZRTI  , ZRTM  , ZRTTR   , ZRTMCW, ZRTMCD, RGRLMX, RGRLMN
       REAL    ASLA  , BSLA  , CSLA    , DSLA  , SLAMAX
-      REAL    COLDMIN,COLDEAD, OSMATA
+      REAL    COLDMIN,COLDEAD, OSMATA 
 !-----Add five parameter here to deal with night temperature control,
 !-----VARIABLE DIFINATION SEE NIGHT.F90, TAOLI, JUNE 10, 509
 	  REAL    SHOUR,  EHOUR,  TTEMP,    TCHANG,	SDAY,	EDAY
@@ -152,12 +151,6 @@
 !     Used functions
       REAL    LINT2, INSW, NOTNUL, GETOBS, INTGRL, INTGR2
       !&SAVE
-
-!   CHP ADDED THESE VARIABLE DECLARATIONS
-    REAL SROOTL, RMINT, ROPTT, RTBS, RCNL, MAXD, SODT 
-!    REAL PV, PNL, PSAND, PCLAY
-!    REAL PROOT_NUTRIENT, PBD, PSOC, PSON, PNO3, PNH4
-    
  
 !===================================================================*
 !     INITIALIZATION SECTION                                        *
@@ -193,6 +186,8 @@
 		 ENDIF
 		 
 !        Read management parameters
+         CALL RDSCHA ('ESTAB'   , ESTAB  )
+         CALL UPPERC (ESTAB  )
          IF (ESTAB.EQ.'TRANSPLANT') THEN
             CALL RDSREA('NH    ',NH   )
             CALL RDSREA('NPLH  ',NPLH )
@@ -328,86 +323,88 @@
 
 !--------Added by TAOLI, June 17, 509, read soil parameter for root growth
 	!-------READING SOIL TEXTURE, BULK DENSITY, LAYER THICKNESS FROM SIOL FILE
-		 CALL RDINIT(IUNITD, IUNITL, FILEI2)
-		 CALL RDSINT('NL', PV%PNL)
-		
-		 SL = PV%PNL
-		 IF(RDINQR('SANDX')) THEN
-			 CALL RDAREA('SANDX',PV%PSAND ,10, SL)		!soil sand content
-			 CALL RDAREA('CLAYX',PV%PCLAY ,10, SL)		!soil clay content
-			 PV%PROOT_NUTRIENT = .TRUE.
-		 ELSE
-			 PV%PROOT_NUTRIENT = .FALSE.
-		 ENDIF
-		 IF(PV%PROOT_NUTRIENT) THEN
-			 CALL RDAREA('BD',PV%PBD    ,10, SL)		!soil bulk density
-			 IF(RDINQR('SOC')) THEN						!IT IS IN KG C/HA
-				 CALL RDAREA('SOC',PV%PSOC,	10,SL)
-				 do i=1, sl
-					pv%psoc(i)=pv%psoc(i-1)
-				 enddo
-					pv%psoc(0)=0.0
-			 ELSeIF(RDINQR('SOM')) THEN
-				 TEMPV=0.0
-				 CALL RDAREA('SOM',TEMPV, 10, SL)
-				 do i = 1, sl
-					 PV%PSOC(i) = tempv(i) *0.58     
-				 enddo
-			 ELSE
-				 PV%PROOT_NUTRIENT = .FALSE.
-			 endif
-				
-			 IF(RDINQR('SON')) THEN
-				CALL RDAREA('SON',PV%PSON, 10, SL)	!IT IS IN KG N/HA
-				do i=1, sl
-					pv%pson(i)=pv%pson(i-1)
-				 enddo
-					pv%pson(0)=0.0
-			 ELSE
-				do i=1, sl
-					if(sum(tkl(1:i)).le.25.0) then
-						pv%pson(i) = pv%psoc(i) / 16.0	!if there is not avaliable data for SON, we suppose the C:N ratio is 16 at upper 25 cm
-					else
-						pv%pson(i) = pv%psoc(i)/11.0
-					endif
-				enddo
-			 endif
-			
-			 IF(RDINQR('SNO3X')) THEN
-				CALL RDAREA('SNO3X',PV%PNO3,	10, SL)
-				do i=1, sl
-					pv%pno3(i)=pv%pno3(i-1)
-				enddo
-				pv%pno3(0)=0.0
-			 ELSE
-			 	PV%PNO3(:) = MAX(0.0, pv%pson(:)/100.0)		!IT IS IN KG N/HA
-			 ENDIF
-			 IF(RDINQR('SNH4X')) THEN
-				CALL RDAREA('SNH4X',PV%PNH4,	10, SL)			!IT IS IN KG N/HA
-				do i=1, sl
-					pv%pnh4(i)=pv%pnh4(i-1)
-				 enddo
-					pv%pnh4(0)=0.0
-			 ELSE
-				PV%PNH4(:)= MAX(0.0, pv%pson(:)/50.0)
-			 ENDIF
-			 IF(RDINQR('SUREA')) THEN
-				CALL RDAREA('SUREA',PV%PUREA,	10, SL)	
-				do i=1, sl
-					pv%purea(i)=pv%purea(i-1)
-				 enddo
-					pv%purea(0)=0.0
-			 ELSE
-				PV%PUREA = 0.0
-			 ENDIF
-			 				
-		 ENDIF
-         IF(RDINQR('PLOWPAN')) THEN
-			      CALL RDSREA('PLOWPAN', PV%PPLOWDEPTH)			!THE DEPTH OF PLOWPAN, NEGATIVE VALUE INDICATES NO PLOWPAN
-		    ELSE
-			      PV%PPLOWDEPTH = -1.
-		    ENDIF
-		CLOSE (IUNITD)
+	    IF(PV%PROOT_NUTRIENT) THEN
+		     CALL RDINIT(IUNITD, IUNITL, FILEI2)
+		     CALL RDSINT('NL', PV%PNL)
+    		
+		     SL = PV%PNL
+		     IF(RDINQR('SANDX')) THEN
+			     CALL RDAREA('SANDX',PV%PSAND ,10, SL)		!soil sand content
+			     CALL RDAREA('CLAYX',PV%PCLAY ,10, SL)		!soil clay content
+			     PV%PROOT_NUTRIENT = .TRUE.
+		     ELSE
+			     PV%PROOT_NUTRIENT = .FALSE.
+		     ENDIF
+		     IF(PV%PROOT_NUTRIENT) THEN
+			     CALL RDAREA('BD',PV%PBD    ,10, SL)		!soil bulk density
+			     IF(RDINQR('SOC')) THEN						!IT IS IN KG C/HA
+				     CALL RDAREA('SOC',PV%PSOC,	10,SL)
+				     do i=sl,1,-1
+					    pv%psoc(i)=pv%psoc(i-1)
+				     enddo
+					    pv%psoc(0)=0.0
+			     ELSeIF(RDINQR('SOM')) THEN
+				     TEMPV=0.0
+				     CALL RDAREA('SOM',TEMPV, 10, SL)
+				     do i = sl,1,-1
+					     PV%PSOC(i) = tempv(i) *0.58     
+				     enddo
+			     ELSE
+				     PV%PROOT_NUTRIENT = .FALSE.
+			     endif
+    				
+			     IF(RDINQR('SON')) THEN
+				    CALL RDAREA('SON',PV%PSON, 10, SL)	!IT IS IN KG N/HA
+				    do i=sl,1,-1
+					    pv%pson(i)=pv%pson(i-1)
+				     enddo
+					    pv%pson(0)=0.0
+			     ELSE
+				    do i=1, sl
+					    if(sum(tkl(1:i)).le.25.0) then
+						    pv%pson(i) = pv%psoc(i) / 16.0	!if there is not avaliable data for SON, we suppose the C:N ratio is 16 at upper 25 cm
+					    else
+						    pv%pson(i) = pv%psoc(i)/11.0
+					    endif
+				    enddo
+			     endif
+    			
+			     IF(RDINQR('SNO3X')) THEN
+				    CALL RDAREA('SNO3X',PV%PNO3,	10, SL)
+				    do i=sl,1,-1
+					    pv%pno3(i)=pv%pno3(i-1)
+				    enddo
+				    pv%pno3(0)=0.0
+			     ELSE
+			 	    PV%PNO3(:) = MAX(0.0, pv%pson(:)/100.0)		!IT IS IN KG N/HA
+			     ENDIF
+			     IF(RDINQR('SNH4X')) THEN
+				    CALL RDAREA('SNH4X',PV%PNH4,	10, SL)			!IT IS IN KG N/HA
+				    do i=sl,1,-1
+					    pv%pnh4(i)=pv%pnh4(i-1)
+				     enddo
+					    pv%pnh4(0)=0.0
+			     ELSE
+				    PV%PNH4(:)= MAX(0.0, pv%pson(:)/50.0)
+			     ENDIF
+			     IF(RDINQR('SUREA')) THEN
+				    CALL RDAREA('SUREA',PV%PUREA,	10, SL)	
+				    do i=sl,1,-1
+					    pv%purea(i)=pv%purea(i-1)
+				     enddo
+					    pv%purea(0)=0.0
+			     ELSE
+				    PV%PUREA = 0.0
+			     ENDIF
+    			 				
+		     ENDIF
+             IF(RDINQR('PLOWPAN')) THEN
+			          CALL RDSREA('PLOWPAN', PV%PPLOWDEPTH)			!THE DEPTH OF PLOWPAN, NEGATIVE VALUE INDICATES NO PLOWPAN
+		        ELSE
+			          PV%PPLOWDEPTH = -1.
+		        ENDIF
+		    CLOSE (IUNITD)
+		  END IF
 		!---- INITIAL ROOT VARIABLES
 			RRCC=0.0;RRNC=0.0;RRDCL=0.0;RRDENSIT=0.0;RRDNL=0.0
 			MaxDep = ZRTMCD *100.0  !From m to cm
@@ -436,7 +433,7 @@
          PWRR   = 0.
          NGR    = 0.
          NSP    = 0.
-         DAE    = 0.
+         DAE    = -1.0      !0.
          TS     = 0.
          TMAXC  = 0.
          TMINC  = 0.
@@ -479,6 +476,7 @@
             WRT  = WRTI
             ZRT  = ZRTI
 			IROOTD = ZRTI			!BY TAOLI, 22 JUNE, 509
+			DAE = 0.0               !BY TAOLI, 5 APRIL 2011
 			ROOTN=0.0;ROOTC=0.0
             IF (ESTAB.EQ.'TRANSPLANT' ) LAI= LAPE * NPLSB
             IF (ESTAB.EQ.'DIRECT-SEED') LAI= LAPE * NPLDS
@@ -487,7 +485,7 @@
 !--------Re-initialize rooting depth at day of transplanting
          IF (CROPSTA .EQ. 3) THEN
             ZRT = ZRTTR
-			      IROOTD = ZRTTR			!BY TAOLI, 22 JUNE, 509
+			IROOTD = ZRTTR			!BY TAOLI, 22 JUNE, 509
          END IF
 
 !=======SKIP ALL RATE CALCULATIONS BEFORE EMERGENCE
@@ -600,7 +598,13 @@
 			 ENDIF
 			 !CALL DIFLA (DPAR*1.E6,DAYL,TRC*PCEW,LAI,WST,WLVG,pv%PWind,KDF2,RBH,RT, RBW, DIF)
 !----------Effect of drought stress on DTGA
-		     DTGA  = DTGA*min(RNSTRS,PCEW)
+
+		   if(PV%PROOT_NUTRIENT) then
+		     DTGA  = DTGA*min(RNSTRS,pcew)     					
+    	   Else
+		     DTGA  = DTGA*min(RNSTRS,pcew)   
+		   Endif
+
 
 !----------Relative growth rates of shoots and roots
 !          Effect of drought stress on shoot-root partitioning ???? 
@@ -612,6 +616,7 @@
            FST = LINT2('FSTTB',FSTTB,ILFSTT,DVS)
            FSO = LINT2('FSOTB',FSOTB,ILFSOT,DVS)
 		   if(PV%PROOT_NUTRIENT) then
+				!CALL PARTITION_K(KDF2,LAI,7.0,1.0,CPEW,RNSTRS,OSMATA,1,FSH,FRT,FLV,FST,FSO)  !ADDED BY TAOLI, APRIL 29, 2010
 				CALL PARTITION_K(KDF2,LAI,7.0,1.0,PCEW,RNSTRS,OSMATA,1,FSH,FRT,FLV,FST,FSO)  !ADDED BY TAOLI, APRIL 29, 2010
 		   ELSE
 				IF (DVS.LT.1.) THEN					!COMMENT OUT BY TAOLI, APRIL 29,2010
@@ -619,6 +624,11 @@
 				END IF
 				FRT = 1.-FSH
 		   ENDIF
+!           IF (DVS.LT.1.) THEN
+!              FSH = FSH * LESTRS
+!              FRT = 1.-FSH
+!           END IF
+
 
 !----------Check sink limitation based on yesterday's growth rates
 !          and adapt partitioning stem-storage organ accordingly
@@ -674,6 +684,7 @@
            ELSE 
               GGR = 0.
            END IF
+		  
         	 IF(PV%PROOT_NUTRIENT) THEN
 !----------Growth rate of root and root profiling		!TAOLI, APRIL 2, 2009
 	     	    NROOTC=GRT*DELT			!IN kg DM/ha/d
@@ -689,12 +700,12 @@
 				ENDIF
 				LROOTC =0.0; LROOTN = 0.0
          		CALL ROOTG(CROPSTA,DVS,DELT, LROOTC ,LROOTN)
-			  ENDIF
+		   ENDIF
 
 !----------Growth rate of number of spikelets and grains
  		   CALL SUBGRN(GCR,CROPSTA,LRSTRS,DVS,SF2,SF1,SPGF,TAV,TMAX, &
 						NSP,CTSTER,GNSP,GNGR,SPFERT,GRAINS)
-!--------- Leaf area growth (after calculation on leaf growth and loss rates!)
+!!--------- Leaf area growth (after calculation on leaf growth and loss rates!)
 !----------USE NIGHT.F90 TO CALCULATE XHU, THEN RECALCULATE HULV
 			 IF((TEMPC).AND.(DOY.GE.SDAY).AND.(DOY.LE.EDAY)) THEN
 				 CALL TSHIFT(TMAX,TMIN,DOY, SHOUR, EHOUR, TTEMP, TCHANG, &
@@ -769,116 +780,73 @@
 !----------Output section
            IF (OUTPUT) THEN
             CALL OUTDAT(2,0,'DVS   ',DVS)
-            CALL ChartOutputRealScalar('DVS', DVS)
             CALL OUTDAT(2,0,'RDD   ',RDD)
-            CALL ChartOutputRealScalar('RDD', RDD)
             CALL OUTDAT(2,0,'TMIN   ',TMIN)
-            CALL ChartOutputRealScalar('TMIN', TMIN)
             CALL OUTDAT(2,0,'TMAX   ',TMAX)
-            CALL ChartOutputRealScalar('TMAX', TMAX)
 !NEW
             CALL OUTDAT(2,0,'DTR   ',DTR)
-            CALL ChartOutputRealScalar('DTR', DTR)
             CALL OUTDAT(2,0,'RAPCDT   ',RAPCDT)
-            CALL ChartOutputRealScalar('RAPCDT', RAPCDT)
             CALL OUTDAT(2,0,'PARCUM   ',PARCUM)
-            CALL ChartOutputRealScalar('PARCUM', PARCUM)
-!            CALL OUTDAT(2,0,'PAR1M   ',PAR1M)
-!            CALL ChartOutputRealScalar('PAR1M', PAR1M)
+    !            CALL OUTDAT(2,0,'PAR1M   ',PAR1M)
 ! END NEW
             CALL OUTDAT(2,0,'NFLV  ',NFLV)
-            CALL ChartOutputRealScalar('NFLV', NFLV)
             CALL OUTDAT(2,0,'SLA   ',SLA)
-            CALL ChartOutputRealScalar('SLA', SLA)
             CALL OUTDAT(2,0,'SLASIM',LAI/NOTNUL(WLVG))
-            CALL ChartOutputRealScalar('SLASIM', LAI/NOTNUL(WLVG))
             CALL OUTDAT(2,0,'LESTRS ',LESTRS)
-            CALL ChartOutputRealScalar('LESTRS', LESTRS)
             CALL OUTDAT(2,0,'LRSTRS ',LRSTRS)
-            CALL ChartOutputRealScalar('LRSTRS', LRSTRS)
             CALL OUTDAT(2,0,'PCEW  ',PCEW)
-            CALL ChartOutputRealScalar('PCEW', PCEW)
             CALL OUTDAT(2,0,'NSP  ',NSP)
-            CALL ChartOutputRealScalar('NSP', NSP)
             CALL OUTDAT(2,0,'LAI   ',LAI  )
-            CALL ChartOutputRealScalar('LAI', LAI)
             CALL OUTDAT(2,0,'WAGT  ',WAGT  )
-            CALL ChartOutputRealScalar('WAGT', WAGT)
             CALL OUTDAT(2,0,'WST   ',WST)
-            CALL ChartOutputRealScalar('WST', WST)
             CALL OUTDAT(2,0,'WLVG  ',WLVG) 
-            CALL ChartOutputRealScalar('WLVG', WLVG)
             CALL OUTDAT(2,0,'WLVD  ',WLVD)
-            CALL ChartOutputRealScalar('WLVD', WLVD)
             CALL OUTDAT(2,0,'WLV   ',WLV)
-            CALL ChartOutputRealScalar('WLV', WLV)
             CALL OUTDAT(2,0,'WSO   ',WSO)
-            CALL ChartOutputRealScalar('WSO', WSO)
             CALL OUTDAT (2,0,'WRR14 ',WRR14 )
-            CALL ChartOutputRealScalar('WRR14', WRR14)
             CALL OUTDAT(2,0,'ZRT',ZRT)
-            CALL ChartOutputRealScalar('ZRT', ZRT)
-			do i=1, sl
+            do i=1, sl
 				Rootobs = ' '
 				write(xx,'(I2)') I
-				!IF (INQOBS (FILEIT,trim(rootobs))) THEN
-					rootobs = trim('ROOTM') // trim(adjustl(xx))
-					CALL OUTDAT (2, 0, trim(rootobs),ROOTC(I))
-					CALL ChartOutputRealScalar(trim(rootobs),ROOTC(I))
-				!ENDIF
-			!ENDDO
-			!DO I=1, SL
+				rootobs = trim('ROOTM') // trim(adjustl(xx))
+				CALL OUTDAT (2, 0, trim(rootobs),ROOTC(I))
 				rootobs = ' '
-				rootobs = trim('ROOTL') // trim(adjustl(xx))
-				!IF (INQOBS (FILEIT,trim(rootobs))) THEN
-					CALL OUTDAT (2,0,trim(rootobs),RDENSITY(I))
-					CALL ChartOutputRealScalar(trim(rootobs),RDENSITY(I))
-				!ENDIF
+				rootobs = trim('ROOTL') // trim(adjustl(xx))				
+				CALL OUTDAT (2,0,trim(rootobs),RDENSITY(I))				
 			ENDDO
 
             IF (INQOBS (FILEIT,'NFLV')) THEN
                     CALL OUTDAT (2, 0, 'NFLV_OBS',GETOBS(FILEIT,'NFLV'))
-                    CALL ChartOutputRealScalar('NFLV_OBS',GETOBS(FILEIT,'NFLV'))
             ENDIF
             IF (INQOBS (FILEIT,'FNLV')) THEN
                       CALL OUTDAT (2, 0, 'FNLV_OBS',GETOBS(FILEIT,'FNLV'))
-                    CALL ChartOutputRealScalar('FNLV_OBS',GETOBS(FILEIT,'FNLV'))
             ENDIF
             IF (INQOBS (FILEIT,'FNST')) THEN
                     CALL OUTDAT (2, 0, 'FNST_OBS',GETOBS(FILEIT,'FNST'))
-                    CALL ChartOutputRealScalar('FNST_OBS',GETOBS(FILEIT,'FNST'))
             ENDIF
             IF (INQOBS (FILEIT,'FNSO')) THEN
                     CALL OUTDAT (2, 0, 'FNSO_OBS',GETOBS(FILEIT,'FNSO'))
-                    CALL ChartOutputRealScalar('FNSO_OBS',GETOBS(FILEIT,'FNSO'))
             ENDIF
             IF (INQOBS (FILEIT,'LAI')) THEN
                     CALL OUTDAT (2, 0, 'LAI_OBS',GETOBS(FILEIT,'LAI'))
-                    CALL ChartOutputRealScalar('LAI_OBS',GETOBS(FILEIT,'LAI'))
             ENDIF
             IF (INQOBS (FILEIT,'WLVG')) THEN
                     CALL OUTDAT (2, 0, 'WLVG_OBS',GETOBS(FILEIT,'WLVG'))
-                    CALL ChartOutputRealScalar('WLVG_OBS',GETOBS(FILEIT,'WLVG'))
             ENDIF
             IF (INQOBS (FILEIT,'WLVD')) THEN
                     CALL OUTDAT (2, 0, 'WLVD_OBS',GETOBS(FILEIT,'WLVD'))
-                    CALL ChartOutputRealScalar('WLVD_OBS',GETOBS(FILEIT,'WLVD'))
             ENDIF
             IF (INQOBS (FILEIT,'WLV')) THEN
                     CALL OUTDAT (2, 0, 'WLV_OBS',GETOBS(FILEIT,'WLV'))
-                    CALL ChartOutputRealScalar('WLV_OBS',GETOBS(FILEIT,'WLV'))
             ENDIF
             IF (INQOBS (FILEIT,'WST')) THEN
                     CALL OUTDAT (2, 0, 'WST_OBS',GETOBS(FILEIT,'WST'))
-                    CALL ChartOutputRealScalar('WST_OBS',GETOBS(FILEIT,'WST'))
             ENDIF
             IF (INQOBS (FILEIT,'WSO')) THEN
                     CALL OUTDAT (2, 0, 'WSO_OBS',GETOBS(FILEIT,'WSO'))
-                    CALL ChartOutputRealScalar('WSO_OBS',GETOBS(FILEIT,'WSO'))
             ENDIF
             IF (INQOBS (FILEIT,'WAGT')) THEN
                     CALL OUTDAT (2, 0, 'WAGT_OBS',GETOBS(FILEIT,'WAGT'))
-                    CALL ChartOutputRealScalar('WAGT_OBS',GETOBS(FILEIT,'WAGT'))
             END IF
 
 			  DO I=1, SL
@@ -887,15 +855,13 @@
 				 rootobs = trim('ROOTM') // trim(adjustl(xx))
 				 IF (INQOBS (FILEIT,trim(rootobs))) THEN				
 					CALL OUTDAT (2, 0, trim(rootobs)// '_OBS',GETOBS(FILEIT,trim(rootobs)))
-					CALL ChartOutputRealScalar(trim(rootobs) // '_OBS',GETOBS(FILEIT,trim(rootobs)))
 				 END IF
-				 rootobs = ' '
+!				 rootobs = ' '
 				 rootobs = trim('ROOTL') // trim(adjustl(xx))
 				 IF (INQOBS (FILEIT,trim(rootobs))) THEN
 				
 					CALL OUTDAT (2, 0, trim(rootobs)// '_OBS',GETOBS(FILEIT,trim(rootobs)))
-					CALL ChartOutputRealScalar(trim(rootobs) // '_OBS',GETOBS(FILEIT,trim(rootobs)))
-                 END IF
+	             END IF
 			 ENDDO
            END IF
 
@@ -918,13 +884,14 @@
                IF (WST.LT.0.) WST = 0.
                IF (WLVG.LT.0.) WLVG = 0.
 			   IF (WRT.LT.0.) WRT = 0.
-!               TERMNL = .TRUE.
+               TERMNL = .TRUE.
             END IF
 
 !-----------If LAI is negative: set at 0 and abort simulation
             IF (LAI.LT.-0.01) THEN
                WRITE (*,*) 'Negative LAI=> simulation stopped'
-               CALL OUTCOM('Negative LAI => simulation stopped')
+               CALL OUTCOM('Negative LAI => simulad:\simulation\strasa\rainfedtion stopped')
+!               IF (LAI.LT.0.) LAI = 0.
                TERMNL = .TRUE.
             END IF
 
@@ -961,6 +928,8 @@
             WSTS   = INTGRL(WSTS  ,GST  ,DELT)
             WSTR   = INTGRL(WSTR  ,RWSTR,DELT)
             WSO    = INTGRL(WSO   ,GSO  ,DELT)
+!-----------THE INTEGRATION FOR ROOT MAY NEED TO BE MOVED INTO ROOT GROWTH SUBROUTINE, TAOLI, APRIL 2, 509
+!            WRT    = INTGRL(WRT,GRT,DELT)  !COMMENT OUT BY TAOLI, 17 JUNE 2009
 !----------ADD BY TAOLI, JUNE 17 2009, ROOT GROWTH
             WRT    = INTGRL(WRT,GRT,DELT)
 
@@ -972,6 +941,7 @@
 					 RDCL(I) = INTGRL(RDCL(I), RRDCL(I), DELT)
 					 TWRT = TWRT + ROOTC(I) + RDCL(I)
 					 RDNL(I) = INTGRL(RDNL(I), RRDNL(I), DELT)
+!					 RDENSITY(I)= INTGRL(RDENSITY(I), RRDENSIT(I), DELT)
 					 RDENSITY(I)= ROOTC(I)*RRDENSIT(I)   !Changed by TAOLI, 25 Feb 2010	
 					 RRDENSIT(I) = RRCC(I)*RRDENSIT(I)*Delt		!Changed by TAOLI, 25 Feb 2010		 
 !-----------FRESH SOIL ORGANIC CARBON AND NITROGEN STATE VARIABLES SHOULD ALSO BE UPDATE
@@ -979,10 +949,12 @@
 				!the deid root c and n as fresh organic matter in soil nutrient
 					 pv%prestype(i) = 1; pv%presc(i,1)=pv%presc(i,1)+RRDCL(I)*delt
 					 pv%presn(i, 1) = pv%presn(i, 1)+RRDNL(I) * delt;	pv%prootden(i) = rdensity(i)
+				!pv%prootd = zrt
 				 ENDDO
 
 !--------CHECK IF THE WEIGHT OF ROOT FROM WHOLE AND LAYERS ARE THE SAME
 				 IF(ABS(TWRT-WRT)/MAX(0.00001, WRT).GT.0.05) THEN
+!			    WRITE(*,*) 'ROOT WEIGHT DIFFERENCE = ', (TWRT-WRT)
 					 CALL FATALERR ('ROOTG','THE TOTAL WEIGHT OF ROOTS IS NOT SAME BY CALCULATING AS WHOLE AND LAYERS!')
 				 ENDIF
 			 ENDIF
@@ -1009,10 +981,11 @@
 
 !-----------Leaf area index and total area index (leaves + stems)
             LAI    = INTGR2(LAI, GLAI, DELT, FILEIT, 'LAI')
+			LAI = MAX(LAI, 0.0001)				!Avoid negative leaf area index, added by TaoLi, 8 March 2011
             ALAI   = LAI+0.5*SAI
 	
 			 IF(PV%PROOT_NUTRIENT) THEN
-				 ZRT =  min(MaxDep,REFFECD)			!BY TAOLI, 17 JUNE, 509
+				 ZRT =  min(MaxDep/100.0,REFFECD)			!BY TAOLI, 17 JUNE, 509
 			 ELSE
 !-----------Root length
 				 IF ((.NOT.DROUT).AND.(ZRT.LE.ZRTMCW)) THEN	!COMMENT OUT BY TAOLI, 1 JUNE 2009
@@ -1044,15 +1017,16 @@
 !===================================================================*
       ELSE IF (ITASK.EQ.4) THEN
 !        Terminal calculations
-!        Terminal output
-         CALL OPSTOR ('WRR14', WRR14)
-         CALL OPSTOR ('WSO', WSO)
-         CALL OPSTOR ('WAGT', WAGT)
-         CALL OPSTOR ('PARCUM', PARCUM)
-         CALL OPSTOR ('TS', TS)
-         CALL OPSTOR ('TMAXC', TMAXC)
-         CALL OPSTOR ('TMINC', TMINC)
-         CALL OPSTOR ('TAVERC', (TMAXC+TMINC)/2.)
+        IF(OUTPUT) THEN
+             CALL OPSTOR ('WRR14', WRR14)
+             CALL OPSTOR ('WSO', WSO)
+             CALL OPSTOR ('WAGT', WAGT)
+             CALL OPSTOR ('PARCUM', PARCUM)
+             CALL OPSTOR ('TS', TS)
+             CALL OPSTOR ('TMAXC', TMAXC)
+             CALL OPSTOR ('TMINC', TMINC)
+             CALL OPSTOR ('TAVERC', (TMAXC+TMINC)/2.)
+         END IF
       END IF
       RETURN
       END

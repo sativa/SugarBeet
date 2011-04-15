@@ -59,23 +59,27 @@ MODULE RootGrowth
 !=================================================================================================================
 !1. Soil Parameters: All array have dimension 0 for surface residue or pond, broadcast fertilizer also goes into it
 !-----------------------------------------------------------------------------------------------------------------
-
+!	type rootGlobal
 		 REAL RRCC(10),RRNC(10), RRDCL(10), RRDNL(10),RRDENSIT(10)
 		 REAL ROOTC(10),RDCL(10),RDNL(10),ROOTN(10),RDENSITY(10)
 		 REAL NROOTC, NROOTN, theRootC
 		 REAL IROOTD, ROPTT, RMINT, RTBS, MAXDEP, SODT
 		 REAL REFFECD, REFCD_O, ROOTNC
+!	end type rootGlobal
 
+!	type RootParameter
 		 real MAXD, RCNL, SROOTL
+!	end type rootParameter
+	
+!	  !&SAVE
 
 END MODULE RootGrowth
 
 SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)				
 
 
-!	 USE numerical_libraries
-!     USE IMSL
-	 USE CHART
+	 USE numerical_libraries
+	 !USE CHART
 	 USE public_module	!VARIABLES
 	 USE rootgrowth
 
@@ -164,6 +168,8 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 				 IF(IROOTD*100.0.LE.LAYT(1)) THEN       !IROOTD in m
 					ROOTC(1) = NROOTC
 					ROOTN(1) = NROOTN
+					!rdcl(i)=totaldrc
+					!rdnl(i)=totaldrn
 					GOTO 2000
 				 ENDIF
 			 ELSE
@@ -232,8 +238,8 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			MAXDEP=MAXDDVS1*MAX(0.0, SIN(1.57+1.57/1.5*(DVS-1.0)))*100.0
 		!EDNIF
 		ELSE
-		
-			 maxDep =  maxd *MAX(0.0, SIN(1.57*DVS)) 
+		!	MAXDEP = MAXD*MIN(1.0,DVS)
+			 maxDep =  maxd *MAX(0.0, SIN(1.57*DVS)) !(0.5-0.5*sin(3.03*dvs/(2.0-dvs)+1.147)) !maxd in cm
 		endif
 		 IF(REFFECD.GT.0.0) THEN		
 			 maxDep = MIN(MAXD,maxdep) !REFFECD*100.0)				!REFFECD in m, changed into cm
@@ -259,6 +265,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 		 ENDDO
 	
 !---determine the most good condition layer where the new root carbon will concentrate in
+!   IF(NROOTC.GT.0.0) THEN					!IT USE PREVIOUS REDISTRIBUTION FACTOR AT TRANSPLANT DAT
 		 totalSN = 0.0; TPFmx=0.0; TWFmx=0.0; TTFmx=0.0
 		 DO 100 i = 1, MDL
 		
@@ -271,6 +278,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			   ENDIF
 
 !!---------DETERMINE PENETRATION RESISTANCE, from A. Canarache, 1990. bY TAOLI,APRIL 10, 2009
+				!BDx=exp((-1.26+0.02*clayx(i)*100.0+7.53*log(bd(i))/log(10.0))*log(10.0))			!THE RPs,
 			      BDx=exp((-1.26+0.02*clayx(i)+7.53*log(bd(i))/log(10.0))*log(10.0))			!THE RPs,
 			    !  BDo=44.9+0.163*CLAYX(I)*100.0					!THE TPm
 				  BDo=44.9+0.163*CLAYX(I)					!THE TPm
@@ -278,7 +286,9 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			      SBD=0.875+0.32*(BDO-SBD)/BDO			!THE f
 			      BDO=100.0*(1.0-0.38*BD(I))/BD(I)					!THE S
 			      SBD=SBD*BDO								!THE Sf
-				  BDO=-EXP((-0.44+0.00114*CLAYX(I)+1.27*LOG(BD(I))/LOG(10.0)+ &
+			   !   BDO=-EXP((-0.44+0.00114*CLAYX(I)*100+1.27*LOG(BD(I))/LOG(10.0)+ &
+			!	        0.0267*CLAYX(I)*100*LOG(BD(I))/LOG(10.0))*LOG(10.0))			!THE M
+				BDO=-EXP((-0.44+0.00114*CLAYX(I)+1.27*LOG(BD(I))/LOG(10.0)+ &
 				        0.0267*CLAYX(I)*LOG(BD(I))/LOG(10.0))*LOG(10.0))			!THE M
 			      SSL(I)=EXP((LOG(BDX)/LOG(10.0)+BDO*(LOG(10000.0*WCL(I)/BD(I)/SBD)- &   !WCL IS IN CM3/CM3
 				        LOG(50.0))/LOG(10.0))*LOG(10.0))	!THE PENETRATION RESISTANCE INCREASE WITH LARGER SSL
@@ -297,6 +307,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 				 IF(I.LE.1) THEN 
 					 SAL(I)=1.0
 				 ELSE
+					 !SAL(I)= exp(-0.06931*(sdep(i-1)+0.5*layt(i))) !(SDEP(1)/(SDEP(I)+SDEP(I-1)))**2.0
 					 SAL(I)= exp(-0.02378*(sdep(i-1)+0.5*layt(i)))
 				 ENDIF
 			 ELSE 
@@ -314,7 +325,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			 ENDIF
 !-------Determine the direct effects of soil water on root growth
 			 IF(WL0.GT.0.0) THEN
-			 	   LWF(I) = 1.0  !Under saturated condition, the oxygen availability decrease 30% every 15 cm
+			 	   LWF(I) = 1.0  !exp(-0.06931*(sdep(i-1)+0.5*layt(i)))		!Under saturated condition, the oxygen availability decrease 30% every 15 cm
 				   LWFMX = LWF(1)
 			 Else
 			 		 LWF(I) = 1.0 - ((PV%PWCST(I)-WCL(I))/(PV%PWCST(I)-PV%PWCWP(I)))**2.0  !** OSMATIC/1.5
@@ -382,6 +393,12 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			 MaxNo = SDEP(int(MaxNo) - 1)+0.5*LAYT(int(MAXNO))
 			 MAXNO=MIN(MAXDEP,MIN(MAXD,MAXNO))
 			 IF(MAXNO.GE.MAXDEP) THEN
+				!IF((MAXNO.GT.SDEP(OLDNO-1)).AND.(MAXNO.LE.SDEP(OLDNO))) THEN
+				!	MAXNO=SDEP(OLDNO-1)*0.8+0.2*MAXNO
+				!ELSEIF(MAXNO.LE.SDEP(OLDNO-1)) THEN
+				!	MAXNO=SDEP(OLDNO-2)*0.5+0.5*MAXNO
+				!	OLDNO=OLDNO-1
+				!ENDIF
 				MAXNO=MAXDEP-5.0
 			 ENDIF
 		 EndIf
@@ -419,7 +436,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			 EndIf
     
 		 ENDDO
-  
+    !ENDIF   !For the new root carbon positive
   ENDIF !FOR THE SINGLE OR MULTPILE LAYER ROOTING
 !	Supposed that the root senecence only happen in the layer where have root older than one day
 	TMPV4 = 0.0
@@ -434,7 +451,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 !	'''Calculating the new DM distribution in soil layers
   TMPV2 =0.0	
   DO i = 1, SL		 
-		 If(ASF2.GT.0.0)  Then
+		 If(ASF2.GT.0.0) Then
 				RRCC(i) = NRootC * RRCC(i) / ASF2    !IN kg DM/ha
 				RRNC(i) = NRootN * RRNC(i) / ASF2    !IN kg N/ha
 				IF(TMPV4.GT.0.0) THEN
@@ -450,8 +467,11 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 				 Else
 					theRootC = RootC(i)
 				 EndIf
+				! If((theRootC.GT.0.0).And.(RRCC(i).GT.0.0)) Then
+				!basicR(i) = RRCC(i) / theRootC
 				 If((ROOTC(I).GT.0.0).And.(RRCC(i).GT.0.0)) Then
 					basicR(i) = RRCC(i) /ROOTC(I)
+				! ElseIf((RRCC(i).EQ.0.0).And.(theRootC.GT.0.0)) Then
 				 ElseIf((RRCC(i).EQ.0.0).And.(ROOTC(I).GT.0.0)) Then
 					basicR(i) = 0.001
 				 Else
@@ -521,7 +541,25 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 	RMINDIED = 0.016
 	 DO i = sl, 1, -1
 	    If((ROOTC(i).GT.0.0).OR.(RRCC(I).GT.0.0)) Then
-		    
+		    !!If(DVS.GE.0.4) Then
+			!!     RRDCL(i) = 0.015 * Exp(-basicR(i)) * &
+			!!		RRCC(i) * (1.0 + Max(0.0,1.0 - LWF(i)))* 1.0/SAL(I)
+			     !  RRCC(i) * (1.0 + Max((1.0 - LWF(i)), &
+     			 ! (1.0 - SAL(i))))**(4.0*OSMATIC/1.5)								!The basic root death rate??
+     			 !xxx1=(1.0 + Max(0.0, 1.0 - LWF(i)))**8.0
+     			 !xxx2 = (1.0+ max(0.0,1.0-SAL(i)))**(1.0-SODT)
+				 !xxx3=RMINDIED**2/basicR(i)
+			     !RRDCL(i) =MIN(0.75,max(RMINDIED, min(1.0, xxx3)) &
+			     !    * max(xxx1,xxx2))*RRCC(i)   !2.0*OSMATIC/1.5								!The basic root death rate??
+			!!     If((DVS.GE.2.0).And.(RRCC(i).GE.0.0)) Then
+			!!	      RRDCL(i) = RRDCL(i) + RRCC(i) * &
+			!!		     ((DVS - 1.8) / (DVS - 1.6))**3
+			!!     EndIf
+			!!     RRDCL(i) =max(0.0, Min(RRDCL(i), RRCC(i)))
+		    !! Else
+			!!     RRDCL(i) = 0.0
+
+		    !! EndIf
 !---------The root depth parameters
 		!	'''---for tmpF2 and tmpF3
 			   tmpV2 =0.0; TMPV3 =0.0
@@ -553,7 +591,15 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 	   EndIf
 !---------TRootDeathC(i) WILL BE UPDATE BY INTEGRATION ROUTINE
 
+!	    ''Calculating root density in cm/cm3, RRCC IN KG DM/HA, SROOTL in m/g DM, LAYT in cm
+!	    RRDENSIT(i) = RRCC(I)  * SROOTL / LAYT(I)/1000.0
+!			In oder to aviod negative value of root length, above function is cancelled out, replaced with CALCULATION
+!     by the mass in ORYZA1.for
 	    RRDENSIT(i) = SROOTL / LAYT(I)/1000.0 !*(1.0+((sdep(i-1)+layt(i)*0.5)/(0.8*maxd))**1.0)
+		!----THE SROOTL WOULD VARY WITH SOIL WATER CONDITION AND GROWTH STAGE, REFERENCES???
+		!----Tahere Azhiri-Sigari et al. 2000, Plant Prod. Sci., 3(2), 180-188.
+		!----Also assumed that the root become thin in deeper soil layer
+
 	 ENDDO
 	!----DETERMINE THE EFFECTIVE ROOT LAYER FOR WATER AND NITROGEN UPTAKE
 	!-------rescale tmpF2 and tmpF3
@@ -580,10 +626,16 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 	 IF(TMPVALUE.GT.0.0) THEN
 	 		TMPV2 = 0.95*TMPVALUE
 		 DO I=1, int(SDEP(SL))
+		 	 !95% OF TOTAL ROOT MASS IS THE LAYER OF EFFECTIVE ROOTING LAYER
+!			 tmpV3 = tmpf2(i)*srootl/100.0    !in cm/m3 within 1 cm layer
+!			 tmpV2 =	10.0/1000.0*srootl		!Critical value is 10.0 g root/m3 effective water and nutrient uptake
+!			 if(tmpV3.lt.tmpV2) then			!Critical value is 100.0 cm/m3,
 				TMPV3=TMPV3+TMPF2(I) 
 			 IF(TMPV3.GE.TMPV2) THEN
 				 if(dvs.gt.1.0) then
 					REFFECD=min(REFCD_O, max(IROOTD,real(i/100.0)))    !IROOTD in m, REFFECD and REFCD_O in m
+				 !IF((DVS.GT.1.0).AND.(REFFECD.GT.REFCD_O)) THEN
+					!	REFFECD=REFCD_O
 					REFCD_O=REFFECD
 				 ELSE
 					REFFECD=max(REFCD_O, max(IROOTD,real(i/100.0)))
