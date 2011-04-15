@@ -1,4 +1,4 @@
-      SUBROUTINE WARNING (MODULE,MESSAG)
+      SUBROUTINE TT_WARNING (MODULE,MESSAG)
 !     04/15/2011
 !     CHP changed subroutine WARNING in TTUTILS to TT_WARNING to eliminate duplicate name in DSSAT
       IMPLICIT NONE
