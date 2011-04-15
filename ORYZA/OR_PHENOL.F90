@@ -25,7 +25,7 @@
 !                                                                      *
 !  FILE usage : none                                                   *
 !----------------------------------------------------------------------*
-      SUBROUTINE PHENOL(ESTAB,DVS,DVRJ,DVRI,DVRP,DVRR,HU,DAYL,MOPP,PPSE, &
+      SUBROUTINE OR_PHENOL(ESTAB,DVS,DVRJ,DVRI,DVRP,DVRR,HU,DAYL,MOPP,PPSE, &
                         TS,SHCKD,CROPSTA,DVR,TSHCKD)
 
       IMPLICIT NONE

@@ -78,7 +78,7 @@ END MODULE RootGrowth
 SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)				
 
 
-	 USE numerical_libraries
+!	 USE numerical_libraries
 	 !USE CHART
 	 USE public_module	!VARIABLES
 	 USE rootgrowth

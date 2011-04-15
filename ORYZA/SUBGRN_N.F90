@@ -41,6 +41,10 @@
       LOGICAL GRAINS
 !-----Local parameters
       REAL    DVSPI, DVSF, CTT, COLDTT, TFERT, NTFERT, TINCR
+
+! CHP ADDED:
+      REAL SFLOWER, IFLOWER, TFLOWER
+
       SAVE
 
 !     Initialization
