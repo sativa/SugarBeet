@@ -73,7 +73,7 @@
 !     DECLARATION SECTION                                           *
 !===================================================================*
 !CHP      USE CHART
-!CHP	  USE Public_Module		!VARIABLES
+	  USE Public_Module		!VARIABLES
 !CHP	  use RootGrowth
       IMPLICIT NONE
  
@@ -154,8 +154,9 @@
       !&SAVE
 
 !   CHP ADDED THESE VARIABLE DECLARATIONS
-    REAL SROOTL, RMINT, ROPTT, RTBS, RCNL, MAXD, SODT, PV, PNL, PSAND, PCLAY
-    REAL PROOT_NUTRIENT, PBD, PSOC, PSON, PNO3, PNH4
+    REAL SROOTL, RMINT, ROPTT, RTBS, RCNL, MAXD, SODT 
+!    REAL PV, PNL, PSAND, PCLAY
+!    REAL PROOT_NUTRIENT, PBD, PSOC, PSON, PNO3, PNH4
     
  
 !===================================================================*
