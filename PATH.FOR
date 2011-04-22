@@ -317,6 +317,7 @@ C=======================================================================
 
 !    Check for valid crop modeling approaches
       IF ((INDEX(MODEL(3:5),'CER') .EQ. 0) .AND.      !CERES
+     &    (INDEX(MODEL(3:5),'YZA') .EQ. 0) .AND.      !ORYZA2000
      &    (INDEX(MODEL(3:5),'IXM') .EQ. 0) .AND.      !IXIM
      &    (INDEX(MODEL(3:5),'GRO') .EQ. 0) .AND.      !CROPGRO
      &    (INDEX(MODEL(3:5),'CSM') .EQ. 0) .AND.      !CROPSIM (Cereal)
