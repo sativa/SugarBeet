@@ -1,0 +1,236 @@
+*--------------------------------------------------------------------*
+* TIMER and EXPERIMENTAL DATA FILE                                   *
+*                                                                    *
+* File name        : IR72DS1.T92                                      *
+* Crop             : Oryza sativa cv. IR72                           *
+* Year/Season      : 1992, dry season                                *
+* Experimental site: IRRI farm, Field M10, 14.22N, 121.25E, 23m      *
+* Fertilizer       : 180 kg N                                        *
+* People           : Kropff/Cassman/Libbon/Torres                    *
+* Address          : IRRI, MCPO 3127, 1271 Makati City, Philippines  *
+* Additional info  : Potential production experiment                 *
+*                                                                    *
+*--------------------------------------------------------------------*
+
+*--------------------------------------------------------------------*
+* 1. Selection of modes of running                                   *
+*--------------------------------------------------------------------*
+*--  RUNMODE: mode of running ORYZA
+RUNMODE = 'EXPERIMENT'       ! ORYZA simulates particular experiment
+*RUNMODE ='EXPLORATION'      ! ORYZA used for exploraton 
+
+*--  PRODENV = Production situation setting
+PRODENV = 'POTENTIAL'        ! Potential production
+*PRODENV = 'WATER BALANCE'   ! Production may be water-limited
+
+*--  NITROENV = Nitrogen production situation setting
+*NITROENV = 'POTENTIAL'        ! Potential production
+NITROENV = 'NITROGEN BALANCE'   ! Production may be nitrogen-limited 
+
+* WARNING: NITROGEN AND WATER LIMITATIONS AT SAME TIME IS AS
+* YET UN UNVALIDATED OPTION IN ORYZA2000!!!! 
+
+*--  ETMOD is method for evapotranspiration calculation:
+ETMOD = 'PENMAN'            ! Penman-based (Van Kraalingen & Stol,1996)
+*ETMOD = 'PRIESTLY TAYLOR'   ! Priestly-Taylor (")
+*ETMOD = 'MAKKINK'           ! Makkink (Van Kraalingen & Stol, 1996)
+
+*--------------------------------------------------------------------*
+* 2. Timer data for simulation                                       *
+*--------------------------------------------------------------------*
+IYEAR  = 1992                ! Start year of simulation (year)
+STTIME = 4.                  ! Start time  (day number)
+FINTIM = 1000.               ! Finish time (days after start)
+DELT   = 1.                  ! Time step   (day)
+
+*--------------------------------------------------------------------*
+* 2. Weather station and climatic data for simulation                *
+*--------------------------------------------------------------------*
+WTRDIR = 'C:\ORYZA\DATA\WEATHER\'   ! Directory of weather data
+CNTR   = 'PHIL'              ! Country code
+ISTN   = 1                   ! Station code
+
+ANGA = 0.29                  ! Angstrom A parameter
+ANGB = 0.45                  ! Angstrom B parameter
+
+TMCTB =  0., 0.,             ! Table for temperature increase
+       366., 0.              ! Climatic Change studies
+
+FAOF  = 1.          ! MultipL. factor for pot. evapotranspiration (FAO)
+                    ! Value Murty & Tuong
+
+TMPSB = 0.          ! Temperature increase in seed-bed due to cover:
+                    ! Zero when no cover over seed-bed; 9.5 with seed-bed
+
+*--------------------------------------------------------------------*
+* 3. Establishment data
+*--------------------------------------------------------------------*
+*--  ESTAB is method of establishment: 'TRANSPLANT' or 'DIRECT-SEED'
+ESTAB='TRANSPLANT'
+*ESTAB='DIRECT-SEED'
+
+* Transplanting date January 16, 1992; sowing date Jan. 4.
+EMD    = 4          ! Day of emergence (either direct, or in seed-bed)
+EMYR   = 1992       ! Year of emergence 
+SBDUR  = 12         ! Seed-bed duration (days)
+
+*--------------------------------------------------------------------*
+* 4. Management parameters                                           *
+*--------------------------------------------------------------------*
+NPLH   = 5.         ! Number of plants per hill 
+NH     = 25.        ! Number of hills
+NPLSB  = 1000.      ! Number of plants in seed-bed (???)
+NPLDS  = 200.       ! Number of plants/m2 direct-seeded
+
+*-- Initial data at emergence, for either direct-seeding or seed-bed
+*   Standard data used.
+LAPE   = 0.0001     ! Initial leaf area per plant
+DVSI   = 0.0        ! Initial development stage
+WLVGI  = 0.0        ! Initial leaf weight
+WSTI   = 0.0        ! Initial stem weight
+WRTI   = 0.0        ! Initial stem weight
+WSOI   = 0.0        ! Initial weight storage organs
+ZRTI   = 0.0001     ! Initial root depth (m)
+
+*-- Re-initialization at transplanting (standard data used)
+ZRTTR  = 0.05       ! Root depth at transplanting (m)
+
+*--------------------------------------------------------------------*
+* 6. Nitrogen parameters                                             *
+*--------------------------------------------------------------------*
+* Table of recovery fraction of Nitrogen in the soil (-) second column
+* versus development stage (DVS) (first column) STANDARD VALUE
+RECNIT = 
+0.0, 0.30,
+0.2, 0.35,
+0.4, 0.50,
+0.8, 0.75,
+1.0, 0.75,
+2.5, 0.75
+
+SOILSP = 0.8  ! Soil N mineralization rate (kg N/ha/d)
+
+* Table of fertilizer rate (kg N/ha) (second column) versus days after sowing
+* in the seed-bed (!) (first column)
+FERTIL = 
+0.,    0.,
+1.,    0.,
+11.,   0.,
+12.,   120.,
+13.,   0.,
+29.,   0.,
+30.,   60.,
+31.,   0.,
+366.,  0.
+
+*--------------------------------------------------------------------*
+* 6. Measured data                                                   *
+*    And option to force measured LAI during simulation              *
+*    (instead of using simulated values)                             *
+*--------------------------------------------------------------------*
+* Observed phenology: only required if program DRATES is run!!
+IDOYTR = 16    ! Day of transplanting (give 0 if direct-seeded)
+IYRTR  = 1992  ! Year of transplanting (give 0 if direct-seeded)
+IDOYPI = 58    ! Day of panicle initiation (give -99 if not observed)
+IYRPI  = 1992  ! Year of panicle initiation (give -99 if not observed)
+IDOYFL = 83    ! Day of flowering
+IYRFL  = 1992  ! Year of flowering
+IDOYM  = 114   ! Day of maturity
+IYRM   = 1992  ! Year of maturity
+
+* Leaf Area Index (m2 leaf / m2 ground)
+LAI_OBS =
+1992.,   4.,    0.,
+1992.,  16.,  0.03,
+1992.,  34.,  0.46,
+1992.,  58.,  4.43,
+1992.,  68.,  6.40,
+1992.,  83.,  5.95,
+1992.,  97.,  4.28,
+1992., 114.,  2.11
+
+*-- Parameter to set forcing of observed LAI during simulation
+LAI_FRC = 0       ! No forcing 
+*LAI_FRC = 2      ! Forcing 
+
+*-----Observed data: IR72 1992DS 180N
+*Green leaf dry wt (kg/ha)
+WLVG_OBS =
+1992.,   4.,    0.,
+1992.,  16.,    6.,
+1992.,  34.,  148.,
+1992.,  58., 2012.,
+1992.,  68., 3024.,
+1992.,  83., 3118.,
+1992.,  97., 2431.,
+1992., 114., 1326.
+
+*Dead leaf dry wt (kg/ha)
+WLVD_OBS =
+1992.,   4.,    0.,
+1992.,  16.,    0.,
+1992.,  34.,    0.,
+1992.,  58.,   43.,
+1992.,  68.,  247.,
+1992.,  83.,  717.,
+1992.,  97., 1889.,
+1992., 114., 3004.
+
+*Stem dry wt (kg/ha)
+WST_OBS =
+1992.,   4.,    0.,
+1992.,  16.,    5.,
+1992.,  34.,  112.,
+1992.,  58., 1720.,
+1992.,  68., 3317.,
+1992.,  83., 4814.,
+1992.,  97., 4308.,
+1992., 114., 3918.
+
+*Panicle dry wt (kg/ha)
+WSO_OBS =
+1992.,   4.,    0.,
+1992.,  16.,    0.,
+1992.,  34.,    0.,
+1992.,  58.,    0.,
+1992.,  68.,    0.,
+1992.,  83., 1667.,
+1992.,  97., 6456.,
+1992., 114.,10199.
+
+*total dry wt (kg/ha)
+WAGT_OBS = 
+1992.,   4.,    0.,
+1992.,  16.,   11.,
+1992.,  34.,  260.,
+1992.,  58., 3775.,
+1992.,  68., 6588.,
+1992.,  83.,10316.,
+1992.,  97.,15084.,
+1992., 114.,18447.
+
+*Leaf N (g N/g leaf): 
+FNLV_OBS =
+1992.,   4.,  0.027,
+1992.,  16.,  0.027,
+1992.,  34.,  0.052,
+1992.,  58.,  0.035,
+1992.,  68.,  0.032,
+1992.,  83.,  0.026,
+1992.,  97.,  0.020,
+1992., 114.,  0.012
+
+*Leaf N (g N/m2 leaf): 
+NFLV_OBS =
+1992.,   4.,  0.54,
+1992.,  16.,  0.54,
+1992.,  34.,  1.68,
+1992.,  58.,  1.59,
+1992.,  68.,  1.51,
+1992.,  83.,  1.37,
+1992.,  97.,  1.13,
+1992., 114.,  0.76
+
+*-- Parameter to set forcing of observed NFLV values during simulation
+NFLV_FRC = 0       ! No forcing 
+*NFLV_FRC = 2      ! Forcing 
