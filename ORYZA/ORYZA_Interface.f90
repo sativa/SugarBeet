@@ -28,7 +28,7 @@
       INTEGER REP, STEP, CN, YRHAR, YREND, YRDOY
       INTEGER MDATE, L, NLAYR
       INTEGER MULTI, FROP, SN, YEAR
-      INTEGER STGDOY(20), YEARPLT, YRPLT
+      INTEGER STGDOY(20), YRPLT
 
       REAL WUPT, EOP, EP, ET, TRWUP, SRAD, TMAX, TMIN, CO2
       REAL SNOW, KCAN, KEP, DEPMAX
@@ -44,33 +44,37 @@
       REAL, DIMENSION(0:NL) :: SOILTEMP
       REAL, DIMENSION(2)  :: HARVFRAC
 
-!     ORYZA2000 variables:
-      REAL NFLF
-
 !-----Formal ORYZA parameters
-      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, K, NLO
+      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, NLO
       LOGICAL       OR_OUTPUT, TERMNL
       CHARACTER (128) FILEI1, FILEIT, FILEI2
       CHARACTER (32) ESTAB
       REAL    OR_DOY , TIME, DELT  , LAT  , RDD, TRC, NFLV, NSLLV
-      REAL    TMMN, TMMX, TMAXC, TMINC, TKLT  , ZRTMS, LRSTRS, LDSTRS, LESTRS, NRT
+      REAL    TMMN, TMMX, TKLT  , ZRTMS, LRSTRS, LDSTRS, LESTRS, NRT
       REAL    PCEW, CPEW, DAE , LAIROL, ZRT  , DVS, RNSTRS, WCL(10), WL0, DLDR
       REAL    LAI, LLV  , SLA , WLVG  , WST  , WSO, GSO, GGR, GST, GLV, PLTR 
       REAL    TRW, TRWL(10), TKL(10)
 
 !     FOR EXPERIMENT FILE 
       CHARACTER*(128) OUTPUTFILE
-      INTEGER YRSIM, EDATE, PAGE, IRRCOD 
+      INTEGER YRSIM, EDATE, iPAGE, IRRCOD 
       CHARACTER*1, ISWWAT, ISWNIT, PLME,IIRRI
-      REAL PLPH, PLYPOP, PLANTS, PLDP,IRRI, WL0MIN, KPAMIN, WLODAY, SLMIN
+      REAL PLPH, PLTPOP, PLANTS, PLDP,IRRI, WL0MIN, KPAMIN, WLODAY, SLMIN
       REAL IRMTAB(300), RIRRIT(750),ISTAGET(900), TMCTB(750)
-      
+
+!     FILEIO data
+      CHARACTER*1  PLDS
+      INTEGER INCDAT
+      REAL PAGE, ROWSPC, SDWTPL, ATEMP
+
       TYPE (ControlType) CONTROL
       TYPE (SoilType)    SOILPROP
       TYPE (SwitchType)  ISWITCH
       Type (ResidueType) HARVRES
       Type (ResidueType) SENESCE
       TYPE (WeatherType) WEATHER
+
+      ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
 
 !     Transfer values from constructed data types into local variables.
       DYNAMIC = CONTROL % DYNAMIC
@@ -81,6 +85,7 @@
       RNMODE  = CONTROL % RNMODE
       RUN     = CONTROL % RUN
       YRDOY   = CONTROL % YRDOY
+      YRSIM   = CONTROL % YRSIM
 
       ISWWAT  = ISWITCH % ISWWAT
       ISWNIT  = ISWITCH % ISWNIT
@@ -142,20 +147,34 @@
       WINDSP= WEATHER % WINDSP
 
 !-----------------------------------------------------------------------
+!    Read DSSAT cultivar and planting data from FILEIO
+     CALL OR_IPRICE (CONTROL,                       &
+          FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
+          ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
+
+    iPAGE = NINT(PAGE)
+    EDATE = INCDAT(YRSIM,iPAGE)
+
  !GENERATE EXPERIMENT FILE
       CALL ExperimentFileEdit(OUTPUTFILE, YRSIM, EDATE,& 
-                ISWWAT, ISWNIT, PLME, PAGE, PLPH, PLYPOP,PLANTS, PLANTS, PLDP, &
-                IIRRI, IRRCOD,IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
+                ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
+                IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
+
 !     Used STRING
 !   ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
 !   FILEI1 = 'D:\...\...\IR72.CRP
 !   FILEIT = 'D:\...\...\...\N150.exp
     TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.; NLO = PV%PNL
-    FILEI2 = "";IUNITD = 30; IUNITL = 40
+
+    CALL GETLUN("ORYZA1",IUNITD)
+    CALL GETLUN("ORYZA2",IUNITL)
+
+    FILEI2 = "" !;IUNITD = 30; IUNITL = 40
     DELT = 1.0  !TIME STEP IS 1.0
     DO I = 1, NLO
         TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
     END DO
+
 !   ESSENTIAL INFORMATION    
     CALL WNOSTRESS (NLO, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
 
@@ -200,7 +219,94 @@
         MDATE = -99
       ENDIF
 
+    DEALLOCATE(PV)      !Added by TaoLi, 24 April 2011
+
       RETURN
       END SUBROUTINE ORYZA_Interface
 
 !=====================================================================
+
+!=======================================================================
+!  RI_IPGROSUB, Subroutine
+!
+!  Reads FILEIO for GROSUB routine
+!  05/07/2002 CHP Written
+!  08/12/2003 CHP Added I/O error checking
+!=======================================================================
+      SUBROUTINE OR_IPRICE (CONTROL,                       &
+          FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
+          ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
+
+      USE ModuleDefs     !Definitions of constructed variable types, 
+                         ! which contain control information, soil
+                         ! parameters, hourly weather data.
+      IMPLICIT     NONE
+
+      CHARACTER*1   PLME, PLDS
+      CHARACTER*2   CROP
+      CHARACTER*6   VARTY
+      CHARACTER*20  VARNAME
+      CHARACTER*30  FILEIO
+      CHARACTER*78  MSG(2)
+      CHARACTER*128 FILEI1
+
+      CHARACTER*6  ERRKEY, SECTION
+      PARAMETER (ERRKEY = 'IPRICE')
+
+      INTEGER LINC, LNUM, LUNIO, ERR, FOUND
+      REAL PLANTS, PLTPOP, ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH
+
+!     The variable "CONTROL" is of type "ControlType".
+      TYPE (ControlType) CONTROL
+      FILEIO = CONTROL % FILEIO
+      LUNIO  = CONTROL % LUNIO
+
+      LNUM = 0
+
+!-----------------------------------------------------------------------
+!       Read data from FILEIO for use in PLANT module
+!-----------------------------------------------------------------------
+      OPEN (LUNIO, FILE = FILEIO, STATUS = 'OLD', IOSTAT=ERR)
+      IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,0)
+
+!-----------------------------------------------------------------------
+!    Read Cultivars Section
+!-----------------------------------------------------------------------
+!C CR INGENO CNAME
+!  RI IB0118 IR 72   
+        
+      SECTION = '*CULTI'
+      CALL FIND(LUNIO, SECTION, LINC, FOUND) ; LNUM = LNUM + LINC
+      IF (FOUND .EQ. 0) CALL ERROR(SECTION, 42, FILEIO, LNUM)
+      READ(LUNIO,'(3X,A2,1X,A6,1X,A20)', IOSTAT=ERR) CROP, VARTY, VARNAME ; LNUM = LNUM + 1
+      IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
+
+      SELECT CASE(VARTY)
+      CASE ('IB0118'); FILEI1 = 'IR72.CRP'
+      CASE DEFAULT
+        MSG(1) = 'Invalid ORYZA cultivar found.'
+        MSG(2) = 'Program will stop.'
+        CALL WARNING(2, ERRKEY, MSG)
+        CALL ERROR(ERRKEY,36,FILEIO,LNUM)
+      END SELECT
+
+!-----------------------------------------------------------------------
+!    Read Planting Details Section
+!-----------------------------------------------------------------------
+!P   PDATE   EDATE  PPOP  PPOE  PLME  PLDS  PLRS  PLRD  PLDP  PLWT  PAGE  PENV  PLPH  SPRL
+!  1992195     -99 999.0 125.0     T     H   20.    0.   5.0    0.   12.  25.0   5.0   0.0
+
+      SECTION = '*PLANT'
+      CALL FIND(LUNIO, SECTION, LINC, FOUND) ; LNUM = LNUM + LINC
+      IF (FOUND .EQ. 0) CALL ERROR(SECTION, 42, FILEIO, LNUM)
+      READ (LUNIO,70, IOSTAT=ERR) PLANTS, PLTPOP, PLME, PLDS, ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH
+   70 FORMAT (18X,2F6.0,2(5X,A1),F6.0,6X,5F6.0)
+      LNUM = LNUM + 1
+      IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
+
+      ROWSPC = ROWSPC / 100.0
+
+      CLOSE (LUNIO)
+      RETURN
+      END SUBROUTINE OR_IPRICE
+!=======================================================================

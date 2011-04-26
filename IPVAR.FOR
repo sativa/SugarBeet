@@ -234,7 +234,7 @@ C-GH &            P1,P2O,P2R,P5,G1,G2,PHINT,P3,P4
      &            G2,G3,G4,PD,P2,TC
 
 !     Ceres Rice **
-      CASE ('RICER')
+      CASE ('RICER','RIORZ')
         READ (C360,800,IOSTAT=ERRNUM) VARTY,VRNAME,ECONO,
      &            P1,P2R,P5,P2O,G1,G2,G3,G4
 

@@ -317,7 +317,7 @@ C=======================================================================
 
 !    Check for valid crop modeling approaches
       IF ((INDEX(MODEL(3:5),'CER') .EQ. 0) .AND.      !CERES
-     &    (INDEX(MODEL(3:5),'YZA') .EQ. 0) .AND.      !ORYZA2000
+     &    (INDEX(MODEL(3:5),'ORZ') .EQ. 0) .AND.      !ORYZA
      &    (INDEX(MODEL(3:5),'IXM') .EQ. 0) .AND.      !IXIM
      &    (INDEX(MODEL(3:5),'GRO') .EQ. 0) .AND.      !CROPGRO
      &    (INDEX(MODEL(3:5),'CSM') .EQ. 0) .AND.      !CROPSIM (Cereal)
@@ -343,7 +343,8 @@ C=======================================================================
      &    (INDEX(MODEL(1:5),'MZIXM') .EQ. 0) .AND.    !Maize IXIM
      &    (INDEX(MODEL(1:5),'MLCER') .EQ. 0) .AND.    !Millet
      &    (INDEX(MODEL(1:5),'PTSUB') .EQ. 0) .AND.    !Potato
-     &    (INDEX(MODEL(1:5),'RICER') .EQ. 0) .AND.    !Rice
+     &    (INDEX(MODEL(1:5),'RICER') .EQ. 0) .AND.    !CERES-Rice
+     &    (INDEX(MODEL(1:5),'RIORZ') .EQ. 0) .AND.    !ORYZA-Rice
      &    (INDEX(MODEL(1:5),'SGCER') .EQ. 0) .AND.    !Sorghum
      &    (INDEX(MODEL(1:5),'SCCSP') .EQ. 0) .AND.    !Sugarcane CASUPRO
      &    (INDEX(MODEL(1:5),'SCCAN') .EQ. 0) .AND.    !Sugarcane CaneGro
