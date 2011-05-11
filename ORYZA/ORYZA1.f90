@@ -67,7 +67,7 @@
                         LRSTRS, LDSTRS, LESTRS, PCEW,  CPEW, TRC, &
                         DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
-                        PLTR, WCL, WL0)
+                        PLTR, WCL, WL0, WRT, WRR14)
 
 !===================================================================*
 !     DECLARATION SECTION                                           *
@@ -150,7 +150,7 @@
 		REAL TEMPV(15), Y1, Y2
 !     Used functions
       REAL    LINT2, INSW, NOTNUL, GETOBS, INTGRL, INTGR2
-      !&SAVE
+      SAVE
  
 !===================================================================*
 !     INITIALIZATION SECTION                                        *
@@ -204,7 +204,7 @@
 		 ENDIF
 !--------Close experimental data input file
          CLOSE (IUNITD)
-
+!         IUNITD = IUNITD + 5            
 !--------Open crop input file
          CALL RDINIT(IUNITD,IUNITL,FILEI1)
 !        Read model parameters
@@ -877,7 +877,7 @@
 !-----------If biomass is negative: set at 0 and abort simulation
             IF (WSO.LT.-5..OR.WLVG.LT.-5..OR.WST.LT.-5..OR.WRR.LT.-5) THEN
                WRITE (*,*) 'Negative biomass=> simulation stopped'
-               CALL OUTCOM('Negative biomass => simulation stopped')
+!               CALL OUTCOM('Negative biomass => simulation stopped')
 ! BAS: removed, Spet 2006  \Commented them back by TAOLI, May 7 2010
 				IF (WSO.LT.0.) WSO = 0.
                IF (WRR.LT.0.) WRR = 0.
@@ -890,7 +890,7 @@
 !-----------If LAI is negative: set at 0 and abort simulation
             IF (LAI.LT.-0.01) THEN
                WRITE (*,*) 'Negative LAI=> simulation stopped'
-               CALL OUTCOM('Negative LAI => simulad:\simulation\strasa\rainfedtion stopped')
+!               CALL OUTCOM('Negative LAI => simulad:\simulation\strasa\rainfedtion stopped')
 !               IF (LAI.LT.0.) LAI = 0.
                TERMNL = .TRUE.
             END IF
@@ -901,7 +901,7 @@
                IF (LDSTRS.LE.0.) THEN
                   WRITE (*,*) 'Soil dryer than lower limit dead leaves'
                   WRITE (*,*) 'LDSTRS = 0 => Simulation stopped'
-                  CALL OUTCOM('LDSTRS = 0 => simulation stopped')
+!                  CALL OUTCOM('LDSTRS = 0 => simulation stopped')
                   TERMNL = .TRUE.
                END IF
 !-----------End if only in main field

@@ -24,10 +24,10 @@
       CHARACTER*30  FILEIO
       CHARACTER*120 FILEIOCS
 
-      INTEGER DOY, DYNAMIC, RUN, TN, RUNI, RN, ON
+      INTEGER DOY1, DYNAMIC, RUN, TN, RUNI, RN, ON
       INTEGER REP, STEP, CN, YRHAR, YREND, YRDOY
       INTEGER MDATE, L, NLAYR
-      INTEGER MULTI, FROP, SN, YEAR
+      INTEGER MULTI, FROP, SN, YEAR1
       INTEGER STGDOY(20), YRPLT
 
       REAL WUPT, EOP, EP, ET, TRWUP, SRAD, TMAX, TMIN, CO2
@@ -51,11 +51,11 @@
       LOGICAL       OR_OUTPUT, TERMNL
       CHARACTER (128) FILEI1, FILEIT, FILEI2
       CHARACTER (32) ESTAB
-      REAL    OR_DOY , TIME, DELT  , LAT  , RDD, TRC, NFLV, NSLLV
+      REAL    YEAR, DOY , TIME, DELT  , LAT  , RDD, TRC, NFLV, NSLLV
       REAL    TMMN, TMMX, TKLT  , ZRTMS, LRSTRS, LDSTRS, LESTRS, NRT
       REAL    PCEW, CPEW, DAE , LAIROL, ZRT  , DVS, RNSTRS, WCL(10), WL0, DLDR
       REAL    LAI, LLV  , SLA , WLVG  , WST  , WSO, GSO, GGR, GST, GLV, PLTR 
-      REAL    TRW, TRWL(10), TKL(10)
+      REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
 
 !     FOR EXPERIMENT FILE 
       CHARACTER*(128) OUTPUTFILE
@@ -75,6 +75,9 @@
       Type (ResidueType) HARVRES
       Type (ResidueType) SENESCE
       TYPE (WeatherType) WEATHER
+      
+      COMMON /FSECM1/ YEAR,DOY,IUNITD,IUNITL,TERMNL
+      
 
 !     Transfer values from constructed data types into local variables.
       DYNAMIC = CONTROL % DYNAMIC
@@ -111,9 +114,12 @@
 
       FILEIOCS(1:30) = FILEIO
 
-      CALL YR_DOY(YRDOY, YEAR, DOY)
+      TRC = EOP
 
-      IF (DYNAMIC .EQ. RUNINIT .OR. DYNAMIC .EQ. SEASINIT) THEN
+      CALL YR_DOY(YRDOY, YEAR1, DOY1)
+
+      !IF (DYNAMIC .EQ. RUNINIT .OR. DYNAMIC .EQ. SEASINIT) THEN
+      IF (DYNAMIC .EQ. 1) THEN
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
         TN = 0
         RN = 0
@@ -124,22 +130,20 @@
         STEP = 1
         RUNI = 1
         TOTIR = 0.0
-
-!       CHP attempt to prevent errors in opening a file that is already open. Didn't work.
-        IF (DYNAMIC == RUNINIT) THEN
-          ITASK = 0
-        ELSE
-          ITASK = 1
-        ENDIF 
-      ELSEIF (DYNAMIC == RATE) THEN
+        ITASK = 1;TIME =0.0
+      !ELSEIF (DYNAMIC == RATE) THEN
+      ELSEIF (DYNAMIC == 2.OR. DYNAMIC ==3) THEN
         CALL GET('SPAM','EO',  EO)
         CALL GET('SPAM','EP',  EP)
         CALL GET('SPAM','UH2O',UH2O)
         ITASK = 2
-      ELSEIF (DYNAMIC == INTEGR) THEN
+      !ELSEIF (DYNAMIC == INTEGR) THEN
+      ELSEIF (DYNAMIC == 4) THEN
         CALL GET('SPAM','ET',  ET)
         CALL Get('MGMT','TOTIR', TOTIR)
-        ITASK = 3
+        ITASK = 3;TIME = TIME+DELT
+      ELSE
+        ITASK = 0
       ENDIF
 
       SOILTEMP(0) = SRFTEMP
@@ -150,11 +154,12 @@
       CO2   = WEATHER % CO2
       DAYL  = WEATHER % DAYL 
       RAIN  = WEATHER % RAIN
-      SRAD  = WEATHER % SRAD
-      TMAX  = WEATHER % TMAX
-      TMIN  = WEATHER % TMIN
+      RDD   = WEATHER % SRAD*1000000.0
+      TMMX  = WEATHER % TMAX
+      TMMN  = WEATHER % TMIN
       TWILEN= WEATHER % TWILEN
       WINDSP= WEATHER % WINDSP
+      LAT   = WEATHER % XLAT
 
 !-----------------------------------------------------------------------
 !    Read DSSAT cultivar and planting data from FILEIO
@@ -162,7 +167,9 @@
           FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
           ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
  
-     IF(ITASK.EQ.1) THEN
+    IF(ITASK.EQ.1) THEN
+        !initialize OBSSYS routine
+        CALL OBSINI
         !get emergence date and transplanting date
         iPAGE = NINT(PAGE)
         EDATE = INCDAT(YRSIM,iPAGE)
@@ -186,73 +193,84 @@
             END IF
         END IF
 
+!     Used STRING
+!   ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
+!   FILEI1 = 'D:\...\...\IR72.CRP
+!   FILEIT = 'D:\...\...\...\N150.exp
+    FILEIT = CONTROL % FILEX(1:8) // ".EXP"
+
         !GENERATE EXPERIMENT FILE
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
+    
+        TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.
+        NLO = PV%PNL; TERMNL = .FALSE.
 
-!      Used STRING
-!      ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
-!      FILEI1 = 'D:\...\...\IR72.CRP
-!      FILEIT = 'D:\...\...\...\N150.exp
-       TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.; NLO = PV%PNL
-   
-       CALL GETLUN("ORYZA1",IUNITD)
-       CALL GETLUN("ORYZA2",IUNITL)
-       IUNITD = IUNITD+10
-       IUNITL = IUNITL +20
-       FILEI2 = "" !;IUNITD = 30; IUNITL = 40
-       DELT = 1.0  !TIME STEP IS 1.0
-   
-       DO I = 1, NLAYR
-          PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
-          TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
-       END DO
+        CALL GETLUN("ORYZA1",IUNITD)
+        CALL GETLUN("ORYZA2",IUNITL)
+        IUNITD = IUNITD+10
+        IUNITL = IUNITL+20
+        FILEI2 = "" !;IUNITD = 30; IUNITL = 40
+        DELT = 1.0  !TIME STEP IS 1.0
+        IDOY = DOY
+        DAE = 0.0
+        DO I = 1, NLAYR
+            PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
+            TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
+        END DO
     END IF
 
-!   ESSENTIAL INFORMATION    
+!   ESSENTIAL INFORMATION  
     CALL UPPERC(ISWWAT)
     IF(INDEX(ISWWAT, "N").GT.0) THEN        !POTENTIAL WATER CONDITION
-        TRW = EP                            !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+        TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT                            !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
         CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
     END IF
-
-    !DETERMINE THE CROP STATE
-    IF(INDEX(PLME,"T").GT.0) THEN
-        IF(YRDOY.EQ.EDATE) THEN
-            CROPSTA = 1         !IN SEED BED
-        ELSEIF(YRDOY.LT.EDATE) THEN
-            CROPSTA = 0         !BEFORE EMERGENCE
-        ELSEIF(YRDOY.EQ.TDATE) THEN
-            CROPSTA = 3         !THE TRANSPLANTING DAY
-        ELSEIF((CROPSTA.EQ.3).AND.(YRDOY.GT.TDATE)) THEN
-            CROPSTA = 4         !SWITCH TO MAIN FIELD
-        END IF
-    ELSE
-        IF(YRDOY.EQ.EDATE) THEN
-            CROPSTA = 4             !IT IS SET TO BE MAINFED FROM THE EMERGENCE FOR DIRECT-SEED
-        ELSEIF(YRDOY.LT.EDATE) THEN
+  !-----Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
+!                  3=day of transplanting; 4=main growth period
+!      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
+         IF(YRDOY.LT.EDATE) THEN
             CROPSTA = 0             !
+         END IF
+         IF (CROPSTA .EQ. 3) CROPSTA = 4
+         IF (CROPSTA .EQ. 2) THEN
+            IF (YRDOY.EQ.TDATE) CROPSTA = 3
+         END IF
+         IF (CROPSTA .EQ. 1) THEN
+            IF (INDEX(PLME,"T").GT.0) THEN
+               CROPSTA = 2
+            ELSE 
+               CROPSTA = 4
+            END IF
         END IF
-    END IF
-    
-    CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
-                        OR_OUTPUT, TERMNL, IDOY  , OR_DOY, &
+        IF (CROPSTA .EQ. 0) THEN
+           IF (YRDOY.EQ.EDATE) CROPSTA = 1
+        END IF
+!    END IF
+  
+    DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
+    IF((CROPSTA.GE.1).AND.(ITASK.EQ.2)) DAE=DAE+1.0
+    IF(.NOT.TERMNL) THEN
+        CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
+                        OR_OUTPUT, TERMNL, IDOY  , DOY, &
                         TIME,   DELT,   LAT,    RDD,    TMMN,   TMMX, &
                         NFLV,   NSLLV,  NRT,	RNSTRS,                 &
                         ESTAB,  TKLT,   ZRTMS,  CROPSTA, &
                         LRSTRS, LDSTRS, LESTRS, PCEW,  CPEW, TRC, &
                         DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
-                        PLTR, WCL, WL0)
-    CALL UPPERC(ISWNIT)
+                        PLTR, WCL, WL0, WRT, WRR14)
+        CALL UPPERC(ISWNIT)
 
-!    IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
-        CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
+!       IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
+            CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
                            CROPSTA, DVS, WLVG, LAI, SLA, NFLV, NSLLV, RNSTRS)
-!    ELSE
+!       ELSE
     
-!    END IF
+!       END IF
+    ENDIF
+
 !-----------------------------------------------------------------------
 !      KCAN   = KPAR
 !      KEP    = KSRAD
@@ -271,7 +289,7 @@
           SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
         ENDDO
       endif
-                      
+      IF(ITASK .EQ.3) ITASK = 2                
       IF (YREND.EQ.YRDOY .AND. DYNAMIC.EQ.INTEGR) THEN 
         !Transfer harvest residue from senescence variable to 
         !harvest residue variable on day of harvest.
