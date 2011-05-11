@@ -198,6 +198,8 @@
 !   FILEI1 = 'D:\...\...\IR72.CRP
 !   FILEIT = 'D:\...\...\...\N150.exp
     FILEIT = CONTROL % FILEX(1:8) // ".EXP"
+    IIRRI  = ISWITCH % IIRRI
+    IRCOD  = 0  !Potential production  - need to get value for water limited
 
         !GENERATE EXPERIMENT FILE
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
