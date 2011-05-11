@@ -44,8 +44,10 @@
       REAL, DIMENSION(0:NL) :: SOILTEMP
       REAL, DIMENSION(2)  :: HARVFRAC
 
+      LOGICAL LEAP !Function in DATES subroutine
+
 !-----Formal ORYZA parameters
-      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, NLO
+      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, NLO, TDATE
       LOGICAL       OR_OUTPUT, TERMNL
       CHARACTER (128) FILEI1, FILEIT, FILEI2
       CHARACTER (32) ESTAB
@@ -73,8 +75,6 @@
       Type (ResidueType) HARVRES
       Type (ResidueType) SENESCE
       TYPE (WeatherType) WEATHER
-
-      ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
 
 !     Transfer values from constructed data types into local variables.
       DYNAMIC = CONTROL % DYNAMIC
@@ -114,6 +114,7 @@
       CALL YR_DOY(YRDOY, YEAR, DOY)
 
       IF (DYNAMIC .EQ. RUNINIT .OR. DYNAMIC .EQ. SEASINIT) THEN
+        ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
         TN = 0
         RN = 0
         SN = 0
@@ -123,13 +124,22 @@
         STEP = 1
         RUNI = 1
         TOTIR = 0.0
+
+!       CHP attempt to prevent errors in opening a file that is already open. Didn't work.
+        IF (DYNAMIC == RUNINIT) THEN
+          ITASK = 0
+        ELSE
+          ITASK = 1
+        ENDIF 
       ELSEIF (DYNAMIC == RATE) THEN
         CALL GET('SPAM','EO',  EO)
         CALL GET('SPAM','EP',  EP)
         CALL GET('SPAM','UH2O',UH2O)
+        ITASK = 2
       ELSEIF (DYNAMIC == INTEGR) THEN
         CALL GET('SPAM','ET',  ET)
         CALL Get('MGMT','TOTIR', TOTIR)
+        ITASK = 3
       ENDIF
 
       SOILTEMP(0) = SRFTEMP
@@ -151,33 +161,81 @@
      CALL OR_IPRICE (CONTROL,                       &
           FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
           ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
+ 
+     IF(ITASK.EQ.1) THEN
+        !get emergence date and transplanting date
+        iPAGE = NINT(PAGE)
+        EDATE = INCDAT(YRSIM,iPAGE)
+        IF(INDEX(PLME,"T").GT.0) THEN
+            CALL YR_DOY(EDATE, YRPLT,TDATE)
+            TDATE = TDATE + IPAGE
+            IF (LEAP(YRPLT)) THEN
+                IF(TDATE.GT.366) THEN
+                    YRPLT =YRPLT +1; TDATE = TDATE-366
+                    TDATE = YRPLT *1000.0 + TDATE
+                ELSE
+                    TDATE = YRPLT *1000.0 + TDATE
+                END IF
+            ELSE
+                IF(TDATE.GT.365) THEN
+                    YRPLT =YRPLT +1; TDATE = TDATE-366
+                    TDATE = YRPLT *1000.0 + TDATE
+                ELSE
+                    TDATE = YRPLT *1000.0 + TDATE
+                END IF
+            END IF
+        END IF
 
-    iPAGE = NINT(PAGE)
-    EDATE = INCDAT(YRSIM,iPAGE)
-
- !GENERATE EXPERIMENT FILE
-      CALL ExperimentFileEdit(OUTPUTFILE, YRSIM, EDATE,& 
+        !GENERATE EXPERIMENT FILE
+        CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
 
-!     Used STRING
-!   ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
-!   FILEI1 = 'D:\...\...\IR72.CRP
-!   FILEIT = 'D:\...\...\...\N150.exp
-    TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.; NLO = PV%PNL
-
-    CALL GETLUN("ORYZA1",IUNITD)
-    CALL GETLUN("ORYZA2",IUNITL)
-
-    FILEI2 = "" !;IUNITD = 30; IUNITL = 40
-    DELT = 1.0  !TIME STEP IS 1.0
-    DO I = 1, NLO
-        TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
-    END DO
+!      Used STRING
+!      ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
+!      FILEI1 = 'D:\...\...\IR72.CRP
+!      FILEIT = 'D:\...\...\...\N150.exp
+       TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.; NLO = PV%PNL
+   
+       CALL GETLUN("ORYZA1",IUNITD)
+       CALL GETLUN("ORYZA2",IUNITL)
+       IUNITD = IUNITD+10
+       IUNITL = IUNITL +20
+       FILEI2 = "" !;IUNITD = 30; IUNITL = 40
+       DELT = 1.0  !TIME STEP IS 1.0
+   
+       DO I = 1, NLAYR
+          PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
+          TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
+       END DO
+    END IF
 
 !   ESSENTIAL INFORMATION    
-    CALL WNOSTRESS (NLO, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
+    CALL UPPERC(ISWWAT)
+    IF(INDEX(ISWWAT, "N").GT.0) THEN        !POTENTIAL WATER CONDITION
+        TRW = EP                            !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+        CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
+    END IF
 
+    !DETERMINE THE CROP STATE
+    IF(INDEX(PLME,"T").GT.0) THEN
+        IF(YRDOY.EQ.EDATE) THEN
+            CROPSTA = 1         !IN SEED BED
+        ELSEIF(YRDOY.LT.EDATE) THEN
+            CROPSTA = 0         !BEFORE EMERGENCE
+        ELSEIF(YRDOY.EQ.TDATE) THEN
+            CROPSTA = 3         !THE TRANSPLANTING DAY
+        ELSEIF((CROPSTA.EQ.3).AND.(YRDOY.GT.TDATE)) THEN
+            CROPSTA = 4         !SWITCH TO MAIN FIELD
+        END IF
+    ELSE
+        IF(YRDOY.EQ.EDATE) THEN
+            CROPSTA = 4             !IT IS SET TO BE MAINFED FROM THE EMERGENCE FOR DIRECT-SEED
+        ELSEIF(YRDOY.LT.EDATE) THEN
+            CROPSTA = 0             !
+        END IF
+    END IF
+    
     CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
                         OR_OUTPUT, TERMNL, IDOY  , OR_DOY, &
                         TIME,   DELT,   LAT,    RDD,    TMMN,   TMMX, &
@@ -187,8 +245,14 @@
                         DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
                         PLTR, WCL, WL0)
-    CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
+    CALL UPPERC(ISWNIT)
+
+!    IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
+        CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
                            CROPSTA, DVS, WLVG, LAI, SLA, NFLV, NSLLV, RNSTRS)
+!    ELSE
+    
+!    END IF
 !-----------------------------------------------------------------------
 !      KCAN   = KPAR
 !      KEP    = KSRAD
@@ -215,11 +279,10 @@
         SENESCE % ResWt  = 0.0
         SENESCE % ResLig = 0.0
         SENESCE % ResE   = 0.0
+        DEALLOCATE(PV)      !Added by TaoLi, 24 April 2011
       ELSE
         MDATE = -99
       ENDIF
-
-    DEALLOCATE(PV)      !Added by TaoLi, 24 April 2011
 
       RETURN
       END SUBROUTINE ORYZA_Interface
