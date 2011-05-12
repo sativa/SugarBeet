@@ -199,7 +199,8 @@
 !   FILEIT = 'D:\...\...\...\N150.exp
     FILEIT = CONTROL % FILEX(1:8) // ".EXP"
     IIRRI  = ISWITCH % IIRRI
-    IRCOD  = 0  !Potential production  - need to get value for water limited
+!    IRCOD  = 0  !Potential production  - need to get value for water limited. 
+        !THE 'IRCOD', IT IS NOT USED IN THE ROUTINE YET, COMMENT IT OUT TEMPORARY.
 
         !GENERATE EXPERIMENT FILE
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
@@ -271,6 +272,9 @@
 !       ELSE
     
 !       END IF
+    ELSE
+    !delete all temporary files
+        CALL RDDTMP (IUNITD)
     ENDIF
 
 !-----------------------------------------------------------------------

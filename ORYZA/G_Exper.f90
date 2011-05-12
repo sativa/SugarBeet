@@ -23,7 +23,7 @@ CALL GETLUN('OUTPUTFILE',LUN)
 
 IYEAR = INT(YRSIM/1000.0);STTIME = YRSIM-IYEAR*1000.0
 EMYR = INT(EDATE/1000.0);EMD = EDATE-EMYR*1000.0
-OUTPUTFILE = "Test.exp"
+!OUTPUTFILE = "Test.exp"
 DELT = 1.0
 
 OPEN(UNIT=LUN, FILE = OUTPUTFILE, STATUS='REPLACE',ACTION='WRITE')
@@ -79,7 +79,7 @@ OPEN(UNIT=LUN, FILE = OUTPUTFILE, STATUS='REPLACE',ACTION='WRITE')
     WRITE(LUN, '(A)') "* 4. Management parameters                                           *"
     WRITE(LUN, '(A)') "*--------------------------------------------------------------------*"
     WRITE(LUN, 7000) "NPLH", NPLH, "        ! Number of plants per hill"
-    WRITE(LUN, 7000) "NH", PLTPOP/PLPH       ! Number of hills/m2 (13 x 27 cm)"
+    WRITE(LUN, 7000) "NH", PLTPOP/NPLH       ! Number of hills/m2 (13 x 27 cm)"
     WRITE(LUN, 7000) "NPLSB", NPLSB, "      ! Number of plants in seed-bed (???)"    
     WRITE(LUN, 7000) "NPLDS", NPLDS, "      ! Number of plants/m2 direct-seeded"
     
