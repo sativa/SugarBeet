@@ -47,7 +47,7 @@
 
       REAL NOTNUL
 
-      !&SAVE
+      SAVE
 
       IF (CROPSTA .LE. 1) THEN
         X       = 1.

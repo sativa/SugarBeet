@@ -71,7 +71,7 @@ MODULE RootGrowth
 		 real MAXD, RCNL, SROOTL
 !	end type rootParameter
 	
-!	  !&SAVE
+	  SAVE
 
 END MODULE RootGrowth
 

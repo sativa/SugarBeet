@@ -223,38 +223,38 @@
             TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
         END DO
     END IF
-
-!   ESSENTIAL INFORMATION  
-    CALL UPPERC(ISWWAT)
-    IF(INDEX(ISWWAT, "N").GT.0) THEN        !POTENTIAL WATER CONDITION
-        TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT                            !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
-        CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
-    END IF
-  !-----Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
-!                  3=day of transplanting; 4=main growth period
-!      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
-         IF(YRDOY.LT.EDATE) THEN
-            CROPSTA = 0             !
-         END IF
-         IF (CROPSTA .EQ. 3) CROPSTA = 4
-         IF (CROPSTA .EQ. 2) THEN
-            IF (YRDOY.EQ.TDATE) CROPSTA = 3
-         END IF
-         IF (CROPSTA .EQ. 1) THEN
-            IF (INDEX(PLME,"T").GT.0) THEN
-               CROPSTA = 2
-            ELSE 
-               CROPSTA = 4
-            END IF
-        END IF
-        IF (CROPSTA .EQ. 0) THEN
-           IF (YRDOY.EQ.EDATE) CROPSTA = 1
-        END IF
-!    END IF
-  
-    DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
-    IF((CROPSTA.GE.1).AND.(ITASK.EQ.2)) DAE=DAE+1.0
     IF(.NOT.TERMNL) THEN
+!   ESSENTIAL INFORMATION  
+        CALL UPPERC(ISWWAT)
+        IF(INDEX(ISWWAT, "N").GT.0) THEN        !POTENTIAL WATER CONDITION
+            TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT                            !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+            CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
+        END IF
+      !-----Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
+    !                  3=day of transplanting; 4=main growth period
+    !      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
+             IF(YRDOY.LT.EDATE) THEN
+                CROPSTA = 0             !
+             END IF
+             IF (CROPSTA .EQ. 3) CROPSTA = 4
+             IF (CROPSTA .EQ. 2) THEN
+                IF (YRDOY.EQ.TDATE) CROPSTA = 3
+             END IF
+             IF (CROPSTA .EQ. 1) THEN
+                IF (INDEX(PLME,"T").GT.0) THEN
+                   CROPSTA = 2
+                ELSE 
+                   CROPSTA = 4
+                END IF
+            END IF
+            IF (CROPSTA .EQ. 0) THEN
+               IF (YRDOY.EQ.EDATE) CROPSTA = 1
+            END IF
+    !    END IF
+      
+        DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
+        IF((CROPSTA.GE.1).AND.(ITASK.EQ.2)) DAE=DAE+1.0
+    
         CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
                         OR_OUTPUT, TERMNL, IDOY  , DOY, &
                         TIME,   DELT,   LAT,    RDD,    TMMN,   TMMX, &

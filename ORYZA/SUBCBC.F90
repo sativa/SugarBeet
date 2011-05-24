@@ -22,7 +22,7 @@
 !-----Formal parameters
       REAL    CKCIN,CKCFL,TIME,CBCHK
       LOGICAL TERMNL
-      !&SAVE
+      SAVE
  
       CBCHK = 2.0*(CKCIN-CKCFL)/(CKCIN+CKCFL+1.E-10)
  

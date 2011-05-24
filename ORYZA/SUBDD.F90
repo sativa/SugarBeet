@@ -24,7 +24,7 @@
 !-----Local parameters
       REAL    TD, TM, TT, X1, X2
       INTEGER I
-      !&SAVE
+      SAVE
  
       TM = (TMAX+TMIN)/2.
       TT = 0.

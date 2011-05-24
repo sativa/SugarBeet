@@ -31,7 +31,7 @@
       REAL    TRWL(NL),theTRW, ZRLT, ZZL,TKL(NL),ZRT
 !-----Local variables
       INTEGER I
-      !&SAVE
+      SAVE
 
 	  theTRW = TRW   !TAOLI 17 AUG, 2010
       TRW    = 0.

@@ -23,7 +23,7 @@
 !      real cCO2, cKNF, cNFLV, cREDFT
 !      common /gp_common/ cCO2, cKNF, cNFLV, cREDFT
 
-      !&SAVE
+      SAVE
 
 !     avoid compiler warnings on unused variables
       tmpr1 = xAmaxin

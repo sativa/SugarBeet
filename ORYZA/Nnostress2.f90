@@ -53,7 +53,7 @@
 
       REAL LINT2, INTGR2
 
-      !&SAVE
+      SAVE
 
 !-----Initialization
       IF (ITASK.EQ.1) THEN

@@ -40,7 +40,7 @@
       REAL    TD, TM, TT, DAVERT, DST, DET, TMPV
 	  REAL  MYTEM, MYT(24)
       INTEGER I, ISTEMPC, CONTRM
-      !&SAVE
+      SAVE
 !Calculate hourly temperature
 	  TM = (TMAX+TMIN)/2.
       DO I = 1,24

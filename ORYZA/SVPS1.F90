@@ -25,7 +25,7 @@
       SUBROUTINE SVPS1 (TMA,VPS,VPSL)
       IMPLICIT NONE
       REAL TMA,VPS,VPSL
-      !&SAVE
+      SAVE
 
       IF (TMA.LT.-20..OR.TMA.GT.50.) WRITE (*,'(A,G12.5,A)') &
          ' WARNING from SVPS1: extreme temperature:',TMA,' d. Celsius'

@@ -2,7 +2,7 @@ subroutine GPParSet (xCO2, xKNF, xNFLV, xREDFT)
 use gp
 implicit none
 real xCO2, xKNF, xNFLV, xREDFT
-
+SAVE
 !real cCO2, cKNF, cNFLV, cREDFT
 !common /gp_common/ cCO2, cKNF, cNFLV, cREDFT
 

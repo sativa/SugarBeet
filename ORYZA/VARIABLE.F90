@@ -259,40 +259,48 @@
 !	common /InstancePointers/ pv
 !	save InstancePointers
 	 type(public_variables),pointer::pv
-!	 !&SAVE
+	 SAVE
 end module public_module
 
 module GP
 !      common block for communication with input routine
-   real cCO2, cKNF, cNFLV, cREDFT     
+   real cCO2, cKNF, cNFLV, cREDFT 
+   SAVE    
 end module GP
 
 module GWT
    INTEGER    ILZMAX, IZWTB
    PARAMETER (ILZMAX=400)
    REAL       ZWA, ZWB, MAXGW, MINGW, ZWTBI,ZWTB(ILZMAX)
+   SAVE
 end module GWT
 
 module HYDCON
    REAL KST(10), WCAD(10), WCSTRP(10)
+   SAVE
 end module HYDCON
 
 module NUCHT
    REAL  VGA(10), VGL(10), VGN(10), VGR(10)
+   SAVE
 end module NUCHT
 	  
 module power
    REAL PN(10)
+   SAVE
 end module power
 
 MODULE SPAW
 	REAL SPAWA(10), SPAWB(10)
+	SAVE
 END MODULE SPAW
 
 module swit
   INTEGER SWITKH
+  SAVE
 end module swit
 
 MODULE CROP_N
    REAL xFNLV, xNFLV
+   SAVE
 END MODULE CROP_N
