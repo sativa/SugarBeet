@@ -5,11 +5,16 @@
 !  REVISION       HISTORY
 !  01/26/2011 TL/CHP Written.
 !=======================================================================
-      SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,         & !Input
-          EOP, YREND, NH4, NO3, SNOW, SOILPROP,             & !Input
-          SRFTEMP, ST, SW, TRWUP, WEATHER, YRPLT, HARVFRAC, & !Input
-          CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES,PORMIN,  & !Output
-          RLV, RWUMX, SENESCE, STGDOY, UNH4, UNO3, XLAI)      !Output
+      SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,               &    !Input
+          EOP, YREND, SOILPROP, TRWUP, WEATHER, YRPLT, HARVFRAC,  &    !Input
+          CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       &    !Output
+          RWUMX, SENESCE, STGDOY, XLAI)                                !Output
+
+!   Variables to be introduced with water
+!         FLOODWAT, SW, SRFTEMP, RLV, !Input
+!   Variables to be introduced with N
+!         NH4, NO3, UNH4, UNO3, 
+!         FLOODN,                                                &    !I/O
 
       USE ModuleDefs
       USE ModuleData
@@ -20,7 +25,6 @@
       SAVE
 
       CHARACTER*1   IDETG, IDETL, IDETO, IDETS, RNMODE
-      CHARACTER*2   CROP
       CHARACTER*30  FILEIO
       CHARACTER*120 FILEIOCS
 
@@ -30,19 +34,23 @@
       INTEGER MULTI, FROP, SN, YEAR1
       INTEGER STGDOY(20), YRPLT
 
-      REAL WUPT, EOP, EP, ET, TRWUP, SRAD, TMAX, TMIN, CO2
-      REAL SNOW, KCAN, KEP, DEPMAX
+      REAL WUPT, EOP, EP, ET, TRWUP, CO2
+      REAL KCAN, KEP, DEPMAX
       REAL NSTRES, XLAI, NFP, SLPF
-      REAL DAYL, TWILEN, PORMIN, RAIN, RWUMX, SRFTEMP
-      REAL CANHT, EO, TOTIR, WINDSP
+      REAL DAYL, TWILEN, PORMIN, RAIN, RWUMX    !EO, SRFTEMP ,
+      REAL CANHT, TOTIR, WINDSP
 
-      REAL, DIMENSION(NL) :: BD, DLAYR, DS, DUL, LL
-      REAL, DIMENSION(NL) :: NH4, NO3, RLV, SAT, SHF
-      REAL, DIMENSION(NL) :: ST, SW, UNO3, UNH4, UH2O
+      REAL, DIMENSION(NL) :: DLAYR
+!     REAL, DIMENSION(NL) :: BD, DUL, LL, 
+      REAL, DIMENSION(NL) :: SAT, SHF      
       REAL, DIMENSION(0:NL) :: SENC, SENN, SENLIG
       REAL, DIMENSION(0:NL) :: CRESC, CRESN, CRESLIG
-      REAL, DIMENSION(0:NL) :: SOILTEMP
       REAL, DIMENSION(2)  :: HARVFRAC
+
+!     Soil water
+!     REAL, DIMENSION(NL) :: RLV, SW, ST, SOILTEMP   
+!     Soil N
+!     REAL, DIMENSION(0:NL) :: NH4, NO3, UNO3, UNH4, UH2O
 
       LOGICAL LEAP !Function in DATES subroutine
 
@@ -58,7 +66,7 @@
       REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
 
 !     FOR EXPERIMENT FILE 
-      CHARACTER*(128) OUTPUTFILE
+!      CHARACTER*(128) OUTPUTFILE
       INTEGER YRSIM, EDATE, iPAGE, IRRCOD 
       CHARACTER*1, ISWWAT, ISWNIT, PLME,IIRRI
       REAL PLPH, PLTPOP, PLANTS, PLDP,IRRI, WL0MIN, KPAMIN, WLODAY, SLMIN
@@ -69,6 +77,16 @@
       INTEGER INCDAT
       REAL PAGE, ROWSPC, SDWTPL, ATEMP
 
+!     Output data needed for DSSAT output files
+
+      CHARACTER * 15 STNAME(20)     !??? GUESS
+      INTEGER ISDATE, ISTAGE 
+
+      REAL AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA, DYIELD, G2, GNUP, GPP
+      REAL GPSM, GRAINN, GRNWT, LEAFNO, MAXLAI, PANWT, PBIOMS, PSTRES1, PSTRES2
+      REAL SKERWT, STOVER, STOVN, SWFAC, TILNO, TOTNUP, TURFAC, XGNP, BWAH
+      REAL PODWT, SDWT, SDWTAH, TOPWT, WTNSD
+
       TYPE (ControlType) CONTROL
       TYPE (SoilType)    SOILPROP
       TYPE (SwitchType)  ISWITCH
@@ -78,49 +96,24 @@
       
       COMMON /FSECM1/ YEAR,DOY,IUNITD,IUNITL,TERMNL
       
-
-!     Transfer values from constructed data types into local variables.
       DYNAMIC = CONTROL % DYNAMIC
-      FILEIO  = CONTROL % FILEIO
-      CROP    = CONTROL % CROP
-      FROP    = CONTROL % FROP
-      MULTI   = CONTROL % MULTI
-      RNMODE  = CONTROL % RNMODE
-      RUN     = CONTROL % RUN
       YRDOY   = CONTROL % YRDOY
-      YRSIM   = CONTROL % YRSIM
-
-      ISWWAT  = ISWITCH % ISWWAT
-      ISWNIT  = ISWITCH % ISWNIT
-      IDETG   = ISWITCH % IDETG
-      IDETL   = ISWITCH % IDETL
-      IDETO   = ISWITCH % IDETO
-      IDETS   = ISWITCH % IDETS
-
-      BD     = SOILPROP % BD     
-      DLAYR  = SOILPROP % DLAYR  
-      DS     = SOILPROP % DS    
-      DUL    = SOILPROP % DUL    
-      LL     = SOILPROP % LL     
-      NLAYR  = SOILPROP % NLAYR  
-      SAT    = SOILPROP % SAT    
-      SHF    = SOILPROP % WR
-      SLPF   = SOILPROP % SLPF
-
-      YRHAR = YREND
-      WUPT  = TRWUP
-
-      DEPMAX = DS(NLAYR)
-
-      FILEIOCS(1:30) = FILEIO
-
-      TRC = EOP
-
       CALL YR_DOY(YRDOY, YEAR1, DOY1)
 
-      !IF (DYNAMIC .EQ. RUNINIT .OR. DYNAMIC .EQ. SEASINIT) THEN
-      IF (DYNAMIC .EQ. 1) THEN
+!***********************************************************************
+!***********************************************************************
+!     Run initialization - run once per simulation
+!***********************************************************************
+      IF (DYNAMIC == SEASINIT) THEN
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
+
+!       Variables required by DSSAT for root water uptake calculations
+        PORMIN = 0.0  !Minimum pore space required for supplying oxygen to roots for 
+!                      optimal growth and function (cm3/cm3)
+        RWUMX  = 0.03 !Maximum water uptake per unit root length, constrained by soil 
+!                      water (cm3[water] / cm [root])
+
+        FILEIOCS(1:30) = FILEIO
         TN = 0
         RN = 0
         SN = 0
@@ -131,25 +124,75 @@
         RUNI = 1
         TOTIR = 0.0
         ITASK = 1;TIME =0.0
-      !ELSEIF (DYNAMIC == RATE) THEN
-      ELSEIF (DYNAMIC == 2.OR. DYNAMIC ==3) THEN
-        CALL GET('SPAM','EO',  EO)
+
+        FILEIO  = CONTROL % FILEIO
+        FROP    = CONTROL % FROP
+        MULTI   = CONTROL % MULTI
+        RNMODE  = CONTROL % RNMODE
+        RUN     = CONTROL % RUN
+        YRSIM   = CONTROL % YRSIM
+      
+        DLAYR  = SOILPROP % DLAYR  
+        NLAYR  = SOILPROP % NLAYR  
+        DEPMAX = SOILPROP % DS(NLAYR)
+        SAT    = SOILPROP % SAT    
+        SHF    = SOILPROP % WR
+        SLPF   = SOILPROP % SLPF
+!       BD     = SOILPROP % BD     
+!       DUL    = SOILPROP % DUL    
+!       LL     = SOILPROP % LL     
+
+        CALL RI_OPHARV (CONTROL, ISWITCH,               &
+         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
+         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
+         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
+         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
+         PSTRES1, PSTRES2,                              & !Input
+         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
+         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
+         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
+
+!***********************************************************************
+!***********************************************************************
+!     Rate - daily
+!***********************************************************************
+      ELSEIF (DYNAMIC == RATE) THEN
         CALL GET('SPAM','EP',  EP)
-        CALL GET('SPAM','UH2O',UH2O)
+!       CALL GET('SPAM','EO',  EO)
+!       CALL GET('SPAM','UH2O',UH2O)
         ITASK = 2
-      !ELSEIF (DYNAMIC == INTEGR) THEN
-      ELSEIF (DYNAMIC == 4) THEN
+
+        CANHT = 0.0   !Canopy height
+        KCAN  = 0.85  !Canopy light extinction coef
+        KEP   = 1.0   !Energy extinction coef
+
+        CALL RI_OPHARV (CONTROL, ISWITCH,               &
+         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
+         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
+         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
+         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
+         PSTRES1, PSTRES2,                              & !Input
+         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
+         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
+         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
+
+     ELSEIF (DYNAMIC == INTEGR) THEN
+        YRHAR = YREND
+        WUPT  = TRWUP
+        TRC = EOP
+
         CALL GET('SPAM','ET',  ET)
         CALL Get('MGMT','TOTIR', TOTIR)
         ITASK = 3;TIME = TIME+DELT
+
       ELSE
         ITASK = 0
       ENDIF
 
-      SOILTEMP(0) = SRFTEMP
-      DO L = 1, NLAYR
-        SOILTEMP(L) = ST(L)
-      ENDDO
+!      SOILTEMP(0) = SRFTEMP
+!      DO L = 1, NLAYR
+!        SOILTEMP(L) = ST(L)
+!      ENDDO
 
       CO2   = WEATHER % CO2
       DAYL  = WEATHER % DAYL 
