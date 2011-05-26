@@ -24,35 +24,34 @@
       IMPLICIT NONE
       SAVE
 
-      CHARACTER*1   IDETG, IDETL, IDETO, IDETS, RNMODE
       CHARACTER*30  FILEIO
       CHARACTER*120 FILEIOCS
 
-      INTEGER DOY1, DYNAMIC, RUN, TN, RUNI, RN, ON
+      INTEGER DOY1, DYNAMIC, TN, RUNI, RN, ON
       INTEGER REP, STEP, CN, YRHAR, YREND, YRDOY
       INTEGER MDATE, L, NLAYR
-      INTEGER MULTI, FROP, SN, YEAR1
+      INTEGER SN, YEAR1
       INTEGER STGDOY(20), YRPLT
 
-      REAL WUPT, EOP, EP, ET, TRWUP, CO2
+      REAL WUPT, EOP, EP, ET, TRWUP
       REAL KCAN, KEP, DEPMAX
-      REAL NSTRES, XLAI, NFP, SLPF
-      REAL DAYL, TWILEN, PORMIN, RAIN, RWUMX    !EO, SRFTEMP ,
-      REAL CANHT, TOTIR, WINDSP
+      REAL NSTRES, XLAI, NFP
+      REAL PORMIN, RWUMX
+      REAL CANHT, TOTIR
 
       REAL, DIMENSION(NL) :: DLAYR
-!     REAL, DIMENSION(NL) :: BD, DUL, LL, 
-      REAL, DIMENSION(NL) :: SAT, SHF      
       REAL, DIMENSION(0:NL) :: SENC, SENN, SENLIG
       REAL, DIMENSION(0:NL) :: CRESC, CRESN, CRESLIG
       REAL, DIMENSION(2)  :: HARVFRAC
 
 !     Soil water
+!     REAL EO, SRFTEMP, SLPF
 !     REAL, DIMENSION(NL) :: RLV, SW, ST, SOILTEMP   
+!     REAL, DIMENSION(NL) :: BD, DUL, LL, SAT, SHF
 !     Soil N
 !     REAL, DIMENSION(0:NL) :: NH4, NO3, UNO3, UNH4, UH2O
 
-      LOGICAL LEAP !Function in DATES subroutine
+!     LOGICAL LEAP !Function in DATES subroutine
 
 !-----Formal ORYZA parameters
       INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, NLO, TDATE
@@ -102,9 +101,13 @@
 
 !***********************************************************************
 !***********************************************************************
-!     Run initialization - run once per simulation
+!     Seasonal initialization - run once per planting season
 !***********************************************************************
       IF (DYNAMIC == SEASINIT) THEN
+
+        ITASK = 1
+        TIME =0.0
+
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
 
 !       Variables required by DSSAT for root water uptake calculations
@@ -112,6 +115,22 @@
 !                      optimal growth and function (cm3/cm3)
         RWUMX  = 0.03 !Maximum water uptake per unit root length, constrained by soil 
 !                      water (cm3[water] / cm [root])
+
+        FILEIO  = CONTROL % FILEIO
+        YRSIM   = CONTROL % YRSIM
+      
+        DLAYR  = SOILPROP % DLAYR  
+        NLAYR  = SOILPROP % NLAYR  
+        DEPMAX = SOILPROP % DS(NLAYR)
+
+        ISWWAT = ISWITCH % ISWWAT
+
+!       BD     = SOILPROP % BD     
+!       DUL    = SOILPROP % DUL    
+!       LL     = SOILPROP % LL     
+!       SAT    = SOILPROP % SAT    
+!       SHF    = SOILPROP % WR
+!       SLPF   = SOILPROP % SLPF
 
         FILEIOCS(1:30) = FILEIO
         TN = 0
@@ -123,94 +142,53 @@
         STEP = 1
         RUNI = 1
         TOTIR = 0.0
-        ITASK = 1;TIME =0.0
 
-        FILEIO  = CONTROL % FILEIO
-        FROP    = CONTROL % FROP
-        MULTI   = CONTROL % MULTI
-        RNMODE  = CONTROL % RNMODE
-        RUN     = CONTROL % RUN
-        YRSIM   = CONTROL % YRSIM
-      
-        DLAYR  = SOILPROP % DLAYR  
-        NLAYR  = SOILPROP % NLAYR  
-        DEPMAX = SOILPROP % DS(NLAYR)
-        SAT    = SOILPROP % SAT    
-        SHF    = SOILPROP % WR
-        SLPF   = SOILPROP % SLPF
-!       BD     = SOILPROP % BD     
-!       DUL    = SOILPROP % DUL    
-!       LL     = SOILPROP % LL     
+!       ORYZA life cycle:
+!        DVS  Stage
+!       0.00  Emergence 
+!       0.40  Start of photoperiod sensitive phase
+!       0.65  Panicle initiation
+!       1.00  50% flowering
+!       2.00  Physiological maturity
 
-        CALL RI_OPHARV (CONTROL, ISWITCH,               &
-         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
-         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
-         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
-         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
-         PSTRES1, PSTRES2,                              & !Input
-         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
-         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
-         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
+!       Stages from CERES-Rice:  (X indicates that stages are transferred to DSSAT
+        STNAME(1)  = 'End Juveni'
+        STNAME(2)  = 'Pan Init  '  !DVS = 0.65  !X
+        STNAME(3)  = 'Heading   '
+        STNAME(4)  = 'Beg Gr Fil'
+        STNAME(5)  = 'End Mn Fil'
+        STNAME(6)  = 'Maturity  '  !DVS = 2.0  !X
+        STNAME(7)  = 'Sowing    '  !X
+        STNAME(8)  = 'Germinate '
+        STNAME(9)  = 'Emergence '  !DVS = 0.0  !X
+        STNAME(10) = 'Prgerm Sow'
+        STNAME(11) = 'Transplant'  !X
+        STNAME(12) = 'End Ti Fil'
+        STNAME(13) = '          '
+        STNAME(14) = 'Start Sim '  !X
+        STNAME(15) = '          '
+        STNAME(16) = '          '
+        STNAME(17) = '          '
+        STNAME(18) = '          '
+        STNAME(19) = '          '
+        STNAME(20) = 'Harvest   '
 
-!***********************************************************************
-!***********************************************************************
-!     Rate - daily
-!***********************************************************************
-      ELSEIF (DYNAMIC == RATE) THEN
-        CALL GET('SPAM','EP',  EP)
-!       CALL GET('SPAM','EO',  EO)
-!       CALL GET('SPAM','UH2O',UH2O)
-        ITASK = 2
+        STGDOY     = 9999999  
+        STGDOY(14) = YRDOY 
 
         CANHT = 0.0   !Canopy height
         KCAN  = 0.85  !Canopy light extinction coef
         KEP   = 1.0   !Energy extinction coef
 
-        CALL RI_OPHARV (CONTROL, ISWITCH,               &
-         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
-         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
-         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
-         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
-         PSTRES1, PSTRES2,                              & !Input
-         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
-         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
-         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
-
-     ELSEIF (DYNAMIC == INTEGR) THEN
-        YRHAR = YREND
-        WUPT  = TRWUP
-        TRC = EOP
-
-        CALL GET('SPAM','ET',  ET)
-        CALL Get('MGMT','TOTIR', TOTIR)
-        ITASK = 3;TIME = TIME+DELT
-
-      ELSE
-        ITASK = 0
-      ENDIF
-
-!      SOILTEMP(0) = SRFTEMP
-!      DO L = 1, NLAYR
-!        SOILTEMP(L) = ST(L)
-!      ENDDO
-
-      CO2   = WEATHER % CO2
-      DAYL  = WEATHER % DAYL 
-      RAIN  = WEATHER % RAIN
-      RDD   = WEATHER % SRAD*1000000.0
-      TMMX  = WEATHER % TMAX
-      TMMN  = WEATHER % TMIN
-      TWILEN= WEATHER % TWILEN
-      WINDSP= WEATHER % WINDSP
-      LAT   = WEATHER % XLAT
-
-!-----------------------------------------------------------------------
-!    Read DSSAT cultivar and planting data from FILEIO
-     CALL OR_IPRICE (CONTROL,                       &
-          FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
+!       Read DSSAT cultivar and planting data from FILEIO
+        CALL OR_IPRICE (CONTROL,                       &
+          FILEI1, PLANTS, PLTPOP, PLME, PLDS,          &
           ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
  
-    IF(ITASK.EQ.1) THEN
+!----------------------------------------------------------------
+!       ORYZA initialization section - moved up to initialization section
+!     IF(ITASK.EQ.1) THEN
+
         !initialize OBSSYS routine
         CALL OBSINI
         !get emergence date and transplanting date
@@ -219,30 +197,16 @@
         IF(INDEX(PLME,"T").GT.0) THEN
             CALL YR_DOY(EDATE, YRPLT,TDATE)
             TDATE = TDATE + IPAGE
-            IF (LEAP(YRPLT)) THEN
-                IF(TDATE.GT.366) THEN
-                    YRPLT =YRPLT +1; TDATE = TDATE-366
-                    TDATE = YRPLT *1000.0 + TDATE
-                ELSE
-                    TDATE = YRPLT *1000.0 + TDATE
-                END IF
-            ELSE
-                IF(TDATE.GT.365) THEN
-                    YRPLT =YRPLT +1; TDATE = TDATE-366
-                    TDATE = YRPLT *1000.0 + TDATE
-                ELSE
-                    TDATE = YRPLT *1000.0 + TDATE
-                END IF
-            END IF
+            TDATE = INCDAT(YRPLT,iPAGE)
         END IF
 
-!     Used STRING
-!   ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
-!   FILEI1 = 'D:\...\...\IR72.CRP
-!   FILEIT = 'D:\...\...\...\N150.exp
-    FILEIT = CONTROL % FILEX(1:8) // ".EXP"
-    IIRRI  = ISWITCH % IIRRI
-!    IRCOD  = 0  !Potential production  - need to get value for water limited. 
+!       Used STRING
+!       ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
+!       FILEI1 = 'D:\...\...\IR72.CRP
+!       FILEIT = 'D:\...\...\...\N150.exp
+        FILEIT = CONTROL % FILEX(1:8) // ".EXP"
+        IIRRI  = ISWITCH % IIRRI
+!       IRCOD  = 0  !Potential production  - need to get value for water limited. 
         !THE 'IRCOD', IT IS NOT USED IN THE ROUTINE YET, COMMENT IT OUT TEMPORARY.
 
         !GENERATE EXPERIMENT FILE
@@ -261,28 +225,68 @@
         DELT = 1.0  !TIME STEP IS 1.0
         IDOY = DOY
         DAE = 0.0
+
         DO I = 1, NLAYR
             PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
             TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
         END DO
-    END IF
-    IF(.NOT.TERMNL) THEN
-!   ESSENTIAL INFORMATION  
-        CALL UPPERC(ISWWAT)
-        IF(INDEX(ISWWAT, "N").GT.0) THEN        !POTENTIAL WATER CONDITION
-            TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT                            !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
-            CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
-        END IF
-      !-----Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
-    !                  3=day of transplanting; 4=main growth period
-    !      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
+!    END IF
+!----------------------------------------------------------------
+
+        CALL RI_OPHARV (CONTROL, ISWITCH,               &
+         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
+         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
+         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
+         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
+         PSTRES1, PSTRES2,                              & !Input
+         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
+         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
+         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
+
+!***********************************************************************
+!***********************************************************************
+!     Rate - daily
+!***********************************************************************
+      ELSEIF (DYNAMIC == RATE) THEN
+
+        ITASK = 2
+
+        CALL GET('SPAM','EP',  EP)
+!       CALL GET('SPAM','EO',  EO)
+!       CALL GET('SPAM','UH2O',UH2O)
+
+!        SOILTEMP(0) = SRFTEMP
+!        DO L = 1, NLAYR
+!          SOILTEMP(L) = ST(L)
+!        ENDDO
+
+        RDD   = WEATHER % SRAD*1000000.0
+        TMMX  = WEATHER % TMAX
+        TMMN  = WEATHER % TMIN
+        LAT   = WEATHER % XLAT
+
+!-----Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
+!                  3=day of transplanting; 4=main growth period
+!      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
+
+             IF (YRDOY == YRPLT) THEN
+               STGDOY(7) = YRDOY
+             ENDIF
+
              IF(YRDOY.LT.EDATE) THEN
-                CROPSTA = 0             !
+                CROPSTA = 0             
              END IF
+
              IF (CROPSTA .EQ. 3) CROPSTA = 4
+
              IF (CROPSTA .EQ. 2) THEN
-                IF (YRDOY.EQ.TDATE) CROPSTA = 3
+                IF (YRDOY.EQ.TDATE) THEN
+                   CROPSTA = 3
+!                  Transplant
+                   STGDOY(11) = YRDOY
+                ENDIF
              END IF
+
              IF (CROPSTA .EQ. 1) THEN
                 IF (INDEX(PLME,"T").GT.0) THEN
                    CROPSTA = 2
@@ -290,14 +294,78 @@
                    CROPSTA = 4
                 END IF
             END IF
+
             IF (CROPSTA .EQ. 0) THEN
-               IF (YRDOY.EQ.EDATE) CROPSTA = 1
+               IF (YRDOY.EQ.EDATE) THEN
+                   CROPSTA = 1
+!                  Emergence
+                   STGDOY(9) = YRDOY
+                ENDIF
             END IF
     !    END IF
+
+!       IF((CROPSTA.GE.1).AND.(ITASK.EQ.2)) DAE=DAE+1.0
+        IF (CROPSTA.GE.1) DAE=DAE+1.0
       
         DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
-        IF((CROPSTA.GE.1).AND.(ITASK.EQ.2)) DAE=DAE+1.0
     
+!       Check for potential production condition  
+        CALL UPPERC(ISWWAT)
+        IF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
+            TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+            CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
+        END IF
+
+        CALL GET('SPAM','ET',  ET)
+        CALL Get('MGMT','TOTIR', TOTIR)
+
+!***********************************************************************
+!***********************************************************************
+!     Integration - daily
+!***********************************************************************
+     ELSEIF (DYNAMIC == INTEGR) THEN
+
+        ITASK = 3
+        TIME = TIME+DELT
+
+        YRHAR = YREND
+        WUPT  = TRWUP
+        TRC = EOP
+
+
+!***********************************************************************
+!***********************************************************************
+!     Daily or seasonal output
+!***********************************************************************
+      ELSE
+
+        ITASK = 0
+
+        IF (DYNAMIC == SEASEND) THEN
+          STGDOY(20) = YRDOY
+          YREND = YRDOY
+          TERMNL = .TRUE.
+          DEALLOCATE(PV) 
+          CALL RDDTMP (IUNITD)  !delete all temporary files
+        ENDIF
+
+        CALL RI_OPHARV (CONTROL, ISWITCH,               &
+         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
+         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
+         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
+         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
+         PSTRES1, PSTRES2,                              & !Input
+         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
+         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
+         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
+
+      ENDIF
+
+!***********************************************************************
+!***********************************************************************
+
+    IF(.NOT.TERMNL) THEN
+
         CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
                         OR_OUTPUT, TERMNL, IDOY  , DOY, &
                         TIME,   DELT,   LAT,    RDD,    TMMN,   TMMX, &
@@ -307,49 +375,48 @@
                         DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
                         PLTR, WCL, WL0, WRT, WRR14)
-        CALL UPPERC(ISWNIT)
 
+        CALL UPPERC(ISWNIT)
 !       IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
             CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
                            CROPSTA, DVS, WLVG, LAI, SLA, NFLV, NSLLV, RNSTRS)
 !       ELSE
     
 !       END IF
-    ELSE
-    !delete all temporary files
-        CALL RDDTMP (IUNITD)
+
+        XLAI   = LAI
+        NSTRES = NFP
+      
+        IF (DVS > 0.65 .AND. STGDOY(2) > YRDOY) THEN
+          STGDOY(2) = YRDOY
+        ELSEIF (DVS >= 1.9999999 .AND. STGDOY(6) > YRDOY) THEN
+          STGDOY(6) = YRDOY
+          MDATE = YRDOY
+        ENDIF 
+      
+        if (DYNAMIC == INTEGR) then
+          DO L=0, NLAYR
+            SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
+            SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
+            SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
+          ENDDO
+
+        endif
+
+        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
+          !Transfer harvest residue from senescence variable to 
+          !harvest residue variable on day of harvest.
+          HARVRES = SENESCE
+          SENESCE % ResWt  = 0.0
+          SENESCE % ResLig = 0.0
+          SENESCE % ResE   = 0.0
+        ELSE
+          MDATE = -99
+        ENDIF
+
     ENDIF
 
 !-----------------------------------------------------------------------
-!      KCAN   = KPAR
-!      KEP    = KSRAD
-      XLAI   = LAI
-      NSTRES = NFP
-
-      IF (STGDOY(11).EQ.YRDOY) THEN
-        MDATE = YRDOY
-        YREND = YRDOY
-      ENDIF 
-
-      if (dynamic .eq. integr) then
-        DO L=0, NLAYR
-          SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
-          SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
-          SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
-        ENDDO
-      endif
-      IF(ITASK .EQ.3) ITASK = 2                
-      IF (YREND.EQ.YRDOY .AND. DYNAMIC.EQ.INTEGR) THEN 
-        !Transfer harvest residue from senescence variable to 
-        !harvest residue variable on day of harvest.
-        HARVRES = SENESCE
-        SENESCE % ResWt  = 0.0
-        SENESCE % ResLig = 0.0
-        SENESCE % ResE   = 0.0
-        DEALLOCATE(PV)      !Added by TaoLi, 24 April 2011
-      ELSE
-        MDATE = -99
-      ENDIF
 
       RETURN
       END SUBROUTINE ORYZA_Interface
