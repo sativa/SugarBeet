@@ -78,7 +78,7 @@
 
 !     Output data needed for DSSAT output files
 
-      CHARACTER * 15 STNAME(20)     !??? GUESS
+      CHARACTER*10 STNAME(20) 
       INTEGER ISDATE, ISTAGE 
 
       REAL AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA, DYIELD, G2, GNUP, GPP
@@ -107,7 +107,6 @@
 
         ITASK = 1
         TIME =0.0
-
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
 
 !       Variables required by DSSAT for root water uptake calculations
@@ -143,47 +142,15 @@
         RUNI = 1
         TOTIR = 0.0
 
-!       ORYZA life cycle:
-!        DVS  Stage
-!       0.00  Emergence 
-!       0.40  Start of photoperiod sensitive phase
-!       0.65  Panicle initiation
-!       1.00  50% flowering
-!       2.00  Physiological maturity
-
-!       Stages from CERES-Rice:  (X indicates that stages are transferred to DSSAT
-        STNAME(1)  = 'End Juveni'
-        STNAME(2)  = 'Pan Init  '  !DVS = 0.65  !X
-        STNAME(3)  = 'Heading   '
-        STNAME(4)  = 'Beg Gr Fil'
-        STNAME(5)  = 'End Mn Fil'
-        STNAME(6)  = 'Maturity  '  !DVS = 2.0  !X
-        STNAME(7)  = 'Sowing    '  !X
-        STNAME(8)  = 'Germinate '
-        STNAME(9)  = 'Emergence '  !DVS = 0.0  !X
-        STNAME(10) = 'Prgerm Sow'
-        STNAME(11) = 'Transplant'  !X
-        STNAME(12) = 'End Ti Fil'
-        STNAME(13) = '          '
-        STNAME(14) = 'Start Sim '  !X
-        STNAME(15) = '          '
-        STNAME(16) = '          '
-        STNAME(17) = '          '
-        STNAME(18) = '          '
-        STNAME(19) = '          '
-        STNAME(20) = 'Harvest   '
-
-        STGDOY     = 9999999  
-        STGDOY(14) = YRDOY 
-
         CANHT = 0.0   !Canopy height
         KCAN  = 0.85  !Canopy light extinction coef
         KEP   = 1.0   !Energy extinction coef
 
 !       Read DSSAT cultivar and planting data from FILEIO
         CALL OR_IPRICE (CONTROL,                       &
-          FILEI1, PLANTS, PLTPOP, PLME, PLDS,          &
-          ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
+          FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
+          ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH, &
+          STGDOY, STNAME)
  
 !----------------------------------------------------------------
 !       ORYZA initialization section - moved up to initialization section
@@ -398,7 +365,9 @@
          MDATE = YRDOY
          YREND = YRDOY
       ELSEIF (DVS > 0.00000001) THEN
-        WRITE(500,*) YRDOY, XLAI
+        IF (DYNAMIC == 5) THEN
+          WRITE(500,*) YRDOY, XLAI
+        ENDIF
       ENDIF
 
 !      IF (STGDOY(11).EQ.YRDOY) THEN
@@ -442,9 +411,10 @@
 !  05/07/2002 CHP Written
 !  08/12/2003 CHP Added I/O error checking
 !=======================================================================
-      SUBROUTINE OR_IPRICE (CONTROL,                       &
+      SUBROUTINE OR_IPRICE (CONTROL,               &
           FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
-          ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH)
+          ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH, &
+          STGDOY, STNAME)
 
       USE ModuleDefs     !Definitions of constructed variable types, 
                          ! which contain control information, soil
@@ -454,6 +424,7 @@
       CHARACTER*1   PLME, PLDS
       CHARACTER*2   CROP
       CHARACTER*6   VARTY
+      CHARACTER*10  STNAME(20)     
       CHARACTER*20  VARNAME
       CHARACTER*30  FILEIO
       CHARACTER*78  MSG(2)
@@ -462,7 +433,7 @@
       CHARACTER*6  ERRKEY, SECTION
       PARAMETER (ERRKEY = 'IPRICE')
 
-      INTEGER LINC, LNUM, LUNIO, ERR, FOUND
+      INTEGER LINC, LNUM, LUNIO, ERR, FOUND, STGDOY(20)
       REAL PLANTS, PLTPOP, ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH
 
 !     The variable "CONTROL" is of type "ControlType".
@@ -513,9 +484,42 @@
       LNUM = LNUM + 1
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
 
+      CLOSE (LUNIO)
+
       ROWSPC = ROWSPC / 100.0
 
-      CLOSE (LUNIO)
-      RETURN
-      END SUBROUTINE OR_IPRICE
-!=======================================================================
+!     ORYZA life cycle:
+!      DVS  Stage
+!     0.00  Emergence 
+!     0.40  Start of photoperiod sensitive phase
+!     0.65  Panicle initiation
+!     1.00  50% flowering
+!     2.00  Physiological maturity
+
+!     Stages from CERES-Rice:  (X indicates that stages are transferred to DSSAT
+      STNAME(1)  = 'End Juveni'
+      STNAME(2)  = 'Pan Init  '  !DVS = 0.65  !X
+      STNAME(3)  = 'Heading   '
+      STNAME(4)  = 'Beg Gr Fil'
+      STNAME(5)  = 'End Mn Fil'
+      STNAME(6)  = 'Maturity  '  !DVS = 2.0  !X
+      STNAME(7)  = 'Sowing    '  !X
+      STNAME(8)  = 'Germinate '
+      STNAME(9)  = 'Emergence '  !DVS = 0.0  !X
+      STNAME(10) = 'Prgerm Sow'
+      STNAME(11) = 'Transplant'  !X
+      STNAME(12) = 'End Ti Fil'
+      STNAME(13) = '          '
+      STNAME(14) = 'Start Sim '  !X
+      STNAME(15) = '          '
+      STNAME(16) = '          '
+      STNAME(17) = '          '
+      STNAME(18) = '          '
+      STNAME(19) = '          '
+      STNAME(20) = 'Harvest   '
+
+      STGDOY     = 9999999  
+
+       RETURN
+       END SUBROUTINE OR_IPRICE
+ !=======================================================================
