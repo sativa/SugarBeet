@@ -394,6 +394,18 @@
           MDATE = YRDOY
         ENDIF 
       
+      IF (DVS > 1.9999999) THEN
+         MDATE = YRDOY
+         YREND = YRDOY
+      ELSEIF (DVS > 0.00000001) THEN
+        WRITE(500,*) YRDOY, XLAI
+      ENDIF
+
+!      IF (STGDOY(11).EQ.YRDOY) THEN
+!        MDATE = YRDOY
+!        YREND = YRDOY
+!      ENDIF 
+
         if (DYNAMIC == INTEGR) then
           DO L=0, NLAYR
             SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
