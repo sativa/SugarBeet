@@ -188,13 +188,13 @@
         iPAGE = NINT(PAGE)
         EDATE = INCDAT(YRPLT,-iPAGE)
         IF(INDEX(PLME,"T").GT.0) THEN
-            CALL YR_DOY(YRPLT, YEAR_PLT, TDATE)
+            TDATE = YRPLT
         END IF
 
-!        TDATE = 3274
-!        YRPLT = 1992
-        EDATE = 1992195
-!        YRPLT = 1992195
+!*********************************************************
+!   *** DEBUG ***
+        EDATE = YRPLT
+!*********************************************************
 
 !       Used STRING
 !       ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
@@ -417,11 +417,16 @@
     ENDIF
 
     SELECT CASE(DYNAMIC)
-    CASE(SEASINIT, OUTPUT, SEASEND)
-      CALL OR_OPGROW (CONTROL, ISWITCH, SOILPROP,  &
-         CPEW, DVS, HU, LAI, LDSTRS, LESTRS, LRSTRS,     &
-         NFLV, NGR, NSLLV, PCEW, RDCL, SLA,              &
+    CASE(RUNINIT, SEASINIT, OUTPUT, SEASEND)
+      CALL OR_OPGROW (CONTROL, ISWITCH, SOILPROP,      &
+         CPEW, DVS, HU, LAI, LDSTRS, LESTRS, LRSTRS,   &
+         NFLV, NGR, NSLLV, PCEW, RDCL,                 &
          WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, YRPLT, ZRT)
+
+      CALL OR_OPHARV (CONTROL, ISWITCH,                 &
+         NSLLV, WAGT, WST, WLVG, WLVD, WSO, WRR, NGR,   & !Input
+         HARVFRAC, ISTAGE, LAI, MDATE, STGDOY, STNAME,  & !Input
+         YRPLT)                                           !Input
     END SELECT
 
 !-----------------------------------------------------------------------

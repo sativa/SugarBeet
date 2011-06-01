@@ -8,15 +8,10 @@
 !=======================================================================
 
       SUBROUTINE OR_OPHARV (CONTROL, ISWITCH, 
-     &    NSLLV, BIOMAS, WAGT, WST, WLVG, WLVD         !Input
-     &    WRR, NGR, GRNWT,     !Input
-     &    HARVFRAC, ISDATE, ISTAGE, LAI, LEAFNO, MAXLAI,  !Input
-     &    MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,   !Input
-     &    PSTRES1, PSTRES2,                               !Input
-     &    SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,   !Input
-     &    TILNO, TOTNUP, TURFAC, XGNP, YRPLT,             !Input
+     &    NSLLV, WAGT, WST, WLVG, WLVD, WSO, WRR, NGR,    !Input
+     &    HARVFRAC, ISTAGE, LAI, MDATE, STGDOY, STNAME,   !Input
+     &    YRPLT)                                          !Input
 
-     &    BWAH, PODWT, SDWT, SDWTAH, WTNSD)        !Output
 
 !-----------------------------------------------------------------------
       USE ModuleDefs     !Definitions of constructed variable types, 
@@ -33,26 +28,23 @@
       CHARACTER*30 FILEIO
 	CHARACTER*80 PATHEX
 
-      INTEGER TRTNUM
-      INTEGER TRT_ROT
-      INTEGER IEMRG, ISDATE,ISENS, YREMRG
-      INTEGER YRDOY,YRPLT,YRSIM,YRNR1,YRNR2,YRNR3,YRNR5,YRNR7
+      INTEGER IEMRG, ISENS, TRTNUM, TRT_ROT
+      INTEGER YRDOY, YREMRG, YRPLT, YRSIM
+      INTEGER YRNR1, YRNR2, YRNR3, YRNR5, YRNR7
       INTEGER DEMRG, D_emerge, DNR1,DNR7,MDATE,STGDOY(20)
       INTEGER DYNAMIC, LUNIO, RUN, ACOUNT, ERRNUM, LINC, LNUM, FOUND
-      INTEGER DFLR, DMAT, LEAFNO, YIELD, ISTAGE
+      INTEGER DFLR, DMAT, YIELD, ISTAGE
       INTEGER DNR0, DPIN, IFLR, TIMDIF, IMAT, IPIN
 
-      REAL MAXLAI,TOTNUP,PSDWT,NGR,HIAM, LAI
-      REAL WTNCAN,PLANTS, PANWT, PODWT
-      REAL WTNSD,WTNUP,PLTPOP,PBIOMS,SDWTAM
-      REAL SKERWT,STOVER,STOVN, SEEDNO,SDWT
-      REAL GPP,GPSM, BIOMAS,XGNP
-      REAL VSTAGE, NSTRES, TURFAC ,XLAI
-      REAL WRR, NSLLV, SWFAC
-      REAL GRNWT,TILNO,BWAH,SDWTAH
+      REAL MAXLAI, NGR, HIAM, LAI
+      REAL WTNCAN, WTNSD, SDWTAM, SEEDNO
+      REAL VSTAGE, NSTRES, XLAI
+      REAL WRR, NSLLV
+      REAL BWAH, SDWTAH
       REAL Pstres1, Pstres2   
 
-      REAL WAGT, WST, WLVG, WLVD
+      REAL WAGT, WST, WLVG, WLVD, WSO
+      REAL PCEW, HWUM, LESTRS
 
       REAL, DIMENSION(2) :: HARVFRAC
 
@@ -92,41 +84,38 @@
       IDETO = ISWITCH % IDETO
       IPLTI = ISWITCH % IPLTI
 
-      ACOUNT = 19  !Number of possible FILEA headers for this crop
+      ACOUNT = 10  !Number of possible FILEA headers for this crop
 
 !     Define headings for observed data file (FILEA)
       DATA OLAB / ! 
-                !   
-     &  'IDAT  ', ! 1 Panicle Initiation date (YrDoy)
-     &  'ADAT  ', ! 2 Anthesis date (YrDoy)              
-     &  'MDAT  ', ! 3 Physiological maturity date (YrDoy)        
-     &  'HWAM  ', ! 4 Yield at maturity (kg dm/ha)
-     &  'HWUM  ', ! 5 Unit wt at maturity (mg dm/unit)
-     &  'H#AM  ', ! 6 Number at maturity (no/m2)
-     &  'P#AM  ', ! 7 PANICLE NUMBER (PANICLE/m2) 
-     &  'LAIX  ', ! 8 Maximum Leaf area index 
-     &  'CWAA  ', ! 9 Tops weight at anthesis (kg dm/ha)
-     &  'CNAA  ', !10 Tops N at anthesis (kg/ha) 
-     &  'CWAM  ', !11 Tops weight at maturity (kg dm/ha)
+                  !new was    
+     &  'EDAT  ', ! 1 !19 emergence date
+     &  'ADAT  ', ! 2 ! 2 Anthesis date (YrDoy)              
+     &  'IDAT  ', ! 3 ! 1 Panicle Initiation date (YrDoy)
+     &  'MDAT  ', ! 4 ! 3 Physiological maturity date (YrDoy)        
+     &  'CWAM  ', ! 5 !11 Tops weight at maturity (kg dm/ha)
+     &  'HWAM  ', ! 6 ! 4 Yield at maturity (kg dm/ha)
+     &  'HWUM  ', ! 7 ! 5 Unit wt at maturity (mg dm/unit)
+     &  'H#AM  ', ! 8 ! 6 Number at maturity (no/m2)
+     &  'HIAM  ', ! 9 !13 Harvest index at maturity
+     &  'LAIX  ', !10 ! 8 Maximum Leaf area index 
 
-!         08/11/2005 CHP
-!         Change BWAH to BWAM -- by-product produced to maturity, but
-!           not necessarily removed from field
-!     &  'BWAH', !12 By-product harvest (kg dm/ha)
-     &  'BWAM  ', !12 By-product produced to maturity (kg[dm]/ha)
-               
-     &  'HIAM  ', !13 Harvest index at maturity
-     &  'L#SM  ', !14 Leaf number per stem,maturity
+!     From CERES-Rice:
+!     &  'P#AM  ', ! 7 Panicle number (panicle/m2) 
+!     &  'CWAA  ', ! 9 Tops weight at anthesis (kg dm/ha)
+!     &  'CNAA  ', !10 Tops N at anthesis (kg/ha) 
+!     &  'BWAM  ', !12 By-product produced to maturity (kg[dm]/ha)
+!     &  'L#SM  ', !14 Leaf number per stem,maturity
 !     &  'GNAM  ', !15 Grain N at maturity (kg/ha) 
-     &  'CNAM  ', !16 Tops N at maturity (kg/ha) 
+!     &  'CNAM  ', !16 Tops N at maturity (kg/ha) 
 !     &  'SNAM  ', !17 Stem N at maturity (kg/ha)
-     &  'GN%M  ', !18 Grain N at maturity (%)
-     &  'EDAT  ', !19 emergence date
+!     &  'GN%M  ', !18 Grain N at maturity (%)
 !     &  'PD1T', !19 
 !     &  'PDFT', !20       
 !     &  'PWAM', !21 
 !     &  'THAM', !22 
-     &  21*'      '/
+
+     &  30*'      '/
 
 !***********************************************************************
 !***********************************************************************
@@ -161,11 +150,12 @@
       CALL GETDESC(ACOUNT, OLAB, DESCRIP)
       OLAP = OLAB
 
+      NSTRES  = 1.0
       Pstres1 = 1.0
       Pstres2 = 1.0
       
       CALL OPVIEW(CONTROL, 
-     &    PBIOMS, ACOUNT, DESCRIP, IDETO, VSTAGE, 
+     &    WAGT, ACOUNT, DESCRIP, IDETO, VSTAGE, 
      &    Measured, PlantStres, Simulated, STGDOY, 
      &    STNAME, WTNCAN, XLAI, YIELD, YRPLT, ISTAGE)
 
@@ -178,25 +168,24 @@
       Simulated = ' '
       Measured  = ' '
       YIELD     = 0
-      PBIOMS    = 0.0
       WTNCAN    = -99.
+      WTNSD     = -99.
+      MAXLAI = 0.0
       
 !     Establish #, names of stages for environmental & stress summary
       PlantStres % ACTIVE = .FALSE.
-      PlantStres % NSTAGES = 5
+      PlantStres % NSTAGES = 0
       PlantStres % StageName(0) = 'Planting to Harvest    '
-      PlantStres % StageName(1) = 'Emergence-End Juvenile '
-      PlantStres % StageName(2) = 'End Juvenil-Panicl Init'
-      PlantStres % StageName(3) = 'Panicl Init-End Lf Grow'
-      PlantStres % StageName(4) = 'End Lf Grth-Beg Grn Fil'
-      PlantStres % StageName(5) = 'Grain Filling Phase    '
+!      PlantStres % StageName(1) = 'Emergence-End Juvenile '
+!      PlantStres % StageName(2) = 'End Juvenil-Panicl Init'
+!      PlantStres % StageName(3) = 'Panicl Init-End Lf Grow'
+!      PlantStres % StageName(4) = 'End Lf Grth-Beg Grn Fil'
+!      PlantStres % StageName(5) = 'Grain Filling Phase    '
 
       CALL OPVIEW(CONTROL, 
-     &    PBIOMS, ACOUNT, DESCRIP, IDETO, VSTAGE, 
+     &    WAGT, ACOUNT, DESCRIP, IDETO, VSTAGE, 
      &    Measured, PlantStres, Simulated, STGDOY, 
      &    STNAME, WTNCAN, XLAI, YIELD, YRPLT, ISTAGE)
-
-      MAXLAI = 0.0
 
 !***********************************************************************
 !***********************************************************************
@@ -204,12 +193,11 @@
 !***********************************************************************
       ELSE IF (DYNAMIC .EQ. OUTPUT) THEN
 !-----------------------------------------------------------------------
-      VSTAGE = REAL(LEAFNO)
+      MAXLAI = AMAX1 (MAXLAI, LAI)      ! Maximum XLAI season
       XLAI = LAI
-      MAXLAI = AMAX1 (MAXLAI,XLAI)      ! Maximum XLAI season
 
-      PlantStres % W_grow = TURFAC 
-      PlantStres % W_phot = SWFAC  
+      PlantStres % W_grow = LESTRS 
+      PlantStres % W_phot = PCEW  
       PlantStres % N_grow = NSLLV 
       PlantStres % N_phot = NSTRES 
       PlantStres % P_grow = PSTRES2
@@ -229,7 +217,7 @@
 
 !     Send data to Overview.out data on days where stages occur
       CALL OPVIEW(CONTROL, 
-     &    PBIOMS, ACOUNT, DESCRIP, IDETO, VSTAGE, 
+     &    WAGT, ACOUNT, DESCRIP, IDETO, VSTAGE, 
      &    Measured, PlantStres, Simulated, STGDOY, 
      &    STNAME, WTNCAN, XLAI, YIELD, YRPLT, ISTAGE)
 
@@ -243,25 +231,17 @@
 !-----------------------------------------------------------------------
       SDWTAM = WRR
       SDWTAH = WRR * HARVFRAC(1) !chp 02/03/2005
+      SEEDNO  = NGR / 1.E-4    !#/m2 
 
-      YRNR1  = ISDATE
-      YRNR2  = STGDOY(2)
-      YRNR3  = STGDOY(3)
-      YRNR5  = STGDOY(5)
-      IF (YRPLT .GT. 0) THEN
-        YRNR7  = MDATE
-      ELSE
-        YRNR7  = -99
-      ENDIF
-
-      WTNSD  = GRAINN * PLANTS                !CHP 12/19/2003
+!     Actual byproduct harvested (default is 0 %)
+!     Byproduct not harvested is incorporated
+      BWAH   = (WST + WLVG + WLVD) * HARVFRAC(2)
 
       IF (NGR > 0.0) THEN
-        GWGD = WRR / NGR
+        HWUM = WRR / NGR * 1.E3  !g/grain
       ELSE
-        GWGD = 0.0
+        HWUM = 0.0
       ENDIF
-
 
       IF (WAGT > 0.0 .AND. WRR > 0.0) THEN
         HIAM = WRR / WAGT
@@ -269,11 +249,16 @@
         HIAM = 0.0
       ENDIF 
 
-!-----------------------------------------------------------------------
-!     Actual byproduct harvested (default is 0 %)
-!     Byproduct not harvested is incorporated
-!-----------------------------------------------------------------------
-      BWAH   = (WST + WLVG + WLVD) * HARVFRAC(2)
+      YRNR1  = STGDOY(14)
+      YRNR2  = STGDOY(2)
+      YRNR3  = STGDOY(3)
+      YRNR5  = STGDOY(5)
+
+      IF (YRPLT .GT. 0) THEN
+        YRNR7  = MDATE
+      ELSE
+        YRNR7  = -99
+      ENDIF
 
 !-----------------------------------------------------------------------
 !     Read Measured data from FILEA
@@ -325,20 +310,20 @@
         OLAP(19) = 'EDAP  '
         CALL GetDesc(1,OLAP(19), DESCRIP(19))
 
-        DNR1 = TIMDIF (YRPLT,ISDATE)
-        IF (DNR1 .LE. 0) THEN
+!        DNR1 = TIMDIF (YRPLT,ISDATE)
+!        IF (DNR1 .LE. 0) THEN
            DNR1 = -99
-        ENDIF
-
-        DNR7 = TIMDIF (YRPLT,MDATE)
-        IF (DNR7 .LE. 0 .OR. YRPLT .LT. 0) THEN
+!        ENDIF
+!
+!        DNR7 = TIMDIF (YRPLT,MDATE)
+!        IF (DNR7 .LE. 0 .OR. YRPLT .LT. 0) THEN
            DNR7 = -99
-        ENDIF
-
-        DNR0 = TIMDIF (YRPLT,YRNR2)
-        IF (DNR0 .LE. 0) THEN
+!        ENDIF
+!
+!        DNR0 = TIMDIF (YRPLT,YRNR2)
+!        IF (DNR0 .LE. 0) THEN
            DNR0 = -99
-        ENDIF
+!        ENDIF
 
         IF (STGDOY(9) < 9999999) THEN
           YREMRG = STGDOY(9)    !emergence  
@@ -355,53 +340,57 @@
         ENDIF
 
       YIELD  = NINT(WRR)
-      PLTPOP = PLANTS
-      SEEDNO  = NGR / 1.E-4    !#/m2 
+
+!     &  'EDAT  ', ! 1 !19 emergence date
+!     &  'ADAT  ', ! 2 ! 2 Anthesis date (YrDoy)              
+!     &  'IDAT  ', ! 3 ! 1 Panicle Initiation date (YrDoy)
+!     &  'MDAT  ', ! 4 ! 3 Physiological maturity date (YrDoy)        
+!     &  'CWAM  ', ! 5 !11 Tops weight at maturity (kg dm/ha)
+!     &  'HWAM  ', ! 6 ! 4 Yield at maturity (kg dm/ha)
+!     &  'HWUM  ', ! 7 ! 5 Unit wt at maturity (mg dm/unit)
+!     &  'H#AM  ', ! 8 ! 6 Number at maturity (no/m2)
+!     &  'HIAM  ', ! 9 !13 Harvest index at maturity
+!     &  'LAIX  ', !10 ! 8 Maximum Leaf area index 
 
 !     Write values to Simulated and Measured arrays
-      WRITE(Simulated(1), '(I8)') DNR0;   WRITE(Measured(1),'(I8)') DPIN
-      WRITE(Simulated(2), '(I8)') DNR1;   WRITE(Measured(2),'(I8)') DFLR
-      WRITE(Simulated(3), '(I8)') DNR7;   WRITE(Measured(3),'(I8)') DMAT
-      WRITE(Simulated(4), '(I8)') YIELD;  WRITE(Measured(4),'(A8)') X(4)
-      WRITE(Simulated(5),'(F8.4)')SKERWT; WRITE(Measured(5),'(A8)') X(5)
-      WRITE(Simulated(6), '(I8)') NINT(SEEDNO)                          
+      WRITE(Simulated(1),'(I8)')D_emerge; WRITE(Measured(1),'(I8)')DEMRG
+      WRITE(Simulated(2),'(I8)') DNR1;    WRITE(Measured(2),'(I8)') DFLR
+      WRITE(Simulated(3),'(I8)') DNR0;    WRITE(Measured(3),'(I8)') DPIN
+      WRITE(Simulated(4),'(I8)') DNR7;    WRITE(Measured(4),'(I8)') DMAT
+      WRITE(Simulated(5),'(I8)') NINT(WAGT)                          
+                                          WRITE(Measured(5),'(A8)') X(5)
+      WRITE(Simulated(6),'(I8)') NINT(SDWTAM)
                                           WRITE(Measured(6),'(A8)') X(6)
-      WRITE(Simulated(7),'(F8.2)') (TILNO+1.)*PLTPOP                    
-                                          WRITE(Measured(7),'(A8)') X(7)
-      WRITE(Simulated(8),'(F8.2)')MAXLAI; WRITE(Measured(8),'(A8)') X(8)
+      WRITE(Simulated(7),'(F8.4)')HWUM;   WRITE(Measured(7),'(A8)') X(7)
+      WRITE(Simulated(8), '(I8)') NINT(SEEDNO)                          
+                                          WRITE(Measured(8),'(A8)') X(8)
+      WRITE(Simulated(9),'(F8.3)') HIAM;  WRITE(Measured(9),'(A8)') X(9)
+      WRITE(Simulated(10),'(F8.2)')MAXLAI
+                                         WRITE(Measured(10),'(A8)')X(10)
+
+!      WRITE(Simulated(7),'(F8.2)') (TILNO+1.)*PLTPOP                    
+!                                          WRITE(Measured(7),'(A8)') X(7)
 !      WRITE(Simulated(9),'(I8)') NINT(CANWAA*10)                        
 !                                          WRITE(Measured(9),'(A8)') X(9)
 !      WRITE(Simulated(10),'(I8)') NINT(CANNAA*10)                       
 !                                         WRITE(Measured(10),'(A8)')X(10)
-      WRITE(Simulated(11),'(I8)') NINT(PBIOMS)                          
-                                         WRITE(Measured(11),'(A8)')X(11)
-
-!     08/11/2005 CHP changed from BWAH to BWAM, value remains the same (STOVER)
-      WRITE(Simulated(12),'(I8)') NINT(STOVER) 
-                                         WRITE(Measured(12),'(A8)')X(12)
-
-      WRITE(Simulated(13),'(F8.3)') HI;  WRITE(Measured(13),'(A8)')X(13)
-      WRITE(Simulated(14),'(I8)') LEAFNO;WRITE(Measured(14),'(A8)')X(14)
+!!     08/11/2005 CHP changed from BWAH to BWAM, value remains the same (STOVER)
+!      WRITE(Simulated(12),'(I8)') NINT(STOVER) 
+!                                         WRITE(Measured(12),'(A8)')X(12)
+!
+!      WRITE(Simulated(14),'(I8)') LEAFNO;WRITE(Measured(14),'(A8)')X(14)
 !      WRITE(Simulated(15),'(I8)') NINT(GNUP)                            
 !                                         WRITE(Measured(15),'(A8)')X(15)
-      WRITE(Simulated(16),'(I8)') NINT(TOTNUP)                          
-                                         WRITE(Measured(16),'(A8)')X(16)
+!      WRITE(Simulated(16),'(I8)') NINT(TOTNUP)                          
+!                                         WRITE(Measured(16),'(A8)')X(16)
 !      WRITE(Simulated(17),'(I8)') NINT(APTNUP)
 !                                         WRITE(Measured(17),'(A8)')X(17)
-      WRITE(Simulated(18),'(F8.2)') XGNP;WRITE(Measured(18),'(A8)')X(18)
-      WRITE(Simulated(19),'(I8)')D_emerge
-                                        WRITE(Measured(19),'(I8)') DEMRG
+!      WRITE(Simulated(18),'(F8.2)') XGNP;WRITE(Measured(18),'(A8)')X(18)
       ENDIF  
 
 !-----------------------------------------------------------------------
 !     Send data to OPSUM for SUMMARY.OUT file.
 !-----------------------------------------------------------------------
-      PSDWT   = SKERWT
-
-!      SDRATE  = PSDWT*PLTPOP/0.8*10
-
-      PODWT = PANWT * PLTPOP  !g/m2 CHP 7/21/2005 was * 10.
-
 !       Store Summary.out labels and values in arrays to send to
 !       OPSUM routines for printing.  Integers are temporarily 
 !       saved as real numbers for placement in real array.
@@ -412,24 +401,24 @@
         LABEL(5)  = 'HWAM'; VALUE(5)  = SDWTAM
         LABEL(6)  = 'HWAH'; VALUE(6)  = SDWTAH
         LABEL(7)  = 'BWAH'; VALUE(7)  = BWAH
-        LABEL(8)  = 'HWUM'; VALUE(8)  = GWGD
+        LABEL(8)  = 'HWUM'; VALUE(8)  = HWUM
         LABEL(9)  = 'H#AM'; VALUE(9)  = SEEDNO
-        LABEL(10) = 'H#UM'; VALUE(10) = 0.0 !=seeds/pod
+        LABEL(10) = 'H#UM'; VALUE(10) = -99. !=seeds/pod
         LABEL(11) = 'NFXM'; VALUE(11) = 0.0
-        LABEL(12) = 'NUCM'; VALUE(12) = WTNUP
+        LABEL(12) = 'NUCM'; VALUE(12) = -99.
         LABEL(13) = 'CNAM'; VALUE(13) = WTNCAN
         LABEL(14) = 'GNAM'; VALUE(14) = WTNSD
-        LABEL(15) = 'PWAM'; VALUE(15) = PODWT*10. !chp 7/21/05 added *10
+        LABEL(15) = 'PWAM'; VALUE(15) = WSO
         LABEL(16) = 'LAIX'; VALUE(16) = MAXLAI
         LABEL(17) = 'HIAM'; VALUE(17) = HIAM
-        LABEL(18) = 'EDAT'; VALUE(18) = FLOAT(YREMRG)
+        LABEL(18) = 'EDAT'; VALUE(18) = -99.
 
         !Send labels and values to OPSUM
         CALL SUMVALS (SUMNUM, LABEL, VALUE) 
 !      ENDIF
 
       CALL OPVIEW(CONTROL, 
-     &    PBIOMS, ACOUNT, DESCRIP, IDETO, VSTAGE, 
+     &    WAGT, ACOUNT, DESCRIP, IDETO, VSTAGE, 
      &    Measured, PlantStres, Simulated, STGDOY, 
      &    STNAME, WTNCAN, XLAI, YIELD, YRPLT, ISTAGE)
 

@@ -9,7 +9,7 @@
 
       SUBROUTINE OR_OPGROW (CONTROL, ISWITCH, SOILPROP,  &
          CPEW, DVS, HU, LAI, LDSTRS, LESTRS, LRSTRS,     &
-         NFLV, NGR, NSLLV, PCEW, RDCL, SLA,              &
+         NFLV, NGR, NSLLV, PCEW, RDCL,               &
          WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, YRPLT, ZRT)
 
 !-----------------------------------------------------------------------
@@ -29,11 +29,11 @@
       INTEGER MDATE, NOUTPN, RUN, ERRNUM, TIMDIF, YEAR, DOY
 
       REAL CPEW, DVS, HU, LAI, LDSTRS, LESTRS, LRSTRS,     &
-         NFLV, NSLLV, PCEW, SLA,                   &
+         NFLV, NSLLV, PCEW,                                &
          WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, ZRT 
       REAL, DIMENSION(10) :: RDCL
 
-      REAL GWGD, NGR, HIAD, SLAD
+      REAL NGR, HIAD, HWUD, SLAD
       REAL CUMSENSURF, CUMSENSOIL 
 
       LOGICAL FEXIST, FIRST
