@@ -82,10 +82,10 @@
           LayerText(I:J) = CHAR8(3:8)
         ENDDO
 
-      GROHEAD(1) = '!YR        Days  Days        Leaf  <------------- Dry Weight -------------> Grain Kernl        <--------- Stress (0-1) --------->  Leaf   Spec  Root<Senesced Mat>   Phot'                                                   
-      GROHEAD(2) = '!  and    after after  Grow  Area  <---------------- kg/Ha --------------->   per  wght  Harv  <--------- Water ---------->         Nit   Leaf Depth <--(kg/ha)-->  Therm'                                                   
-      GROHEAD(3) = '!     DOY start plant Stage Index  Leaf  Leaf  Stem Grain  Root Panic  Crop    m2    mg  Indx  Phot  Grow Trans  Roll Death  Nitr    %    Area    m    Surf   Soil   Days'                                                   
-      GROHEAD(4) = '@YEAR DOY   DAS   DAP  GSTD  LAID  LWAD  LDAD  SWAD  GWAD  RWAD  EWAD  CWAD  G#AD  GWGD  HIAD  WSPD  WSGD  WFTD  WFRD  WFDD  NSTD  LN%D   SLAD  RDPD  SNW0C  SNW1C   DTTD'                                                   
+      GROHEAD(1) = '!YR        Days  Days        Leaf  <------------- Dry Weight -------------> Grain Grain        <--------- Stress (0-1) --------->  Leaf   Spec  Root<Senesced Mat>   Phot'                                                   
+      GROHEAD(2) = '!  and    after after  Grow  Area  <---------------- kg/Ha --------------->   per    wt  Harv  <--------- Water ---------->         Nit   Leaf Depth <--(kg/ha)-->  Therm'                                                   
+      GROHEAD(3) = '!     DOY start plant Stage Index  Leaf  Leaf  Stem Grain  Root Panic  Crop    m2     g  Indx  Phot  Grow Trans  Roll Death  Nitr    %    Area    m    Surf   Soil   Days'                                                   
+      GROHEAD(4) = '@YEAR DOY   DAS   DAP  GSTD  LAID  LWAD  LDAD  SWAD  GWAD  RWAD  EWAD  CWAD  G#AD  HWUD  HIAD  WSPD  WSGD  WFTD  WFRD  WFDD  NSTD  LN%D   SLAD  RDPD  SNW0C  SNW1C   DTTD'                                                   
 
 !!-----------------------------------------------------------------------
 !      NITHEAD = '@YEAR DOY   DAS   DAP  CNAD  GNAD  VNAD  GN%D  VN%D  NUPC  LNAD  SNAD  LN%D  SN%D  SHND  RN%D  SNN0C  SNN1C'
@@ -174,9 +174,9 @@
 !        LFWT = WTLF / PLTPOP  !do we need this?
 
         IF (NGR > 0.0) THEN
-          GWGD = WRR / NGR
+          HWUD = WRR / NGR * 1.E3  !g/grain
         ELSE
-          GWGD = 0.0
+          HWUD = 0.0
         ENDIF
 
         IF (WAGT > 0.0 .AND. WRR > 0.0) THEN
@@ -205,7 +205,7 @@
 
         WRITE (NOUTDG,400) YEAR, DOY, DAS, DAP,                    &
           DVS, LAI, NINT(WLVG), NINT(WLVD), NINT(WST), NINT(WRR),  &
-          NINT(WRT), NINT(WSO), NINT(WAGT), NINT(NGR), GWGD, HIAD, &
+          NINT(WRT), NINT(WSO), NINT(WAGT), NINT(NGR), HWUD, HIAD, &
           1.0 - PCEW, 1.0 - LESTRS, 1.0 - CPEW, 1.0 - LRSTRS, 1.0 - LDSTRS, 1.0 - NSLLV,               &
           NFLV, SLAD, ZRT, WLVD, CUMSENSOIL, HU                        
  400    FORMAT (1X,I4, 1X,I3.3, 2(1X,I5), &
