@@ -63,6 +63,7 @@
       REAL    PCEW, CPEW, DAE , LAIROL, ZRT  , DVS, RNSTRS, WCL(10), WL0, DLDR
       REAL    LAI, LLV  , SLA , WLVG  , WST  , WSO, GSO, GGR, GST, GLV, PLTR 
       REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
+      REAL    HU, WAGT, WLVD, WRR
 
 !     FOR EXPERIMENT FILE 
 !      CHARACTER*(128) OUTPUTFILE
@@ -81,10 +82,10 @@
       CHARACTER*10 STNAME(20) 
       INTEGER ISDATE, ISTAGE 
 
-      REAL AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA, DYIELD, G2, GNUP, GPP
-      REAL GPSM, GRAINN, GRNWT, LEAFNO, MAXLAI, PANWT, PBIOMS, PSTRES1, PSTRES2
-      REAL SKERWT, STOVER, STOVN, SWFAC, TILNO, TOTNUP, TURFAC, XGNP, BWAH
-      REAL PODWT, SDWT, SDWTAH, TOPWT, WTNSD
+!      REAL AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA, DYIELD, G2, GNUP, GPP
+!      REAL GPSM, GRAINN, GRNWT, LEAFNO, MAXLAI, PANWT, PBIOMS, PSTRES1, PSTRES2
+!      REAL SKERWT, STOVER, STOVN, SWFAC, TILNO, TOTNUP, TURFAC, XGNP, BWAH
+!      REAL PODWT, SDWT, SDWTAH, TOPWT, WTNSD
 
       TYPE (ControlType) CONTROL
       TYPE (SoilType)    SOILPROP
@@ -142,6 +143,18 @@
         RUNI = 1
         TOTIR = 0.0
 
+        HU = 0.0
+        WAGT = 0.0
+        WLVD = 0.0
+        WRR = 0.0
+
+!       Water & N stresses
+        LRSTRS = 1.0
+        LDSTRS = 1.0
+        LESTRS = 1.0
+        PCEW   = 1.0
+        CPEW   = 1.0
+
         CANHT = 0.0   !Canopy height
         KCAN  = 0.85  !Canopy light extinction coef
         KEP   = 1.0   !Energy extinction coef
@@ -152,6 +165,9 @@
           ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH, &
           STGDOY, STNAME)
  
+        STGDOY(14) = YRDOY !start of simulation
+        ISTAGE = 14
+
 !----------------------------------------------------------------
 !       ORYZA initialization section - moved up to initialization section
 !     IF(ITASK.EQ.1) THEN
@@ -200,15 +216,6 @@
 !    END IF
 !----------------------------------------------------------------
 
-        CALL RI_OPHARV (CONTROL, ISWITCH,               &
-         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
-         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
-         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
-         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
-         PSTRES1, PSTRES2,                              & !Input
-         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
-         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
-         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
 
 !***********************************************************************
 !***********************************************************************
@@ -238,6 +245,7 @@
 
              IF (YRDOY == YRPLT) THEN
                STGDOY(7) = YRDOY
+               ISTAGE = 7
              ENDIF
 
              IF(YRDOY.LT.EDATE) THEN
@@ -251,6 +259,7 @@
                    CROPSTA = 3
 !                  Transplant
                    STGDOY(11) = YRDOY
+                   ISTAGE = 11
                 ENDIF
              END IF
 
@@ -267,6 +276,7 @@
                    CROPSTA = 1
 !                  Emergence
                    STGDOY(9) = YRDOY
+                   ISTAGE = 9
                 ENDIF
             END IF
     !    END IF
@@ -310,21 +320,12 @@
 
         IF (DYNAMIC == SEASEND) THEN
           STGDOY(20) = YRDOY
+          ISTAGE = 20
           YREND = YRDOY
           TERMNL = .TRUE.
           DEALLOCATE(PV) 
           CALL RDDTMP (IUNITD)  !delete all temporary files
         ENDIF
-
-        CALL RI_OPHARV (CONTROL, ISWITCH,               &
-         AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,        & !Input
-         DYIELD, G2, GNUP, GPP, GPSM, GRAINN, GRNWT,    & !Input
-         HARVFRAC, ISDATE, ISTAGE, LAI, NINT(LEAFNO), MAXLAI, & !Input
-         MDATE, NSTRES, PANWT, PBIOMS, PLANTS, PLTPOP,  & !Input
-         PSTRES1, PSTRES2,                              & !Input
-         SKERWT, STGDOY, STNAME, STOVER, STOVN, SWFAC,  & !Input
-         TILNO, TOTNUP, TURFAC, XGNP, YRPLT,            & !Input
-         BWAH, PODWT, SDWT, SDWTAH, TOPWT, WTNSD)         !Output
 
       ENDIF
 
@@ -361,21 +362,16 @@
           MDATE = YRDOY
         ENDIF 
       
-      IF (DVS > 1.9999999) THEN
-         MDATE = YRDOY
-         YREND = YRDOY
-      ELSEIF (DVS > 0.00000001) THEN
-        IF (DYNAMIC == 5) THEN
-          WRITE(500,*) YRDOY, XLAI
+        IF (DVS > 1.9999999) THEN
+          MDATE = YRDOY
+          YREND = YRDOY
         ENDIF
-      ENDIF
-
-!      IF (STGDOY(11).EQ.YRDOY) THEN
-!        MDATE = YRDOY
-!        YREND = YRDOY
-!      ENDIF 
 
         if (DYNAMIC == INTEGR) then
+          IF (DVS > 0.00000001) THEN
+            WRITE(500,*) YRDOY, XLAI
+          ENDIF
+
           DO L=0, NLAYR
             SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
             SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
