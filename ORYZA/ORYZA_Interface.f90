@@ -37,7 +37,7 @@
       REAL KCAN, KEP, DEPMAX
       REAL NSTRES, XLAI, NFP
       REAL PORMIN, RWUMX
-      REAL CANHT, TOTIR
+      REAL CANHT, TOTIR, BIOMAS
 
       REAL, DIMENSION(NL) :: DLAYR
       REAL, DIMENSION(0:NL) :: SENC, SENN, SENLIG
@@ -63,7 +63,7 @@
       REAL    PCEW, CPEW, DAE , LAIROL, ZRT  , DVS, RNSTRS, WCL(10), WL0, DLDR
       REAL    LAI, LLV  , SLA , WLVG  , WST  , WSO, GSO, GGR, GST, GLV, PLTR 
       REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
-      REAL    HU, WAGT, WLVD, WRR
+      REAL    HU, WAGT, WLVD, WRR, NGR
 
 !     FOR EXPERIMENT FILE 
 !      CHARACTER*(128) OUTPUTFILE
@@ -74,7 +74,7 @@
 
 !     FILEIO data
       CHARACTER*1  PLDS
-      INTEGER INCDAT
+      INTEGER INCDAT, YEAR_PLT
       REAL PAGE, ROWSPC, SDWTPL, ATEMP
 
 !     Output data needed for DSSAT output files
@@ -174,14 +174,27 @@
 
         !initialize OBSSYS routine
         CALL OBSINI
+
+!        !get emergence date and transplanting date
+!        iPAGE = NINT(PAGE)
+!        EDATE = INCDAT(YRSIM,iPAGE)
+!        IF(INDEX(PLME,"T").GT.0) THEN
+!            CALL YR_DOY(EDATE, YRPLT,TDATE)
+!            TDATE = TDATE + IPAGE
+!            TDATE = INCDAT(YRPLT,iPAGE)
+!        END IF
+
         !get emergence date and transplanting date
         iPAGE = NINT(PAGE)
-        EDATE = INCDAT(YRSIM,iPAGE)
+        EDATE = INCDAT(YRPLT,-iPAGE)
         IF(INDEX(PLME,"T").GT.0) THEN
-            CALL YR_DOY(EDATE, YRPLT,TDATE)
-            TDATE = TDATE + IPAGE
-            TDATE = INCDAT(YRPLT,iPAGE)
+            CALL YR_DOY(YRPLT, YEAR_PLT, TDATE)
         END IF
+
+!        TDATE = 3274
+!        YRPLT = 1992
+        EDATE = 1992195
+!        YRPLT = 1992195
 
 !       Used STRING
 !       ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
@@ -344,6 +357,14 @@
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
                         PLTR, WCL, WL0, WRT, WRR14)
 
+!   ***** Need to output
+!   HU - heat units
+!   NGR - number of grains / ha (or m2?)
+
+!   Panicle initiation date
+!   Anthesis date
+!   Physiological maturity date  
+
         CALL UPPERC(ISWNIT)
 !       IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
             CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
@@ -354,7 +375,10 @@
 
         XLAI   = LAI
         NSTRES = NFP
-      
+        WAGT = WST + WLVG + WSO + WLVD
+        BIOMAS = WAGT
+        WRR  = WRR14 * 0.86
+
         IF (DVS > 0.65 .AND. STGDOY(2) > YRDOY) THEN
           STGDOY(2) = YRDOY
         ELSEIF (DVS >= 1.9999999 .AND. STGDOY(6) > YRDOY) THEN
@@ -367,31 +391,39 @@
           YREND = YRDOY
         ENDIF
 
-        if (DYNAMIC == INTEGR) then
-          IF (DVS > 0.00000001) THEN
-            WRITE(500,*) YRDOY, XLAI
-          ENDIF
-
-          DO L=0, NLAYR
-            SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
-            SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
-            SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
-          ENDDO
-
-        endif
-
-        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
-          !Transfer harvest residue from senescence variable to 
-          !harvest residue variable on day of harvest.
-          HARVRES = SENESCE
-          SENESCE % ResWt  = 0.0
-          SENESCE % ResLig = 0.0
-          SENESCE % ResE   = 0.0
-        ELSE
-          MDATE = -99
-        ENDIF
+!        if (DYNAMIC == INTEGR) then
+!          IF (DVS > 0.00000001) THEN
+!            WRITE(500,*) YRDOY, XLAI
+!          ENDIF
+!
+!          DO L=0, NLAYR
+!            SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
+!            SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
+!            SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
+!          ENDDO
+!
+!        endif
+!
+!        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
+!          !Transfer harvest residue from senescence variable to 
+!          !harvest residue variable on day of harvest.
+!          HARVRES = SENESCE
+!          SENESCE % ResWt  = 0.0
+!          SENESCE % ResLig = 0.0
+!          SENESCE % ResE   = 0.0
+!        ELSE
+!          MDATE = -99
+!        ENDIF
 
     ENDIF
+
+    SELECT CASE(DYNAMIC)
+    CASE(SEASINIT, OUTPUT, SEASEND)
+      CALL OR_OPGROW (CONTROL, ISWITCH, SOILPROP,  &
+         CPEW, DVS, HU, LAI, LDSTRS, LESTRS, LRSTRS,     &
+         NFLV, NGR, NSLLV, PCEW, RDCL, SLA,              &
+         WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, YRPLT, ZRT)
+    END SELECT
 
 !-----------------------------------------------------------------------
 
