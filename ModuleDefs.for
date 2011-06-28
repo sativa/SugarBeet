@@ -61,12 +61,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 16
+        INTEGER :: Build = 17
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
+!       4.5.1.17 gh  06/28/2011 Sorghum cul file re-order.
 !       4.5.1.16 chp 06/28/2011 More changes to CSCER, CSCRP, incl. spe, eco & cul files.
 !                               This version matches first commit for v4.6
 !       4.5.1.15 chp 06/27/2011 Fixed zero divide in ROOTWU
