@@ -64,7 +64,7 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Build = 15
       END TYPE VersionType
       TYPE (VersionType) Version
-      CHARACTER(len=10) :: VBranch = '-Release  '
+      CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
 !       4.5.1.15 chp 06/27/2011 Fixed zero divide in ROOTWU
