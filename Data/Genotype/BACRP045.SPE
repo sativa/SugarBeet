@@ -1,17 +1,12 @@
 $SPECIES:BACRP045
 
-! LAST EDIT: 18/05/11
+! LAST EDIT: 18/06/11
 
 ! Coefficients differ from those used in DSSAT Versions 3.5 and 4.0x.
 ! They have been developed from 'parameters' embedded in the code of
 ! the earlier DSSAT models,from those used in an earlier Cropsim 
 ! model,and from the literature. They may change as experience is
 ! gained,and should not be taken as 'fixed'.
-
-! Users should be extremely cautious in changing the stress response
-! thresholds (WFPU,NFPU,etc). It is possible that there are differences
-! in these characteristics, but the extent of such differences is not
-! well understood.
 
 *SPECIES:BACRP045
 ! Harvest product and standard moisture content
@@ -20,7 +15,7 @@ $SPECIES:BACRP045
 ! Principal Stages (S=Standard,K=Key(those that may be outputed)
 @ PSNO PSTYP PSABV PSNAME
     1      S GDAT  Germinate
-    2      K TSDAT Max.Primordia
+    2      K TSAT  Max.Primordia
     3      S PSDAT Pseudo_Stem
     4      K LLDAT End_Leaf
     5      K IEDAT Head_Emerge
@@ -34,8 +29,8 @@ $SPECIES:BACRP045
 ! Secondary Stages (S=Standard,K=Key(those that outputed to Evaluate.out)
 @ SSNO SSTYP  SSTG SSABV SSNAME
     1      S   1.5 LAFST Lafac_change          
-    2      K   1.6 DRDAT DoubleRidges
-    3      K 3.143 JDAT  Jointing
+    2      K   1.6 DRAT  DoubleRidges
+    3      S 3.143 JDAT  Jointing
     4      S   3.3 SGPHS StemStart             
     5      S   4.0 RUESG RUE_change            
     6      S   4.0 LGPHE LeafEnd               
@@ -64,20 +59,20 @@ $SPECIES:BACRP045
   10.0   100  0.02  0.20  0.33    50    80   2.0   0.8 
 @LLIFA LLIFG LLIFS LWLOS
    4.0   1.0   3.0  0.50
-@ CHT%  CLA%  ! Height%, cum leaf area %
+@LAIXX ! LAI maximum    
+  14.0
+@ CHT%  CLA% ! Height%, cumulative leaf area %
      0     0
     50    50
    100   100
 @ TPAR TSRAD ! Leaf transmission PAR,solar                                     
   0.07  0.25
-@PARIX ! Canopy PAR interception maximum   
-  0.98
 ! Tillers
-@TGR02 TGR20 TILIP TIL#X ! Size,phase,death,maximum numbe
+@TGR02 TGR20 TILIP TIL#X ! Size,phase,maximum
   0.80  0.10   6.0    20
 ! Reserves
 @ RS%S RS%LX RSUSE ! Standard concentrations,fraction utilizeable/day
-    80    80   0.0
+    80    80   0.1
 ! Stems          
 @SLIG%  SAWS ! Lignin,area/weight
   10.0  25.0
@@ -89,10 +84,12 @@ $SPECIES:BACRP045
   10.0  0.05  0.90 
 ! Seed
 @ SDWT SDDUR SDRS% ! Weight,duration,reserves (% whole seed)
- .0284  20.0   80
+ .0284    20    80
 ! Photosynthesis
-@PARFC CO2CC CO2EX RSFPU RSFPL ! CO2 response,reserves effect thresholds
-  2.05    80 0.005   3.0   2.0
+@PARFC CO2CC CO2EX ! CO2 response (only for comparison)
+  2.05    80 0.005
+@RSFPU RSFPL ! Reserves effect thresholds (as set->no reserves effect)
+   3.0   2.0
 @CO2RF  CO2F
      0  0.00
    220  0.71
@@ -108,11 +105,10 @@ $SPECIES:BACRP045
 @PTFMN PTFMX  PTFA ! Partition to tops (max,min,max.adjustment)
   0.75  0.98  0.10
 ! Cold hardiness
-@ TKUH TKLFD TKTID TKSPN  HDUR HLOST HLOSF ! Kill temps,span,time->harden,loss
-  -6.0  10.0   2.0   2.0  10.0  10.0   0.2
+@ TKUH TKDTI  TKLF TKSPN  HDUR HLOST HLOSF ! Kill temps,span,time->harden,loss
+  -6.0   2.0   0.0   2.0  10.0  10.0   0.2
 ! Temperature responses
 ! AFRC vernalization=-4,3,10,17; Reinink=-1,0,4,8,9
-! Earlier phs=0,5,26,45; gfc,n=-5,0,20,55
 @RRATE TRDV1 TRDV4 TRDV8 TRLFG TRPHS TRVRN TRHAR TRGFW TRGFN 
      0     0     0     0     0     0    -5    -5     0     0 
    1.0    26    26    30    10     5     0     0    16    16  
@@ -132,7 +128,7 @@ $SPECIES:BACRP045
 @ WFPU  WFPL  WFGU  WFGL  WFTU  WFTL  WFSU  WFSF  WFEU !Gr,phs,till,sen,evap
    1.0   0.0   1.3   0.0   1.0   0.5   0.6   0.5   1.5
 @LLOSA
- 0.02 ! Fraction of leaf area lost each day that water uptake ratio < WFS
+ 0.02 ! Fraction of leaf area lost each day that water uptake ratio < WFSU
 ! 2. Based on soil water content as a fraction of DUL-LL or SAT-DUL
 @WFGEU WFRGU  ! Germination/emergence,root growth
   0.50  0.25
@@ -149,7 +145,7 @@ $SPECIES:BACRP045
   0.05
 ! Nitrogen concentrations
 @GN%MX GN%MN  SDN% ! Grain,seed
-   4.5   0.3   1.9 
+   4.5   0.5   1.9 
 @ LN%S LN%MN  SN%S SN%MN  RN%S RN%MN ! Standard,minima N% for lves,stems,rts  
    8.0  0.80  2.50  0.65  2.00  1.50                               
    1.0  0.55  0.40  0.40  1.70  1.25                               
@@ -158,7 +154,7 @@ $SPECIES:BACRP045
     20   0.5
 ! N shortage effects (Fraction of span from lowest to upper N concentration)
 @ NFPU  NFPL  NFGU  NFGL  NFTU  NFTL  NFSU  NFSF ! Phs,gr,tillering,senesnce
-   1.0     0   1.0     0   1.0   0.8   0.4   0.1
+   1.0     0   1.0   0.0   1.0   0.0   0.4   0.1
 ! N shortage effects (Based on soil NO3 or NH4 concentration)
 @ NCRG  ! Root growth 
     30
@@ -208,9 +204,8 @@ $SPECIES:BACRP045
 ! HLOSF   Fraction of hardiness days lost (fr/d)
 ! HLOST   Threshold temperature for hardiness loss (C)
 ! HMPC    Grain moisture percentage,standard (#)
+! LAIXX   LAI maximum (m2/m2)
 ! LASTG   Leaf area change stage (#)
-! SLACF   Specific leaf area,change with leaf position (fr)
-! SLAFF   Specific leaf area,flexibility,fr non-stressed (fr)
 ! LAXS    Maximum area of leaves on main stem (cm2)                                                                                                     
 ! LGPHE   Leaf growth end stage (GrowthStage)
 ! LLIFA   Leaf full activity period,birth to onset of senescence (phyl)
@@ -232,7 +227,7 @@ $SPECIES:BACRP045
 ! NFGU    N stress factor,growth,upper (fr)
 ! NFPL    N stress factor,photosynthesis,lower (fr)
 ! NFPU    N stress factor,photosynthesis,upper (fr)
-! NFS     N stress factor,senescence (fr)
+! NFSU    N stress factor,senescence (fr)
 ! NFSF    N factor to trigger final (maturity) senescence (#)
 ! NFTL    N stress factor,tillering,lower (fr)
 ! NFTU    N stress factor,tillering,upper (fr)
@@ -242,7 +237,6 @@ $SPECIES:BACRP045
 ! P0      Juvenile phase duration (oC.days)
 ! P9      Phase duration 6 (post physio.maturity (oC.d)
 ! PARFC   Maximum photosynthesis relative to phs at 330 vpm CO2 (#)
-! PARIX   PAR interception maximum (fr)
 ! PEMRG   Emergence phase duration (Thermal units per cm depth)
 ! PGERM   Phase duration,germination (Hydrothermal units)
 ! PHFn    Factor by which PHINTS is multiplied -> PHINT for phase (#)
@@ -268,6 +262,8 @@ $SPECIES:BACRP045
 ! RSFPL   Reserves concentration,lower bound for photosynthesis effect (fr)
 ! RSFPU   Reserves concentration,upper bound for photosynthesis effect (fr)
 ! RSUSE   Reserves utilisation fraction,vegetative phases (#)
+! RTNO3   NO3 uptake/root length  (mg N/cm.day)
+! RTNH4   NH4 uptake/root length  (mg N/cm.day)
 ! RTUFR   Max fraction root wt useable for new leaves (fr)
 ! RWULF   Root length factor,water uptake (cm/cm3) (Only stand-alone Cropsim)
 ! RWUMX   Maximum water uptake rate (cm3/cm.d)
@@ -279,6 +275,8 @@ $SPECIES:BACRP045
 ! SDWT    Seed dry weight (g/seed)
 ! SGPHE   Stem growth ending stage (GrowthStage)
 ! SGPHS   Stem growth starting stage (GrowthStage)
+! SLACF   Specific leaf area,change with leaf position (fr)
+! SLAFF   Specific leaf area,flexibility,fr non-stressed (fr)
 ! SLIG%   Stem lignin (%)
 ! SN%MN   Stem N concentration,minimum (%)
 ! SN%S    Stem N concentraation,standard,stage (%)
@@ -289,9 +287,9 @@ $SPECIES:BACRP045
 ! TIL#X   Tiller number per plant,maximum (#)
 ! TILIP   Tiller initiation phase duration (Leaf # from birth to full size)
 ! TKILL   Temperature at which disease killed (oC)
-! TKLFD   Killing temperature difference,leaves v plant (C)
+! TKLF    Killing temperature for leaves (C)
 ! TKSPN   Temperature span over which killing occurs (C)
-! TKTID   Killing temperature difference,tillers v plant (C)
+! TKDTI   Killing temperature difference,tillers v plant (C)
 ! TKUH    Start kill temperature,unhardened (oC)
 ! TOPT1   Lowest optimum temperature for disease development (oC)
 ! TOPT2   Highest optimum temperature for disease development (oC)
@@ -320,7 +318,7 @@ $SPECIES:BACRP045
 ! WFPU    Water factor,photosynthesis,upper (fr)
 ! WFPUR   Water factor,photosynthesis,upper,reproductive (0-1)
 ! WFRGU   Water factor,root growth,upper bound (#)
-! WFS     Water factor,senescence,upper (fr)
+! WFSU    Water factor,senescence,upper (fr)
 ! WFSF    Water factor,trigger for final senescence (fr)
 ! WFTL    Water factor,tillering,lower (fr)
 ! WFTU    Water factor,tillering,upper (fr)

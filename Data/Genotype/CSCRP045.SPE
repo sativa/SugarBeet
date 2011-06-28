@@ -1,6 +1,6 @@
 $SPECIES:CSCRP045
 
-! LAST EDIT: 18/05/11
+! LAST EDIT: 18/06/11
 
 ! Coefficients differ from those used in the DSSAT V3.5 cassava model.
 ! They have been developed from coefficients used in,and from 'parameters'
@@ -64,14 +64,14 @@ $SPECIES:CSCRP045
   0.00  0.20   0.5
 @SLATS SLATR SLAWR  ! Specific leaf area temperature and h2o effect parameters
   25.0 0.025  0.15  ! Not yet implemented
+@LAIXX ! LAI maximum    
+  14.0
 @ CHT%   CLA%   ! Canopy height%, leaf area %
      0     0
     50    50
    100   100
 @ TPAR TSRAD  ! Individual leaf transmission PAR, solar radiation  
   0.07  0.25
-@PARIX  ! PAR interception maximum   
-  0.85
 @ KCAN  ! Canopy extinction coefficient PAR
   0.30 
 ! Tillers
@@ -163,6 +163,7 @@ $SPECIES:CSCRP045
 ! GDAT    Germination date  (YrDoy)
 ! HPROD   Harvest product (code;SR=storage root)
 ! KCAN    PAR extinction coefficient (#)
+! LAIXX   LAI maximum (m2/m2)
 ! LLIFG   Leaf growth (expansion) period (phyl)
 ! LLIFS   Leaf senescence period (phyl)
 ! LLIG%   Leaf lignin (%)
@@ -184,7 +185,6 @@ $SPECIES:CSCRP045
 ! NPTFL   N use by leaves for growth/top-up after minima satisfied (fr)
 ! NTUPF   N top-up fraction (/d)
 ! PARFC   Maximum photosynthesis relative to phs at 330 vpm CO2 (#)
-! PARIX   PAR interception maximum (fr)
 ! PEMRG   Emergence phase duration (Thermal units per cm depth)
 ! PGERM   Germination phase duration (Hydrothermal units)
 ! PHSV    Photosynthesis,sensitivity to VPD (fr/kPa)
