@@ -19,7 +19,7 @@
       USE ModuleDefs
       USE ModuleData
       USE Public_Module		!VARIABLES
-	  use RootGrowth
+	  USE RootGrowth
 
       IMPLICIT NONE
       SAVE
@@ -294,9 +294,6 @@
             END IF
     !    END IF
 
-!       IF((CROPSTA.GE.1).AND.(ITASK.EQ.2)) DAE=DAE+1.0
-        IF (CROPSTA.GE.1) DAE=DAE+1.0
-      
         DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
     
 !       Check for potential production condition  
@@ -355,11 +352,11 @@
                         LRSTRS, LDSTRS, LESTRS, PCEW,  CPEW, TRC, &
                         DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
-                        PLTR, WCL, WL0, WRT, WRR14)
+                        PLTR, WCL, WL0, WRT, WRR14, NGR, HU)
 
 !   ***** Need to output
-!   HU - heat units
-!   NGR - number of grains / ha (or m2?)
+!   HU - heat units oCd/d
+!   NGR - number of grains / ha 
 
 !   Panicle initiation date
 !   Anthesis date
@@ -375,17 +372,24 @@
 
         XLAI   = LAI
         NSTRES = NFP
-        WAGT = WST + WLVG + WSO + WLVD
-        WRR  = WRR14 * 0.86
-
+        IF(ITASK.EQ.3) THEN
+            WLVD = WLVD+(DLDR+LLV)*DELT        
+            WAGT = WST + WLVG + WSO + WLVD
+            WRR  = WRR14 * 0.86
+        ENDIF
         IF (DVS > 0.65 .AND. STGDOY(2) > YRDOY) THEN
+        !     IF (DVS .EQ. 0.65 ) THEN
+                !Panicle initiation date DVS = 0.65
           STGDOY(2) = YRDOY
-        ELSEIF (DVS >= 1.9999999 .AND. STGDOY(6) > YRDOY) THEN
+        ELSEIF(DVS.EQ.1.0) THEN
+            !Anthesis date when DVS = 1.0
+        ELSEIF (TERMNL.AND. STGDOY(6) > YRDOY) THEN
+        !   Maturity date when DVS =2.0
           STGDOY(6) = YRDOY
           MDATE = YRDOY
         ENDIF 
       
-        IF (DVS > 1.9999999) THEN
+        IF (TERMNL) THEN
           MDATE = YRDOY
           YREND = YRDOY
         ENDIF

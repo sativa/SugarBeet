@@ -67,7 +67,7 @@
                         LRSTRS, LDSTRS, LESTRS, PCEW,  CPEW, TRC, &
                         DAE,    SLA, LAI,    LAIROL, ZRT,    DVS, &
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
-                        PLTR, WCL, WL0, WRT, WRR14)
+                        PLTR, WCL, WL0, WRT, WRR14, NGR, HU)
 
 !===================================================================*
 !     DECLARATION SECTION                                           *
