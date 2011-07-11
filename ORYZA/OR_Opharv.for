@@ -231,7 +231,7 @@
 !-----------------------------------------------------------------------
       SDWTAM = WRR
       SDWTAH = WRR * HARVFRAC(1) !chp 02/03/2005
-      SEEDNO  = NGR / 1.E-4    !#/m2 
+      SEEDNO  = NGR / 1.E4    !#/m2 
 
 !     Actual byproduct harvested (default is 0 %)
 !     Byproduct not harvested is incorporated

@@ -100,6 +100,7 @@
       YRDOY   = CONTROL % YRDOY
       CALL YR_DOY(YRDOY, YEAR1, DOY1)
 
+      IF (DYNAMIC == RUNINIT) RETURN
 !***********************************************************************
 !***********************************************************************
 !     Seasonal initialization - run once per planting season
@@ -185,16 +186,19 @@
 !        END IF
 
         !get emergence date and transplanting date
-        iPAGE = NINT(PAGE)
-        EDATE = INCDAT(YRPLT,-iPAGE)
+        TDATE = YRPLT
         IF(INDEX(PLME,"T").GT.0) THEN
-            TDATE = YRPLT
+!           By definition, DSSAT YRPLT = transplant date.  We need to keep this definition
+!           for the FILEX data for compatibility with other models.  But we need to start calling
+!           ORYZA on the sowing date, because the model calculates growth in the seed bed.
+!           So - for transplants, re-set YRPLT = sowing date so that ORYZA is called prior
+!           to transplant date.
+            iPAGE = NINT(PAGE)
+            EDATE = INCDAT(YRPLT,-iPAGE)
+            YRPLT = EDATE  
+        ELSE
+            EDATE = YRPLT
         END IF
-
-!*********************************************************
-!   *** DEBUG ***
-        EDATE = YRPLT
-!*********************************************************
 
 !       Used STRING
 !       ESSENTIAL INFORMATION MUST BE PROVIDED FROM UPPER LAYER
@@ -226,6 +230,11 @@
             PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
             TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
         END DO
+        
+         !open a temporary file for ORYZA2000 outputs
+        OPEN(UNIT = IUNITD+50, FILE = "ORYZA_RES.DAT")
+        OPEN(UNIT = IUNITD+60, FILE = "ORYZA_CLI.DAT")
+        WRITE(IUNITD+50,'(A)') "DOY,DAE,DVS,ZRT,LAI,LLV,WLVD,WLVG,WST,WSO,WRR14,WRT,GSO,GGR,GST,GLV,WAGT" 
 !    END IF
 !----------------------------------------------------------------
 
@@ -335,6 +344,8 @@
           TERMNL = .TRUE.
           DEALLOCATE(PV) 
           CALL RDDTMP (IUNITD)  !delete all temporary files
+          CLOSE(IUNITD+50)
+          CLOSE(IUNITD+60)
         ENDIF
 
       ENDIF
@@ -376,6 +387,9 @@
             WLVD = WLVD+(DLDR+LLV)*DELT        
             WAGT = WST + WLVG + WSO + WLVD
             WRR  = WRR14 * 0.86
+            WRITE(IUNITD+50,5000) DOY,DAE,DVS,ZRT,LAI,LLV,WLVD, WLVG, WST, WSO, WRR14, WRT,&
+                                GSO, GGR, GST, GLV,(WLVG+WST+WSO+WLVD)
+            WRITE(IUNITD+60, 6000) 1,YEAR, DOY, RDD/1000.0, TMMN, TMMX, -99.0, -99.0           
         ENDIF
         IF (DVS > 0.65 .AND. STGDOY(2) > YRDOY) THEN
         !     IF (DVS .EQ. 0.65 ) THEN
@@ -434,7 +448,8 @@
     END SELECT
 
 !-----------------------------------------------------------------------
-
+5000 FORMAT(2(F5.0,","),(F7.4,","),13(F12.3,","),F12.3)
+6000 FORMAT(1(I3,","),2(F5.0,","),(F12.3,","),4(F12.3,","),F12.3)
       RETURN
       END SUBROUTINE ORYZA_Interface
 
