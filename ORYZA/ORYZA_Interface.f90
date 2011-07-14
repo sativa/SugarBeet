@@ -47,9 +47,10 @@
 !     Soil water
 !     REAL EO, SRFTEMP, SLPF
 !     REAL, DIMENSION(NL) :: RLV, SW, ST, SOILTEMP   
-!     REAL, DIMENSION(NL) :: BD, DUL, LL, SAT, SHF
+      REAL, DIMENSION(NL) :: BD, DUL, LL, SAT, SHF,SANDX, CLAYX, MSKPA
 !     Soil N
-!     REAL, DIMENSION(0:NL) :: NH4, NO3, UNO3, UNH4, UH2O
+      REAL, DIMENSION(0:NL) :: NH4, NO3, UNO3, UNH4, UH2O
+      REAL, DIMENSION(NL) :: SNH4X, SNO3X, SUNO3, SUNH4, SUH2O,SOC,SON, SUREA
 
 !     LOGICAL LEAP !Function in DATES subroutine
 
@@ -63,7 +64,7 @@
       REAL    PCEW, CPEW, DAE , LAIROL, ZRT  , DVS, RNSTRS, WCL(10), WL0, DLDR
       REAL    LAI, LLV  , SLA , WLVG  , WST  , WSO, GSO, GGR, GST, GLV, PLTR 
       REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
-      REAL    HU, WAGT, WLVD, WRR, NGR
+      REAL    HU, WAGT, WLVD, WRR, NGR, PLOWPAN, TNSOIL, NACR
 
 !     FOR EXPERIMENT FILE 
 !      CHARACTER*(128) OUTPUTFILE
@@ -125,12 +126,17 @@
 
         ISWWAT = ISWITCH % ISWWAT
 
-!       BD     = SOILPROP % BD     
-!       DUL    = SOILPROP % DUL    
-!       LL     = SOILPROP % LL     
-!       SAT    = SOILPROP % SAT    
+        BD     = SOILPROP % BD     
+        DUL = SOILPROP % DUL    
+        LL     = SOILPROP % LL     
+        SAT    = SOILPROP % SAT    
 !       SHF    = SOILPROP % WR
 !       SLPF   = SOILPROP % SLPF
+!       ??????
+!         NH4 = SOILPROP%NH4
+!         NO3 = SOILPROP%NO3
+        
+!       ??????
 
         FILEIOCS(1:30) = FILEIO
         TN = 0
@@ -154,6 +160,7 @@
         LESTRS = 1.0
         PCEW   = 1.0
         CPEW   = 1.0
+        RNSTRS = 1.0
 
         CANHT = 0.0   !Canopy height
         KCAN  = 0.85  !Canopy light extinction coef
@@ -205,31 +212,44 @@
 !       FILEI1 = 'D:\...\...\IR72.CRP
 !       FILEIT = 'D:\...\...\...\N150.exp
         FILEIT = CONTROL % FILEX(1:8) // ".EXP"
+        FILEI2 = CONTROL % FILEX(1:8) // ".SOL"
         IIRRI  = ISWITCH % IIRRI
 !       IRCOD  = 0  !Potential production  - need to get value for water limited. 
         !THE 'IRCOD', IT IS NOT USED IN THE ROUTINE YET, COMMENT IT OUT TEMPORARY.
 
-        !GENERATE EXPERIMENT FILE
+        !GENERATE EXPERIMENT AND SOIL FILES
+        DO I = 1, NLAYR
+            PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
+            TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
+            PV%PWCST(I) = SAT(I)
+            PV%PWCFC(I) = DUL(I)
+            PV%PWCWP(I) = LL(I)
+        END DO
+        CALL UPPERC(ISWWAT)
+        CALL UPPERC(ISWNIT)
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
-    
-        TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.
-        NLO = PV%PNL; TERMNL = .FALSE.
+        IF(INDEX(ISWWAT,"N")) THEN
+            TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.;NLO = PV%PNL; FILEI2=""
+        ELSE
+            OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .TRUE.
+            CALL SOILFILEEDIT(FILEI2, NLAYR, TKL, SANDX, CLAYX, BD, SOC, SON, SNH4X, SNO3X, SUREA, PLOWPAN)
+        END IF        
+        IF(INDEX(ISWNIT,"N")) THEN
+        ELSE
+            PV%PROOT_NUTRIENT = .TRUE.
+        ENDIF
+         TERMNL = .FALSE.
 
         CALL GETLUN("ORYZA1",IUNITD)
         CALL GETLUN("ORYZA2",IUNITL)
         IUNITD = IUNITD+10
         IUNITL = IUNITL+20
-        FILEI2 = "" !;IUNITD = 30; IUNITL = 40
+        
         DELT = 1.0  !TIME STEP IS 1.0
         IDOY = DOY
-        DAE = 0.0
-
-        DO I = 1, NLAYR
-            PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
-            TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
-        END DO
+        DAE = 0.0        
         
          !open a temporary file for ORYZA2000 outputs
         OPEN(UNIT = IUNITD+50, FILE = "ORYZA_RES.DAT")
@@ -305,7 +325,7 @@
         DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
     
 !       Check for potential production condition  
-        CALL UPPERC(ISWWAT)
+       
         IF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
             TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
             CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
@@ -353,6 +373,12 @@
 !***********************************************************************
 
     IF(.NOT.TERMNL .AND. DYNAMIC > RUNINIT) THEN
+        IF(INDEX(ISWWAT,"T").GT.0) THEN
+            CALL WSTRESS2 (ITASK,  DELT,   OR_OUTPUT, IUNITD, IUNITL, FILEI1, FILEIT, &
+                          TRC,    ZRT,    TKL,    NLAYR,    CROPSTA, &
+                          WCL,    pv%PWCWP,   MSKPA, &
+                          TRW,    TRWL,   LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
+        END IF
 
         CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
                         OR_OUTPUT, TERMNL, IDOY  , DOY, &
@@ -372,23 +398,25 @@
 !   Anthesis date
 !   Physiological maturity date  
 
-        CALL UPPERC(ISWNIT)
+        
 !       IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
             CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
                            CROPSTA, DVS, WLVG, LAI, SLA, NFLV, NSLLV, RNSTRS)
-!       ELSE
-    
-!       END IF
+!        ELSE
+!            CALL NCROP3 (ITASK, IUNITD, IUNITL, FILEI1, FILEI2, FILEIT, DELT, TIME, OR_OUTPUT, &
+!                       TERMNL, DVS, LLV, DLDR, WLVG, WST, WSO, GSO, GST, GLV, &
+!                       PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, NFLV, NSLLV,NRT, RNSTRS,SNH4X, SNO3X)
+!        END IF
 
         XLAI   = LAI
         NSTRES = NFP
         IF(ITASK.EQ.3) THEN
-            WLVD = WLVD+(DLDR+LLV)*DELT        
-            WAGT = WST + WLVG + WSO + WLVD !- LLV*DELT
+            WLVD = WLVD+ (DLDR+LLV)*DELT        
+            WAGT = WST + WLVG + WSO + WLVD
             WRR  = WRR14 * 0.86
             WRITE(IUNITD+50,5000) DOY,DAE,DVS,ZRT,LAI,LLV,WLVD, WLVG, WST, WSO, WRR14, WRT,&
-                                GSO, GGR, GST, GLV, WAGT
-            WRITE(IUNITD+60, 6000) 1,YEAR, DOY, RDD/1000.0, TMMN, TMMX, -99.0, -99.0           
+                                GSO, GGR, GST, GLV,WAGT
+            WRITE(IUNITD+60,6000) 1,YEAR, DOY, RDD/1000.0, TMMN, TMMX, -99.0, -99.0           
         ENDIF
         IF (DVS >= 0.65 .AND. STGDOY(2) > YRDOY) THEN
 !         Panicle initiation date DVS = 0.65
