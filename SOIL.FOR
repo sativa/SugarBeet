@@ -38,7 +38,7 @@ C=====================================================================
      &    FracRts, SWDELTX,TILLVALS, UNH4, UNO3, UPFLOW,  !Input
      &    WEATHER, XHLAI, FLOODN, FLOODWAT, MULCH,        !I/O
      &    NH4, NO3, SKi_AVAIL, SNOW, SPi_AVAIL, SOILPROP, !Output
-     &    SW, SWDELTS, SWDELTU, WINF, YREND)              !Output
+     &    SW, SWDELTS, SWDELTU, UPPM, WINF, YREND)        !Output
 
 !-----------------------------------------------------------------------
       USE ModuleDefs
@@ -79,6 +79,7 @@ C=====================================================================
 !     Output:
       REAL, DIMENSION(NL), INTENT(OUT) :: NH4
       REAL, DIMENSION(NL), INTENT(OUT) :: NO3
+      REAL, DIMENSION(NL), INTENT(OUT) :: UPPM
       REAL, DIMENSION(NL), INTENT(OUT) :: SPi_AVAIL, SKi_AVAIL
       REAL               , INTENT(OUT) :: SNOW
       TYPE (SoilType)    , INTENT(OUT) :: SOILPROP
@@ -152,7 +153,7 @@ C=====================================================================
      &    SOILPROP, SSOMC, ST, SW, TDFC, TDLNO, TILLVALS, !Input
      &    UNH4, UNO3, UPFLOW, WEATHER, XHLAI,             !Input
      &    FLOODN,                                         !I/O
-     &    NH4, NO3)                                       !Output
+     &    NH4, NO3, UPPM)                                 !Output
 
 !     Inorganic P
       CALL SoilPi(CONTROL, ISWITCH, FLOODWAT, 

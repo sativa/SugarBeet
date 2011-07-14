@@ -55,7 +55,7 @@ C=======================================================================
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SPi_AVAIL, SNOW,           !Input
      &    SOILPROP, SRFTEMP, ST, SW, TRWU, TRWUP,         !Input
-     &    WEATHER, YREND, YRPLT,                          !Input
+     &    UPPM, WEATHER, YREND, YRPLT,                    !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES,                         !Output
@@ -109,7 +109,7 @@ C-----------------------------------------------------------------------
       REAL TRWUP, TWILEN, XLAI, XHLAI
 
       REAL, DIMENSION(2)  :: HARVFRAC
-      REAL, DIMENSION(NL) :: NH4, NO3, RLV
+      REAL, DIMENSION(NL) :: NH4, NO3, RLV, UPPM
       REAL, DIMENSION(NL) :: ST, SW, UNO3, UNH4
 
       LOGICAL FixCanht    !, CRGRO
@@ -399,9 +399,10 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     ORYZA2000 Rice 
       CASE('RIORZ')
         CALL ORYZA_Interface (CONTROL, ISWITCH,                  !Input
-     &    EOP, YREND, SOILPROP, TRWUP, WEATHER, YRPLT, HARVFRAC, !Input
+     &    EOP, HARVFRAC, NH4, NO3, SOILPROP, TRWUP, UPPM,        !Input
+     &    WEATHER, YRPLT, YREND,                                 !Input
      &    CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,      !Output
-     &    RWUMX, SENESCE, STGDOY, XLAI)                          !Output
+     &    RWUMX, SENESCE, STGDOY, SW, XLAI)                      !Output
 
         IF (DYNAMIC .EQ. INTEGR) THEN
           XHLAI = XLAI

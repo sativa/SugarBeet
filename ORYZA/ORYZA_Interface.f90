@@ -6,15 +6,10 @@
 !  01/26/2011 TL/CHP Written.
 !=======================================================================
       SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,               &    !Input
-          EOP, YREND, SOILPROP, TRWUP, WEATHER, YRPLT, HARVFRAC,  &    !Input
+          EOP, HARVFRAC, NH4, NO3, SOILPROP, TRWUP, UPPM,         &    !Input
+          WEATHER, YRPLT, YREND,                                  &    !Input
           CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       &    !Output
-          RWUMX, SENESCE, STGDOY, XLAI)                                !Output
-
-!   Variables to be introduced with water
-!         FLOODWAT, SW, SRFTEMP, RLV, !Input
-!   Variables to be introduced with N
-!         NH4, NO3, UNH4, UNO3, 
-!         FLOODN,                                                &    !I/O
+          RWUMX, SENESCE, ST, STGDOY, SW, XLAI)                        !Output
 
       USE ModuleDefs
       USE ModuleData
@@ -32,6 +27,7 @@
       INTEGER MDATE, L, NLAYR
       INTEGER SN, YEAR1
       INTEGER STGDOY(20), YRPLT
+      INTEGER, PARAMETER :: NL_OR = 10
 
       REAL WUPT, EOP, EP, ET, TRWUP
       REAL KCAN, KEP, DEPMAX
@@ -39,20 +35,16 @@
       REAL PORMIN, RWUMX
       REAL CANHT, TOTIR
 
-      REAL, DIMENSION(NL) :: DLAYR
-      REAL, DIMENSION(0:NL) :: SENC, SENN, SENLIG
-      REAL, DIMENSION(0:NL) :: CRESC, CRESN, CRESLIG
+      REAL, DIMENSION(NL) :: DLAYR, DS
       REAL, DIMENSION(2)  :: HARVFRAC
 
 !     Soil water
-!     REAL EO, SRFTEMP, SLPF
-!     REAL, DIMENSION(NL) :: RLV, SW, ST, SOILTEMP   
-      REAL, DIMENSION(NL) :: BD, DUL, LL, SAT, SHF,SANDX, CLAYX, MSKPA
-!     Soil N
-      REAL, DIMENSION(0:NL) :: NH4, NO3, UNO3, UNH4, UH2O
-      REAL, DIMENSION(NL) :: SNH4X, SNO3X, SUNO3, SUNH4, SUH2O,SOC,SON, SUREA
+      REAL, DIMENSION(NL) :: BD, DUL, LL, SAT, ST, SW
+      REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA
 
-!     LOGICAL LEAP !Function in DATES subroutine
+!     Soil N
+      REAL, DIMENSION(NL) :: NH4, NO3, UPPM, UNO3, UNH4, UH2O
+      REAL, DIMENSION(NL_OR) :: SNH4X, SNO3X, SUNO3, SUNH4, SUH2O, SOC, SON, SUREA
 
 !-----Formal ORYZA parameters
       INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, NLO, TDATE
@@ -67,7 +59,6 @@
       REAL    HU, WAGT, WLVD, WRR, NGR, PLOWPAN, TNSOIL, NACR
 
 !     FOR EXPERIMENT FILE 
-!      CHARACTER*(128) OUTPUTFILE
       INTEGER YRSIM, EDATE, iPAGE, IRRCOD 
       CHARACTER*1, ISWWAT, ISWNIT, PLME,IIRRI
       REAL PLPH, PLTPOP, PLANTS, PLDP,IRRI, WL0MIN, KPAMIN, WLODAY, SLMIN
@@ -79,14 +70,8 @@
       REAL PAGE, ROWSPC, SDWTPL, ATEMP
 
 !     Output data needed for DSSAT output files
-
       CHARACTER*10 STNAME(20) 
       INTEGER ISDATE, ISTAGE 
-
-!      REAL AGEFAC, APTNUP, CANNAA, CANWAA, DYIELD, G2, GNUP, GPP
-!      REAL GPSM, GRAINN, GRNWT, LEAFNO, MAXLAI, PANWT, PBIOMS, PSTRES1, PSTRES2
-!      REAL SKERWT, STOVER, STOVN, SWFAC, TILNO, TOTNUP, TURFAC, XGNP, BWAH
-!      REAL PODWT, SDWT, SDWTAH, TOPWT, WTNSD
 
       TYPE (ControlType) CONTROL
       TYPE (SoilType)    SOILPROP
@@ -120,23 +105,19 @@
         FILEIO  = CONTROL % FILEIO
         YRSIM   = CONTROL % YRSIM
       
-        DLAYR  = SOILPROP % DLAYR  
-        NLAYR  = SOILPROP % NLAYR  
+        BD     = SOILPROP % BD     
         DEPMAX = SOILPROP % DS(NLAYR)
+        DLAYR  = SOILPROP % DLAYR  
+        DS     = SOILPROP % DS    
+        DUL    = SOILPROP % DUL    
+        LL     = SOILPROP % LL     
+        NLAYR  = SOILPROP % NLAYR  
+        SAT    = SOILPROP % SAT  
 
         ISWWAT = ISWITCH % ISWWAT
+        ISWNIT = ISWITCH % ISWNIT
 
-        BD     = SOILPROP % BD     
-        DUL = SOILPROP % DUL    
-        LL     = SOILPROP % LL     
-        SAT    = SOILPROP % SAT    
-!       SHF    = SOILPROP % WR
-!       SLPF   = SOILPROP % SLPF
-!       ??????
-!         NH4 = SOILPROP%NH4
-!         NO3 = SOILPROP%NO3
-        
-!       ??????
+        LAT    = WEATHER % XLAT
 
         FILEIOCS(1:30) = FILEIO
         TN = 0
@@ -167,6 +148,15 @@
         KEP   = 1.0   !Energy extinction coef
         STGDOY= 9999999   !Dates for developement stages
 
+!       Depth to plowpan (cm)
+        PLOWPAN = DS(NLAYR) + 10.
+        DO L = 2, NLAYR
+          IF (SOILPROP % WR(L) < 0.001) THEN
+            PLOWPAN = DS(L-1)
+            EXIT
+          ENDIF
+        ENDDO
+
 !       Read DSSAT cultivar and planting data from FILEIO
         CALL OR_IPRICE (CONTROL,                       &
           FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
@@ -178,19 +168,8 @@
 
 !----------------------------------------------------------------
 !       ORYZA initialization section - moved up to initialization section
-!     IF(ITASK.EQ.1) THEN
-
         !initialize OBSSYS routine
         CALL OBSINI
-
-!        !get emergence date and transplanting date
-!        iPAGE = NINT(PAGE)
-!        EDATE = INCDAT(YRSIM,iPAGE)
-!        IF(INDEX(PLME,"T").GT.0) THEN
-!            CALL YR_DOY(EDATE, YRPLT,TDATE)
-!            TDATE = TDATE + IPAGE
-!            TDATE = INCDAT(YRPLT,iPAGE)
-!        END IF
 
         !get emergence date and transplanting date
         TDATE = YRPLT
@@ -225,22 +204,26 @@
             PV%PWCFC(I) = DUL(I)
             PV%PWCWP(I) = LL(I)
         END DO
+
         CALL UPPERC(ISWWAT)
         CALL UPPERC(ISWNIT)
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
+
         IF(INDEX(ISWWAT,"N")) THEN
             TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.;NLO = PV%PNL; FILEI2=""
         ELSE
             OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .TRUE.
             CALL SOILFILEEDIT(FILEI2, NLAYR, TKL, SANDX, CLAYX, BD, SOC, SON, SNH4X, SNO3X, SUREA, PLOWPAN)
         END IF        
+
         IF(INDEX(ISWNIT,"N")) THEN
         ELSE
             PV%PROOT_NUTRIENT = .TRUE.
         ENDIF
-         TERMNL = .FALSE.
+
+        TERMNL = .FALSE.
 
         CALL GETLUN("ORYZA1",IUNITD)
         CALL GETLUN("ORYZA2",IUNITL)
@@ -255,7 +238,6 @@
         OPEN(UNIT = IUNITD+50, FILE = "ORYZA_RES.DAT")
         OPEN(UNIT = IUNITD+60, FILE = "ORYZA_CLI.DAT")
         WRITE(IUNITD+50,'(A)') "DOY,DAE,DVS,ZRT,LAI,LLV,WLVD,WLVG,WST,WSO,WRR14,WRT,GSO,GGR,GST,GLV,WAGT" 
-!    END IF
 
 !***********************************************************************
 !***********************************************************************
@@ -269,63 +251,60 @@
 !       CALL GET('SPAM','EO',  EO)
 !       CALL GET('SPAM','UH2O',UH2O)
 
-!        SOILTEMP(0) = SRFTEMP
-!        DO L = 1, NLAYR
-!          SOILTEMP(L) = ST(L)
-!        ENDDO
-
+!       Transfer DSSAT variables into ORYZA variables
         RDD   = WEATHER % SRAD*1000000.0
         TMMX  = WEATHER % TMAX
         TMMN  = WEATHER % TMIN
-        LAT   = WEATHER % XLAT
 
-!-----Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
+        DO L = 1, NLAYR
+!         Soil water content (mm3/mm3)
+          WCL(L) = SW(L)
+        ENDDO
+
+!-----  Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
 !                  3=day of transplanting; 4=main growth period
-!      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
 
-!            YRPLT = sowing date for direct seed 
-             IF (YRDOY == YRPLT) THEN
-               STGDOY(7) = YRDOY
-               ISTAGE = 7
-             ENDIF
+!       YRPLT = sowing date for direct seed 
+        IF (YRDOY == YRPLT) THEN
+          STGDOY(7) = YRDOY
+          ISTAGE = 7
+        ENDIF
 
-             IF(YRDOY.LT.EDATE) THEN
-                CROPSTA = 0             
-             END IF
+        IF(YRDOY.LT.EDATE) THEN
+           CROPSTA = 0             
+        END IF
 
-             IF (CROPSTA .EQ. 3) CROPSTA = 4
+        IF (CROPSTA .EQ. 3) CROPSTA = 4
 
-             IF (CROPSTA .EQ. 2) THEN
-                IF (YRDOY.EQ.TDATE) THEN
-                   CROPSTA = 3
-!                  Transplant
-                   STGDOY(11) = YRDOY
-                   ISTAGE = 11
-                ENDIF
-             END IF
+        IF (CROPSTA .EQ. 2) THEN
+           IF (YRDOY.EQ.TDATE) THEN
+!             Transplant
+              CROPSTA = 3
+              STGDOY(11) = YRDOY
+              ISTAGE = 11
+           ENDIF
+        END IF
 
-             IF (CROPSTA .EQ. 1) THEN
-                IF (INDEX(PLME,"T").GT.0) THEN
-                   CROPSTA = 2
-                ELSE 
-                   CROPSTA = 4
-                END IF
-            END IF
+        IF (CROPSTA .EQ. 1) THEN
+           IF (INDEX(PLME,"T").GT.0) THEN
+              CROPSTA = 2
+           ELSE 
+              CROPSTA = 4
+           END IF
+        END IF
 
-            IF (CROPSTA .EQ. 0) THEN
-               IF (YRDOY.EQ.EDATE) THEN
-                   CROPSTA = 1
-!                  Emergence
-                   STGDOY(9) = YRDOY
-                   ISTAGE = 9
-                ENDIF
-            END IF
-    !    END IF
+        IF (CROPSTA .EQ. 0) THEN
+           IF (YRDOY.EQ.EDATE) THEN
+!              Emergence
+               CROPSTA = 1
+               STGDOY(9) = YRDOY
+               ISTAGE = 9
+            ENDIF
+        END IF
 
         DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
     
 !       Check for potential production condition  
-       
         IF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
             TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
             CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
@@ -374,11 +353,21 @@
 
     IF(.NOT.TERMNL .AND. DYNAMIC > RUNINIT) THEN
         IF(INDEX(ISWWAT,"T").GT.0) THEN
+
             CALL WSTRESS2 (ITASK,  DELT,   OR_OUTPUT, IUNITD, IUNITL, FILEI1, FILEIT, &
                           TRC,    ZRT,    TKL,    NLAYR,    CROPSTA, &
                           WCL,    pv%PWCWP,   MSKPA, &
                           TRW,    TRWL,   LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
         END IF
+
+!   TRC = EOP
+!   ZRT         Root depth (cm)
+!   TKL         Soil thickness (m)
+!   pv%PWCWP    Wilting point (mm3/mm3)
+!   MSKPA       Water potential (kPa)
+!   TRW         Actual transpiration rate (output from ORYZA) (mm/d)
+!   TRWL        Actual transpiration rate layers (mm/d) (Output from ORYZA)
+!   
 
         CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
                         OR_OUTPUT, TERMNL, IDOY  , DOY, &
@@ -390,15 +379,6 @@
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
                         PLTR, WCL, WL0, WRT, WRR14, NGR, HU)
 
-!   ***** Need to output
-!   HU - heat units oCd/d
-!   NGR - number of grains / ha 
-
-!   Panicle initiation date
-!   Anthesis date
-!   Physiological maturity date  
-
-        
 !       IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
             CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
                            CROPSTA, DVS, WLVG, LAI, SLA, NFLV, NSLLV, RNSTRS)
