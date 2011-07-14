@@ -100,7 +100,6 @@
       YRDOY   = CONTROL % YRDOY
       CALL YR_DOY(YRDOY, YEAR1, DOY1)
 
-      IF (DYNAMIC == RUNINIT) RETURN
 !***********************************************************************
 !***********************************************************************
 !     Seasonal initialization - run once per planting season
@@ -159,6 +158,7 @@
         CANHT = 0.0   !Canopy height
         KCAN  = 0.85  !Canopy light extinction coef
         KEP   = 1.0   !Energy extinction coef
+        STGDOY= 9999999   !Dates for developement stages
 
 !       Read DSSAT cultivar and planting data from FILEIO
         CALL OR_IPRICE (CONTROL,                       &
@@ -236,8 +236,6 @@
         OPEN(UNIT = IUNITD+60, FILE = "ORYZA_CLI.DAT")
         WRITE(IUNITD+50,'(A)') "DOY,DAE,DVS,ZRT,LAI,LLV,WLVD,WLVG,WST,WSO,WRR14,WRT,GSO,GGR,GST,GLV,WAGT" 
 !    END IF
-!----------------------------------------------------------------
-
 
 !***********************************************************************
 !***********************************************************************
@@ -265,6 +263,7 @@
 !                  3=day of transplanting; 4=main growth period
 !      IF (ITASK.EQ.1 .OR. ITASK.EQ.3) THEN
 
+!            YRPLT = sowing date for direct seed 
              IF (YRDOY == YRPLT) THEN
                STGDOY(7) = YRDOY
                ISTAGE = 7
@@ -353,7 +352,7 @@
 !***********************************************************************
 !***********************************************************************
 
-    IF(.NOT.TERMNL) THEN
+    IF(.NOT.TERMNL .AND. DYNAMIC > RUNINIT) THEN
 
         CALL ORYZA1(ITASK,  IUNITD, IUNITL, FILEI1, FILEI2,FILEIT, &
                         OR_OUTPUT, TERMNL, IDOY  , DOY, &
@@ -385,21 +384,25 @@
         NSTRES = NFP
         IF(ITASK.EQ.3) THEN
             WLVD = WLVD+(DLDR+LLV)*DELT        
-            WAGT = WST + WLVG + WSO + WLVD
+            WAGT = WST + WLVG + WSO + WLVD !- LLV*DELT
             WRR  = WRR14 * 0.86
             WRITE(IUNITD+50,5000) DOY,DAE,DVS,ZRT,LAI,LLV,WLVD, WLVG, WST, WSO, WRR14, WRT,&
-                                GSO, GGR, GST, GLV,(WLVG+WST+WSO+WLVD)
+                                GSO, GGR, GST, GLV, WAGT
             WRITE(IUNITD+60, 6000) 1,YEAR, DOY, RDD/1000.0, TMMN, TMMX, -99.0, -99.0           
         ENDIF
-        IF (DVS > 0.65 .AND. STGDOY(2) > YRDOY) THEN
-        !     IF (DVS .EQ. 0.65 ) THEN
-                !Panicle initiation date DVS = 0.65
+        IF (DVS >= 0.65 .AND. STGDOY(2) > YRDOY) THEN
+!         Panicle initiation date DVS = 0.65
           STGDOY(2) = YRDOY
-        ELSEIF(DVS.EQ.1.0) THEN
-            !Anthesis date when DVS = 1.0
+          ISTAGE = 2
+        ELSEIF (DVS >= 1.0 .AND. STGDOY(3) > YRDOY) THEN
+!         Anthesis date when DVS = 1.0
+          STGDOY(3) = YRDOY
+          ISTAGE = 3
+          ISDATE = YRDOY
         ELSEIF (TERMNL.AND. STGDOY(6) > YRDOY) THEN
-        !   Maturity date when DVS =2.0
+!         Maturity date when DVS =2.0
           STGDOY(6) = YRDOY
+          ISTAGE = 6
           MDATE = YRDOY
         ENDIF 
       
@@ -443,8 +446,8 @@
 
       CALL OR_OPHARV (CONTROL, ISWITCH,                 &
          NSLLV, WAGT, WST, WLVG, WLVD, WSO, WRR, NGR,   & !Input
-         HARVFRAC, ISTAGE, LAI, MDATE, STGDOY, STNAME,  & !Input
-         YRPLT)                                           !Input
+         HARVFRAC, ISDATE, ISTAGE, LAI, MDATE,          & !Input
+         STGDOY, STNAME, YRPLT)                           !Input
     END SELECT
 
 !-----------------------------------------------------------------------
@@ -550,11 +553,11 @@
 !     Stages from CERES-Rice:  (X indicates that stages are transferred to DSSAT
       STNAME(1)  = 'End Juveni'
       STNAME(2)  = 'Pan Init  '  !DVS = 0.65  !X
-      STNAME(3)  = 'Heading   '
+      STNAME(3)  = 'Heading   '  !DVS = 1.0
       STNAME(4)  = 'Beg Gr Fil'
       STNAME(5)  = 'End Mn Fil'
       STNAME(6)  = 'Maturity  '  !DVS = 2.0  !X
-      STNAME(7)  = 'Sowing    '  !X
+      STNAME(7)  = 'Sowing    '  !
       STNAME(8)  = 'Germinate '
       STNAME(9)  = 'Emergence '  !DVS = 0.0  !X
       STNAME(10) = 'Prgerm Sow'

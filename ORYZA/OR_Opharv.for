@@ -9,8 +9,8 @@
 
       SUBROUTINE OR_OPHARV (CONTROL, ISWITCH, 
      &    NSLLV, WAGT, WST, WLVG, WLVD, WSO, WRR, NGR,    !Input
-     &    HARVFRAC, ISTAGE, LAI, MDATE, STGDOY, STNAME,   !Input
-     &    YRPLT)                                          !Input
+     &    HARVFRAC, ISDATE, ISTAGE, LAI, MDATE,           !Input
+     &    STGDOY, STNAME, YRPLT)                          !Input
 
 
 !-----------------------------------------------------------------------
@@ -29,7 +29,8 @@
 	CHARACTER*80 PATHEX
 
       INTEGER IEMRG, ISENS, TRTNUM, TRT_ROT
-      INTEGER YRDOY, YREMRG, YRPLT, YRSIM
+      INTEGER ISDATE, YREMRG
+      INTEGER YRDOY, YRPLT, YRSIM
       INTEGER YRNR1, YRNR2, YRNR3, YRNR5, YRNR7
       INTEGER DEMRG, D_emerge, DNR1,DNR7,MDATE,STGDOY(20)
       INTEGER DYNAMIC, LUNIO, RUN, ACOUNT, ERRNUM, LINC, LNUM, FOUND
@@ -249,7 +250,7 @@
         HIAM = 0.0
       ENDIF 
 
-      YRNR1  = STGDOY(14)
+      YRNR1  = ISDATE
       YRNR2  = STGDOY(2)
       YRNR3  = STGDOY(3)
       YRNR5  = STGDOY(5)
@@ -274,6 +275,7 @@
          CALL READA (FILEA, PATHEX,OLAB, TRT_ROT, YRSIM, X)
 
 !       Convert from YRDOY format to DAP.  Change descriptions to match.
+!       Anthesis, flowering, heading
         CALL READA_Dates(X(2), YRSIM, IFLR)
         IF (IFLR .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
           DFLR = TIMDIF(YRPLT,IFLR)
@@ -283,14 +285,15 @@
         OLAP(2) = 'ADAP  '
         CALL GetDesc(1,OLAP(2), DESCRIP(2))
 
-        CALL READA_Dates(X(3), YRSIM, IMAT)
+!       Maturity
+        CALL READA_Dates(X(4), YRSIM, IMAT)
         IF (IMAT .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
           DMAT = TIMDIF(YRPLT,IMAT)
         ELSE
           DMAT = -99
         ENDIF
-        OLAP(3) = 'MDAP  '
-        CALL GetDesc(1,OLAP(3), DESCRIP(3))
+        OLAP(4) = 'MDAP  '
+        CALL GetDesc(1,OLAP(4), DESCRIP(4))
 
         CALL READA_Dates(X(1), YRSIM, IPIN)
         IF (IPIN .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
@@ -301,6 +304,7 @@
         OLAP(1) = 'IDAP  '
         CALL GetDesc(1,OLAP(1), DESCRIP(1))
 
+!       Emergence
         CALL READA_Dates(X(19), YRSIM, IEMRG)
         IF (IEMRG .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
           DEMRG = TIMDIF(YRPLT,IEMRG)
@@ -310,20 +314,20 @@
         OLAP(19) = 'EDAP  '
         CALL GetDesc(1,OLAP(19), DESCRIP(19))
 
-!        DNR1 = TIMDIF (YRPLT,ISDATE)
-!        IF (DNR1 .LE. 0) THEN
+        DNR1 = TIMDIF (YRPLT,ISDATE)
+        IF (DNR1 .LE. 0) THEN
            DNR1 = -99
-!        ENDIF
-!
-!        DNR7 = TIMDIF (YRPLT,MDATE)
-!        IF (DNR7 .LE. 0 .OR. YRPLT .LT. 0) THEN
+        ENDIF
+
+        DNR7 = TIMDIF (YRPLT,MDATE)
+        IF (DNR7 .LE. 0 .OR. YRPLT .LT. 0) THEN
            DNR7 = -99
-!        ENDIF
-!
-!        DNR0 = TIMDIF (YRPLT,YRNR2)
-!        IF (DNR0 .LE. 0) THEN
+        ENDIF
+
+        DNR0 = TIMDIF (YRPLT,YRNR2)
+        IF (DNR0 .LE. 0) THEN
            DNR0 = -99
-!        ENDIF
+        ENDIF
 
         IF (STGDOY(9) < 9999999) THEN
           YREMRG = STGDOY(9)    !emergence  
@@ -394,8 +398,8 @@
 !       Store Summary.out labels and values in arrays to send to
 !       OPSUM routines for printing.  Integers are temporarily 
 !       saved as real numbers for placement in real array.
-        LABEL(1)  = 'ADAT'; VALUE(1)  = -99.  !FLOAT(YRNR1)
-        LABEL(2)  = 'MDAT'; VALUE(2)  = -99.  !FLOAT(YRNR7)
+        LABEL(1)  = 'ADAT'; VALUE(1)  = FLOAT(YRNR1)
+        LABEL(2)  = 'MDAT'; VALUE(2)  = FLOAT(YRNR7)
         LABEL(3)  = 'DWAP'; VALUE(3)  = -99.  !SDRATE
         LABEL(4)  = 'CWAM'; VALUE(4)  = WAGT
         LABEL(5)  = 'HWAM'; VALUE(5)  = SDWTAM

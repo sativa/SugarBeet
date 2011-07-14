@@ -33,7 +33,7 @@
          WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, ZRT 
       REAL, DIMENSION(10) :: RDCL
 
-      REAL NGR, HIAD, HWUD, SLAD
+      REAL NGR, HIAD, HWUD, SLAD, SEEDNO
       REAL CUMSENSURF, CUMSENSOIL 
 
       LOGICAL FEXIST, FIRST
@@ -173,6 +173,8 @@
 !-----------------------------------------------------------------------
 !        LFWT = WTLF / PLTPOP  !do we need this?
 
+        SEEDNO  = NGR / 1.E4    !#/m2 
+
         IF (NGR > 0.0) THEN
           HWUD = WRR / NGR * 1.E3  !g/grain
         ELSE
@@ -193,7 +195,7 @@
 
         DAP = MAX(0,TIMDIF(YRPLT,YRDOY))
         IF (DAP > DAS) DAP = 0
-        CALL YR_DOY(YRDOY, YEAR, DOY) 
+        CALL YR_DOY(YRDOY, YEAR, DOY)
 
 !        WRITE (NOUTDG,400)YEAR, DOY, DAS, DAP,VSTAGE,RSTAGE,LAI,         &
 !            NINT(WTLF*10),NINT(STMWT*GM2KG),NINT(GRNWT*GM2KG),           &
@@ -205,11 +207,11 @@
 
         WRITE (NOUTDG,400) YEAR, DOY, DAS, DAP,                    &
           DVS, LAI, NINT(WLVG), NINT(WLVD), NINT(WST), NINT(WRR),  &
-          NINT(WRT), NINT(WSO), NINT(WAGT), NINT(NGR), HWUD, HIAD, &
+          NINT(WRT), NINT(WSO), NINT(WAGT), NINT(SEEDNO), HWUD, HIAD, &
           1.0 - PCEW, 1.0 - LESTRS, 1.0 - CPEW, 1.0 - LRSTRS, 1.0 - LDSTRS, 1.0 - NSLLV,               &
-          NFLV, SLAD, ZRT, WLVD, CUMSENSOIL, HU                        
+          NFLV, SLAD, ZRT, NINT(WLVD), NINT(CUMSENSOIL), HU                        
  400    FORMAT (1X,I4, 1X,I3.3, 2(1X,I5), &
-             1X,F5.1, 1X,F5.2, 4(1X,I5),  &
+             1X,F5.3, 1X,F5.2, 4(1X,I5),  &
              4(1X,I5), 1X,F5.1, F6.3,     &
              6F6.3,                       &
              F6.2, F7.1, F6.2, 2I7, F7.2)
