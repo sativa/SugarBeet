@@ -202,12 +202,12 @@ C=======================================================================
           UNO3(L)       = 0.0
         ENDDO
 
-        IF (INDEX('N',ISWNIT) > 0) RETURN
+!        IF (INDEX('N',ISWNIT) > 0) RETURN
 
 !         Set initial SOM and nitrogen conditions for each soil layer.
-          CALL SoilNi_init(CONTROL, 
+          CALL SoilNi_init(CONTROL, ISWNIT,
      &      SOILPROP, ST,                                   !Input
-     &      NH4, NO3, SNH4, SNO3, TFNITY, UREA)             !Output
+     &      NH4, NO3, SNH4, SNO3, TFNITY, UPPM, UREA)       !Output
 
           CALL NCHECK_inorg(CONTROL, 
      &      NLAYR, NH4, NO3, SNH4, SNO3, UREA)              !Input

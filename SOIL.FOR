@@ -38,6 +38,7 @@ C=====================================================================
      &    FracRts, SWDELTX,TILLVALS, UNH4, UNO3, UPFLOW,  !Input
      &    WEATHER, XHLAI, FLOODN, FLOODWAT, MULCH,        !I/O
      &    NH4, NO3, SKi_AVAIL, SNOW, SPi_AVAIL, SOILPROP, !Output
+     &    SomLitC, SomLitE,                               !Output
      &    SW, SWDELTS, SWDELTU, UPPM, WINF, YREND)        !Output
 
 !-----------------------------------------------------------------------
@@ -88,6 +89,8 @@ C=====================================================================
       REAL, DIMENSION(NL), INTENT(OUT) :: SWDELTU
       REAL               , INTENT(OUT) :: WINF
       INTEGER            , INTENT(OUT) :: YREND
+      REAL, DIMENSION(0:NL) :: SomLitC
+      REAL, DIMENSION(0:NL,NELEM) :: SomLitE
 
 !-----------------------------------------------------------------------
 !     Local variables:
@@ -97,8 +100,8 @@ C=====================================================================
 
       REAL, DIMENSION(NL) :: DRN
       REAL, DIMENSION(NL) :: SPi_Labile
-      REAL, DIMENSION(0:NL) :: LITC, SSOMC, SomLitC
-      REAL, DIMENSION(0:NL,NELEM) :: IMM, MNR, SomLitE
+      REAL, DIMENSION(0:NL) :: LITC, SSOMC
+      REAL, DIMENSION(0:NL,NELEM) :: IMM, MNR
 
 !     Added for tile drainage:
       REAL TDFC

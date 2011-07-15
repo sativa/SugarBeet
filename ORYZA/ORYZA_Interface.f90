@@ -6,10 +6,10 @@
 !  01/26/2011 TL/CHP Written.
 !=======================================================================
       SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,               &    !Input
-          EOP, HARVFRAC, NH4, NO3, SOILPROP, TRWUP, UPPM,         &    !Input
-          WEATHER, YRPLT, YREND,                                  &    !Input
+          EOP, HARVFRAC, NH4, NO3, SOILPROP, SomLitC, SomLitE,    &    !Input
+          ST, SW, SW_kPa, TRWUP, UPPM, WEATHER, YRPLT, YREND,     &    !Input
           CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       &    !Output
-          RWUMX, SENESCE, ST, STGDOY, SW, XLAI)                        !Output
+          RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)              !Output
 
       USE ModuleDefs
       USE ModuleData
@@ -19,7 +19,11 @@
       IMPLICIT NONE
       SAVE
 
+      CHARACTER*6  ERRKEY
+      PARAMETER (ERRKEY = 'ORYZA ')
+
       CHARACTER*30  FILEIO
+      CHARACTER*78  MSG(4)
       CHARACTER*120 FILEIOCS
 
       INTEGER DOY1, DYNAMIC, TN, RUNI, RN, ON
@@ -30,24 +34,25 @@
       INTEGER, PARAMETER :: NL_OR = 10
 
       REAL WUPT, EOP, EP, ET, TRWUP
-      REAL KCAN, KEP, DEPMAX
+      REAL KCAN, KEP
       REAL NSTRES, XLAI, NFP
       REAL PORMIN, RWUMX
       REAL CANHT, TOTIR
 
-      REAL, DIMENSION(NL) :: DLAYR, DS
+      REAL, DIMENSION(NL) :: DS
       REAL, DIMENSION(2)  :: HARVFRAC
 
 !     Soil water
-      REAL, DIMENSION(NL) :: BD, DUL, LL, SAT, ST, SW
-      REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA
+      REAL, DIMENSION(NL) :: BD, ST, SW, SW_kPa
+      REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA, SOILT
 
 !     Soil N
       REAL, DIMENSION(NL) :: NH4, NO3, UPPM, UNO3, UNH4, UH2O
-      REAL, DIMENSION(NL_OR) :: SNH4X, SNO3X, SUNO3, SUNH4, SUH2O, SOC, SON, SUREA
+      REAL SomLitC(0:NL), SomLitE(0:NL,NELEM)
+      REAL, DIMENSION(NL_OR) :: SNH4X, SNO3X, SOC, SON, SUREA
 
 !-----Formal ORYZA parameters
-      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, NLO, TDATE
+      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, TDATE
       LOGICAL       OR_OUTPUT, TERMNL
       CHARACTER (128) FILEI1, FILEIT, FILEI2
       CHARACTER (32) ESTAB
@@ -66,7 +71,7 @@
 
 !     FILEIO data
       CHARACTER*1  PLDS
-      INTEGER INCDAT, YEAR_PLT
+      INTEGER INCDAT
       REAL PAGE, ROWSPC, SDWTPL, ATEMP
 
 !     Output data needed for DSSAT output files
@@ -96,6 +101,7 @@
         TIME =0.0
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
 
+!       ORYZA does its own root water uptake - how to handle?
 !       Variables required by DSSAT for root water uptake calculations
         PORMIN = 0.0  !Minimum pore space required for supplying oxygen to roots for 
 !                      optimal growth and function (cm3/cm3)
@@ -104,20 +110,47 @@
 
         FILEIO  = CONTROL % FILEIO
         YRSIM   = CONTROL % YRSIM
+        ISWWAT  = ISWITCH % ISWWAT
+        ISWNIT  = ISWITCH % ISWNIT
+        LAT     = WEATHER % XLAT
       
-        BD     = SOILPROP % BD     
-        DEPMAX = SOILPROP % DS(NLAYR)
-        DLAYR  = SOILPROP % DLAYR  
         DS     = SOILPROP % DS    
-        DUL    = SOILPROP % DUL    
-        LL     = SOILPROP % LL     
         NLAYR  = SOILPROP % NLAYR  
-        SAT    = SOILPROP % SAT  
 
-        ISWWAT = ISWITCH % ISWWAT
-        ISWNIT = ISWITCH % ISWNIT
+        IF (NLAYR > NL_OR) THEN
+          MSG(1) = "Too many layers for ORYZA2000 model."
+          WRITE(MSG(2),'("Number of layers = ",I3)') NLAYR
+          WRITE(MSG(3),'("Max # of layers  = ",I3)') NL_OR
+          MSG(4) = "Program will stop."
+          CALL WARNING(4,ERRKEY,MSG)
+          CALL ERROR(ERRKEY,75," ",0)
+        ENDIF
 
-        LAT    = WEATHER % XLAT
+!       Transfer from DSSAT SOILPROP variables to ORYZA variables, by layer
+        PV % PNL = NLAYR
+        DO L = 1, NLAYR
+          BD(L)     = SOILPROP % BD(L)    
+          SANDX(L)  = SOILPROP % SAND(L) / 100.
+          CLAYX(L)  = SOILPROP % CLAY(L) / 100.
+
+!         These are only used for a seasonal initialization, not needed daily
+          SOC(L)    = SomLitC(L)    !Soil organic C (kg/ha)
+          SON(L)    = SomLitE(L,1)  !Soil organic N (kg/ha)
+
+!         ORYZA public variables:
+          PV%PDLAYER(L) = SOILPROP % DLAYR(L)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
+          TKL(L) = PV%PDLAYER(L)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
+          PV%PWCST(L) = SOILPROP % SAT(L)
+          PV%PWCFC(L) = SOILPROP % DUL(L)
+          PV%PWCWP(L) = SOILPROP % LL(L)
+
+!         These will also be transferred daily
+          PV % PNO3(L) = NO3(L) / SOILPROP % KG2PPM(L) !Convert from ppm to kg/ha
+          PV % PNH4(L) = NH4(L) / SOILPROP % KG2PPM(L) !Convert from ppm to kg/ha
+          SUREA(L) = UPPM(L) / SOILPROP % KG2PPM(L)
+          SNH4X(L) = PV % PNH4(L)
+          SNO3X(L) = PV % PNO3(L)
+        END DO
 
         FILEIOCS(1:30) = FILEIO
         TN = 0
@@ -134,6 +167,7 @@
         WAGT = 0.0
         WLVD = 0.0
         WRR = 0.0
+        TRC = 0.0
 
 !       Water & N stresses
         LRSTRS = 1.0
@@ -197,28 +231,28 @@
         !THE 'IRCOD', IT IS NOT USED IN THE ROUTINE YET, COMMENT IT OUT TEMPORARY.
 
         !GENERATE EXPERIMENT AND SOIL FILES
-        DO I = 1, NLAYR
-            PV%PDLAYER(I) = DLAYR(I)*10.0       !CONVERT LAYER THICKNESS FROM cm TO mm
-            TKL(I) = PV%PDLAYER(I)/1000.0      !CONVERT SOIL LAYER THICKNESS FROM mm TO m
-            PV%PWCST(I) = SAT(I)
-            PV%PWCFC(I) = DUL(I)
-            PV%PWCWP(I) = LL(I)
-        END DO
-
         CALL UPPERC(ISWWAT)
         CALL UPPERC(ISWNIT)
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
 
-        IF(INDEX(ISWWAT,"N")) THEN
-            TRW =TRC; OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .FALSE.;NLO = PV%PNL; FILEI2=""
+        OR_OUTPUT = .FALSE.
+        IF (ISWNIT == 'Y') THEN
+          PV%PROOT_NUTRIENT = .TRUE.
         ELSE
-            OR_OUTPUT = .FALSE.; PV%PROOT_NUTRIENT = .TRUE.
+          PV%PROOT_NUTRIENT = .FALSE.
+        END IF
+
+        IF(INDEX(ISWWAT,"N")>0) THEN
+            TRW =TRC; FILEI2=""
+        ELSE
+            PV%PROOT_NUTRIENT = .TRUE.
             CALL SOILFILEEDIT(FILEI2, NLAYR, TKL, SANDX, CLAYX, BD, SOC, SON, SNH4X, SNO3X, SUREA, PLOWPAN)
         END IF        
 
-        IF(INDEX(ISWNIT,"N")) THEN
+        IF(INDEX(ISWNIT,"N")>0) THEN
+            PV%PROOT_NUTRIENT = .FALSE.
         ELSE
             PV%PROOT_NUTRIENT = .TRUE.
         ENDIF
@@ -255,10 +289,16 @@
         RDD   = WEATHER % SRAD*1000000.0
         TMMX  = WEATHER % TMAX
         TMMN  = WEATHER % TMIN
+        TRC   = EOP
 
         DO L = 1, NLAYR
-!         Soil water content (mm3/mm3)
-          WCL(L) = SW(L)
+          WCL(L)   = SW(L)      !Soil water content (mm3/mm3)
+          SOILT(L) = ST(L)      !Soil temperature (oC)
+          MSKPA(L) = SW_kPa(L)  !Soil water potential (kPa)
+          PV % PNO3(L) = NO3(L) / SOILPROP % KG2PPM(L) !NO3 (kg/ha)
+          PV % PNH4(L) = NH4(L) / SOILPROP % KG2PPM(L) !NH4 (kg/ha)
+          SNH4X(L) = PV % PNH4(L)
+          SNO3X(L) = PV % PNO3(L)
         ENDDO
 
 !-----  Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
@@ -324,7 +364,25 @@
 
         YRHAR = YREND
         WUPT  = TRWUP
-        TRC = EOP
+
+!          DO L=0, NLAYR
+!            SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
+!            SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
+!            SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
+!          ENDDO
+!
+!        endif
+!
+!        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
+!          !Transfer harvest residue from senescence variable to 
+!          !harvest residue variable on day of harvest.
+!          HARVRES = SENESCE
+!          SENESCE % ResWt  = 0.0
+!          SENESCE % ResLig = 0.0
+!          SENESCE % ResE   = 0.0
+!        ELSE
+!          MDATE = -99
+!        ENDIF
 
 
 !***********************************************************************
@@ -385,19 +443,29 @@
 !        ELSE
 !            CALL NCROP3 (ITASK, IUNITD, IUNITL, FILEI1, FILEI2, FILEIT, DELT, TIME, OR_OUTPUT, &
 !                       TERMNL, DVS, LLV, DLDR, WLVG, WST, WSO, GSO, GST, GLV, &
-!                       PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, NFLV, NSLLV,NRT, RNSTRS,SNH4X, SNO3X)
+!                       PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, NFLV, NSLLV,NRT, RNSTRS, RNH4, RNO3)
+
 !        END IF
 
-        XLAI   = LAI
+      IF (ITASK == 2) THEN
+        DO L = 1, NLAYR
+          UNH4(L) = SNH4X(L) - PV % PNH4(L)    !NH4 uptake (kg/ha)
+          UNO3(L) = SNO3X(L) - PV % PNO3(L)    !NO3 uptake (kg/ha)
+          UH2O(L) = TRWL(L)                    !H2O uptake (mm/d)
+        ENDDO 
         NSTRES = NFP
-        IF(ITASK.EQ.3) THEN
-            WLVD = WLVD+ (DLDR+LLV)*DELT        
-            WAGT = WST + WLVG + WSO + WLVD
-            WRR  = WRR14 * 0.86
-            WRITE(IUNITD+50,5000) DOY,DAE,DVS,ZRT,LAI,LLV,WLVD, WLVG, WST, WSO, WRR14, WRT,&
-                                GSO, GGR, GST, GLV,WAGT
-            WRITE(IUNITD+60,6000) 1,YEAR, DOY, RDD/1000.0, TMMN, TMMX, -99.0, -99.0           
-        ENDIF
+
+      ELSEIF (ITASK == 3) THEN
+        XLAI   = LAI
+        WLVD = WLVD+ (DLDR+LLV)*DELT        
+        WAGT = WST + WLVG + WSO + WLVD
+        WRR  = WRR14 * 0.86
+
+!       Temporary
+        WRITE(IUNITD+50,5000) DOY,DAE,DVS,ZRT,LAI,LLV,WLVD, WLVG, WST, WSO, WRR14, WRT,&
+                            GSO, GGR, GST, GLV,WAGT
+        WRITE(IUNITD+60,6000) 1,YEAR, DOY, RDD/1000.0, TMMN, TMMX, -99.0, -99.0           
+        
         IF (DVS >= 0.65 .AND. STGDOY(2) > YRDOY) THEN
 !         Panicle initiation date DVS = 0.65
           STGDOY(2) = YRDOY
@@ -418,31 +486,7 @@
           MDATE = YRDOY
           YREND = YRDOY
         ENDIF
-
-!        if (DYNAMIC == INTEGR) then
-!          IF (DVS > 0.00000001) THEN
-!            WRITE(500,*) YRDOY, XLAI
-!          ENDIF
-!
-!          DO L=0, NLAYR
-!            SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
-!            SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
-!            SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
-!          ENDDO
-!
-!        endif
-!
-!        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
-!          !Transfer harvest residue from senescence variable to 
-!          !harvest residue variable on day of harvest.
-!          HARVRES = SENESCE
-!          SENESCE % ResWt  = 0.0
-!          SENESCE % ResLig = 0.0
-!          SENESCE % ResE   = 0.0
-!        ELSE
-!          MDATE = -99
-!        ENDIF
-
+      ENDIF
     ENDIF
 
     SELECT CASE(DYNAMIC)
