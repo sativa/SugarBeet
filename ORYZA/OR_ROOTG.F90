@@ -18,7 +18,7 @@
 !SWCX			--			arry, real		Soil water contents in layers
 !SNH4X			kg N/ha		array, real		soil NH4-N contents in layers	
 !SNO3X			kg N/ha		array, real		Soil NO3-N content in layers
-!STX			oC			array, real		Soil temperature in layers
+!SOILTX			oC			array, real		Soil temperature in layers
 !SANDX			%			array, real		Soil sand contents in layers
 !CLAYX			%			array, real		Clay content in layers
 !BDX			Mg/m3		array, real		Soil bulk density in layers
@@ -89,12 +89,11 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
       REAL SSL(15), SAL(15), STL(15), NEFF(15)
 	
 	 INTEGER SL,OLDNO
-	 REAL CLAYX(0:10), SANDX(0:10), SILTX(0:10), BD(0:10), LAYT(0:10), SDEP(0:10)
+	 REAL CLAYX(0:10), SANDX(0:10),  BD(0:10), LAYT(0:10), SDEP(0:10)
 	 REAL SPH(0:10), SCEC(0:10), SNH4X(0:10), SNO3X(0:10), SNH3X(0:10), UREA(0:10)
 	 REAL PLOWL1, SOC(0:10), SON(0:10)
 !SOIL VARIABLES CONCERN WITH ROOT GROWTH       
-      REAL  STX(15)
-      REAL THETAW(15), THETAF(15), THETAS(15), THETAA(15) !, LAYT(15)
+     REAL SOILTX(15),THETAW(15), THETAF(15), THETAS(15), THETAA(15) !, LAYT(15)
 	! Soil stength, areation, temperature factor of soil layers
 	 REAL  CWP, totalSN, ASF1, ASF2,  tmpValue, TIME, DELT
 	 INTEGER i, j, L, MDL,CROPSTA
@@ -118,16 +117,16 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 	 sl = pv%pnl;  WL0 = PV%PWL0
 	 do i = 1, sl
 		clayx(i) = pv%pclay(i)*100.0;	sandx(i) = pv%psand(i)*100.0
-		siltx(i) = pv%psoilt(i)*100.0;		bd(i) = pv%pbd(i)
+		soiltx(i) = pv%psoiltx(i);		bd(i) = pv%pbd(i)
 		layt(i) = pv%pdlayer(i)/10.0;	sdep(i) = sum(layt(1:i))  !pdalayer in mm, layt in cm, sdep in cm
 		sph(i) = pv%pph(i);				snh4x(i) = pv%pnh4(i)
 		sno3x(i) = pv%pno3(i);			urea(i) = pv%purea(i)
 		thetaw(i)= pv%pwcwp(i);			thetaf(i) = pv%pwcfc(i)
 		thetas(i) = pv%pwcst(i);		thetaa(i) = pv%pwcad(i)
-		WCL(I) = PV%PSWC(I)
+		WCL(I) = PV%PSWC(i)
 	 enddo
 	 IF(PV%PPLOWDEPTH.GT.0.0) THEN
-		plowl1 = pv%pplowdepth *10.0	!Pplowdepth in m, convert into cm
+		plowl1 = pv%pplowdepth *100.0	!Pplowdepth in m, convert into cm
 	 ELSE
 		PLOW1 = SUM(PV%PDLaYER)/10.0		!from mm into cm
 	 endif
@@ -335,8 +334,8 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 			 ENDIF
 
 !-------DETERMINE SOIL TEMPERATURE EFFECTS ON ROOT GROWTH	    
-			 If(STX(i).GE.RMINT) Then
-				 STL(i) =Sin(1.57 * (STX(i) - RMINT) / (ROPTT - RTBS))
+			 If(SOILTX(i).GE.RMINT) Then
+				 STL(i) =Sin(1.57 * (SOILTX(i) - RMINT) / (ROPTT - RTBS))
 				 STL(i)=max(STL(i),0.0)
 			 Else
 				 STL(i) = 0

@@ -13,7 +13,6 @@ IMPLICIT NONE
 CHARACTER*(*) OUTPUTFILE 
 CHARACTER*(*) PRODENV, NITROENV, ESTAB, IIRRI
 INTEGER IYEAR, SBDUR, ICOMBA, I, J, J1, WL0DAY, YRSIM, EDATE, EMYR, EMD, STTIME, IRRCOD
-
 !CHP - flexible unit numbers - DSSAT uses lots of unit numbers - need to avoid conflicts.
 INTEGER LUN
 
@@ -26,6 +25,10 @@ CALL GETLUN('OUTPUTFILE',LUN)
 
 IYEAR = INT(YRSIM/1000.0);STTIME = YRSIM-IYEAR*1000.0
 EMYR = INT(EDATE/1000.0);EMD = EDATE-EMYR*1000.0
+IF((IYEAR.GT.EMYR).OR.((IYEAR.EQ.EMYR).AND.(STTIME.GT.EMD))) THEN
+    WRITE(*,*) 'Simulation starting date is later than emergence date. Setting to emergence date.'
+    IYEAR =EMYR; STTIME = EMD
+END IF
 !OUTPUTFILE = "Test.exp"
 DELT = 1.0
 WCMIN = 0.0

@@ -403,10 +403,11 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     ORYZA2000 Rice 
       CASE('RIORZ')
         CALL ORYZA_Interface (CONTROL, ISWITCH,                  !Input
-     &    EOP, HARVFRAC, NH4, NO3, SOILPROP, SomLitC, SomLitE,   !Input
-     &    ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,            !Input
-     &    CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,      !Output
-     &    RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)        !Output
+     &   EOP, FLOODWAT, HARVFRAC, NH4, NO3, SOILPROP,            !Input
+     &   SomLitC, SomLitE,                                       !Input
+     &   ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             !Input
+     &   CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       !Output
+     &   RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)         !Output
 
         IF (DYNAMIC .EQ. INTEGR) THEN
           XHLAI = XLAI

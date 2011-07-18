@@ -14,7 +14,7 @@
 !SWCX                  --                  arry, R4      Soil water contents in layers
 !SNH4X                  kg N/ha            array, R4      soil NH4-N contents in layers      
 !SNO3X                  kg N/ha            array, R4      Soil NO3-N content in layers
-!STX                  oC                  array, R4      Soil temperature in layers
+!SOILTX                  oC                  array, R4      Soil temperature in layers
 !SANDX                  %                  array, R4      Soil sand contents in layers
 !CLAYX                  %                  array, R4      Clay content in layers
 !BDX                  Mg/m3            array, R4      Soil bulk density in layers
@@ -213,9 +213,9 @@
 		 real Pwcwp(15)		!soil wilting point (cm3/cm3)
 		 real Pwcad(15)		!soil air drying water content (cm3/cm3)
 		 real PplowDepth		!plow pan depth (m)
-		 real Psoilt(0:15)	!soil temperature (oC)
 		 real Pwl0			!surface water level (mm)
 		 real Pswc(0:15)		!soil water content (cm3/cm3)
+		 real Psoiltx(0:15)     !soil temperature
 		 real Pwflux(0:15)	!soil water flux (cm/day), it quantify the net changes in a given layer
 		 REAL PTRWL(15)	!soil water uptake for quantify the interaction of water and nitrogen in nutrient uptake
 		 real Prunoff			!soil surface runoff (mm/day)
@@ -264,7 +264,7 @@ end module public_module
 
 module GP
 !      common block for communication with input routine
-   real cCO2, cKNF, cNFLV, cREDFT 
+   real cCO2, cKNF, cNFLV, cREDFT, cAMaxSLN, cMinSLN  
    SAVE    
 end module GP
 

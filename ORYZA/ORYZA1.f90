@@ -128,7 +128,7 @@
       REAL    WSO   , WSOI  , WSTS    , WSTR   
       REAL    ZRTI  , ZRTM  , ZRTTR   , ZRTMCW, ZRTMCD, RGRLMX, RGRLMN
       REAL    ASLA  , BSLA  , CSLA    , DSLA  , SLAMAX
-      REAL    COLDMIN,COLDEAD, OSMATA 
+      REAL    COLDMIN,COLDEAD, FSWTD, AMaxSLN0,  MINSLN
 !-----Add five parameter here to deal with night temperature control,
 !-----VARIABLE DIFINATION SEE NIGHT.F90, TAOLI, JUNE 10, 509
 	  REAL    SHOUR,  EHOUR,  TTEMP,    TCHANG,	SDAY,	EDAY
@@ -276,11 +276,26 @@
 		ELSE
 			TFLOWER=34.0
 		ENDIF
-		IF(RDINQR('OSMATA')) THEN
-			CALL RDSREA('OSMATA', OSMATA)
+		IF(RDINQR('FSWTD')) THEN
+			CALL RDSREA('FSWTD', FSWTD)
+			IF(FSWTD.GT.0.0) THEN
+			    FSWTD = 1.0/FSWTD
+			ELSE
+			    FSWTD = 3.0
+			ENDIF    
 		 ELSE
-			OSMATA = 3.0
+			FSWTD = 3.0
 		 ENDIF
+		 IF(RDINQR('AMAXSLN0')) THEN
+		    CALL RDSREA('AMAXSLN0',AMaxSLN0)
+		 ELSE
+		    AMAXSLN0 = 22.0
+		 END IF
+		 IF(RDINQR('MINSLN')) THEN
+		    CALL RDSREA('MINSLN',MINSLN)
+		 ELSE
+		    MINSLN =0.2
+		 END IF
 !-------END SECTION
 !        Read tables
          CALL RDAREA('REDFTT',REDFTT,IMX,ILREDF)
@@ -399,7 +414,7 @@
     			 				
 		     ENDIF
              IF(RDINQR('PLOWPAN')) THEN
-			          CALL RDSREA('PLOWPAN', PV%PPLOWDEPTH)			!THE DEPTH OF PLOWPAN, NEGATIVE VALUE INDICATES NO PLOWPAN
+			          CALL RDSREA('PLOWPAN', PV%PPLOWDEPTH)			!THE DEPTH OF PLOWPAN, NEGATIVE VALUE or very large value INDICATES NO PLOWPAN
 		        ELSE
 			          PV%PPLOWDEPTH = -1.
 		        ENDIF
@@ -573,7 +588,7 @@
            KNF   = LINT2('KNFTB' ,KNFTB,ILKNFT,DVS)
 
 !----------Daily gross canopy CO2 assimilation (DTGA)
-           CALL GPPARSET (CO2, KNF, NFLV, REDFT)
+           CALL GPPARSET (CO2, KNF, NFLV, REDFT, AMaxSLN0, MinSLN)
 !----------The value 2 in next argument list: accuracy for Gauss integration over canopy. 
 !          If value=1 => 3-points Gauss over canopy (as in TOTASP); of value = 2 => 
 !          enhanced accuracy if required as detrmined within the subroutine TRY!
@@ -616,8 +631,7 @@
            FST = LINT2('FSTTB',FSTTB,ILFSTT,DVS)
            FSO = LINT2('FSOTB',FSOTB,ILFSOT,DVS)
 		   if(PV%PROOT_NUTRIENT) then
-				!CALL PARTITION_K(KDF2,LAI,7.0,1.0,CPEW,RNSTRS,OSMATA,1,FSH,FRT,FLV,FST,FSO)  !ADDED BY TAOLI, APRIL 29, 2010
-				CALL PARTITION_K(KDF2,LAI,7.0,1.0,PCEW,RNSTRS,OSMATA,1,FSH,FRT,FLV,FST,FSO)  !ADDED BY TAOLI, APRIL 29, 2010
+				CALL PARTITION_K(KDF2,LAI,7.0,1.0,PCEW,RNSTRS,FSWTD,1,FSH,FRT,FLV,FST,FSO)  !ADDED BY TAOLI, APRIL 29, 2010
 		   ELSE
 				IF (DVS.LT.1.) THEN					!COMMENT OUT BY TAOLI, APRIL 29,2010
 					FSH  = (FSH*CPEW)/NOTNUL((1.+(CPEW-1.)*FSH))

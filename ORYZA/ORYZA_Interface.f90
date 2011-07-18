@@ -6,12 +6,14 @@
 !  01/26/2011 TL/CHP Written.
 !=======================================================================
       SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,               &    !Input
-          EOP, HARVFRAC, NH4, NO3, SOILPROP, SomLitC, SomLitE,    &    !Input
+          EOP, FLOODWAT, HARVFRAC, NH4, NO3, SOILPROP,            &    !Input
+          SomLitC, SomLitE,                                       &    !Input
           ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             &    !Input
           CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       &    !Output
           RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)              !Output
 
       USE ModuleDefs
+      USE FloodModule
       USE ModuleData
       USE Public_Module		!VARIABLES
 	  USE RootGrowth
@@ -43,8 +45,8 @@
       REAL, DIMENSION(2)  :: HARVFRAC
 
 !     Soil water
-      REAL, DIMENSION(NL) :: BD, ST, SW
-      REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA, SOILT
+      REAL, DIMENSION(NL) :: BD, ST, SW, WPkPa
+      REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA
 
 !     Soil N
       REAL, DIMENSION(NL) :: NH4, NO3, UPPM, UNO3, UNH4, UH2O
@@ -84,6 +86,7 @@
       Type (ResidueType) HARVRES
       Type (ResidueType) SENESCE
       TYPE (WeatherType) WEATHER
+      TYPE (FloodWatType)FLOODWAT
       
       COMMON /FSECM1/ YEAR,DOY,IUNITD,IUNITL,TERMNL
       
@@ -126,6 +129,9 @@
           CALL ERROR(ERRKEY,75," ",0)
         ENDIF
 
+        CALL WaterPotential(SW, SOILPROP,  &    !Input
+          WPkPa)                                !Output
+
 !       Transfer from DSSAT SOILPROP variables to ORYZA variables, by layer
         PV % PNL = NLAYR
         DO L = 1, NLAYR
@@ -150,11 +156,10 @@
           SUREA(L) = UPPM(L) / SOILPROP % KG2PPM(L)
           SNH4X(L) = PV % PNH4(L)
           SNO3X(L) = PV % PNO3(L)
+          MSKPA(L) = WPkpa(L)
         END DO
 
-        CALL WaterPotential(SW, SOILPROP,  &    !Input
-          MSkPa)                                !Output
-
+    
         FILEIOCS(1:30) = FILEIO
         TN = 0
         RN = 0
@@ -186,13 +191,15 @@
         STGDOY= 9999999   !Dates for developement stages
 
 !       Depth to plowpan (cm)
-        PLOWPAN = DS(NLAYR) + 10.
+        PLOWPAN = (DS(NLAYR) + 10.)/100.0   !converted into m
         DO L = 2, NLAYR
           IF (SOILPROP % WR(L) < 0.001) THEN
-            PLOWPAN = DS(L-1)
+            PLOWPAN = DS(L-1) /100.0    !converted into m
             EXIT
           ENDIF
         ENDDO
+
+        WL0  = FLOODWAT % FLOOD
 
 !       Read DSSAT cultivar and planting data from FILEIO
         CALL OR_IPRICE (CONTROL,                       &
@@ -240,27 +247,17 @@
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
 
-        OR_OUTPUT = .FALSE.
-        IF (ISWNIT == 'Y') THEN
-          PV%PROOT_NUTRIENT = .TRUE.
+        OR_OUTPUT = .FALSE.;TERMNL = .FALSE.
+        IF ((ISWNIT == 'Y').OR.(ISWWAT == 'Y')) THEN
+            PV%PROOT_NUTRIENT = .TRUE.
+            CALL SOILFILEEDIT(FILEI2, NLAYR, TKL, SANDX, CLAYX, BD, SOC, SON, SNH4X, SNO3X, SUREA, PLOWPAN)
         ELSE
-          PV%PROOT_NUTRIENT = .FALSE.
+            PV%PROOT_NUTRIENT = .FALSE.; FILEI2=""
         END IF
 
         IF(INDEX(ISWWAT,"N")>0) THEN
-            TRW =TRC; FILEI2=""
-        ELSE
-            PV%PROOT_NUTRIENT = .TRUE.
-            CALL SOILFILEEDIT(FILEI2, NLAYR, TKL, SANDX, CLAYX, BD, SOC, SON, SNH4X, SNO3X, SUREA, PLOWPAN)
-        END IF        
-
-        IF(INDEX(ISWNIT,"N")>0) THEN
-            PV%PROOT_NUTRIENT = .FALSE.
-        ELSE
-            PV%PROOT_NUTRIENT = .TRUE.
+            TRW =TRC
         ENDIF
-
-        TERMNL = .FALSE.
 
         CALL GETLUN("ORYZA1",IUNITD)
         CALL GETLUN("ORYZA2",IUNITL)
@@ -294,17 +291,22 @@
         TMMN  = WEATHER % TMIN
         TRC   = EOP
 
+        WL0  = FLOODWAT % FLOOD  !the surface water depth in mm
+        pv%pwl0 = wl0
+
+        CALL WaterPotential(SW, SOILPROP,  &    !Input
+          WPkPa)                                !Output
+
         DO L = 1, NLAYR
-          WCL(L)   = SW(L)      !Soil water content (mm3/mm3)
-          SOILT(L) = ST(L)      !Soil temperature (oC)
+          WCL(L) = SW(L)      !Soil water content (mm3/mm3)
+          pv%Pswc(L)   = SW(L)      !Soil water content (mm3/mm3)
+          pv%pSOILTx(L) = ST(L)      !Soil temperature (oC)
           PV % PNO3(L) = NO3(L) / SOILPROP % KG2PPM(L) !NO3 (kg/ha)
           PV % PNH4(L) = NH4(L) / SOILPROP % KG2PPM(L) !NH4 (kg/ha)
           SNH4X(L) = PV % PNH4(L)
           SNO3X(L) = PV % PNO3(L)
+          MSKPA(L) = WPkpa(L)
         ENDDO
-
-        CALL WaterPotential(SW, SOILPROP,  &    !Input
-          MSkPa)                                !Output
 
 !-----  Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
 !                  3=day of transplanting; 4=main growth period
@@ -348,13 +350,6 @@
         END IF
 
         DOY = REAL(DOY1);YEAR = real(YEAR1); IDOY = DOY1
-    
-!       Check for potential production condition  
-        IF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
-            TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
-            CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
-        END IF
-
         CALL GET('SPAM','ET',  ET)
         CALL Get('MGMT','TOTIR', TOTIR)
 
@@ -415,12 +410,16 @@
 !***********************************************************************
 
     IF(.NOT.TERMNL .AND. DYNAMIC > RUNINIT) THEN
-        IF(INDEX(ISWWAT,"T").GT.0) THEN
+        IF(INDEX(ISWWAT,"Y").GT.0) THEN
 
             CALL WSTRESS2 (ITASK,  DELT,   OR_OUTPUT, IUNITD, IUNITL, FILEI1, FILEIT, &
                           TRC,    ZRT,    TKL,    NLAYR,    CROPSTA, &
                           WCL,    pv%PWCWP,   MSKPA, &
                           TRW,    TRWL,   LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
+        !       Check for potential production condition  
+        ELSEIF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
+            TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+            CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
         END IF
 
 !   TRC = EOP
@@ -490,6 +489,7 @@
         IF (TERMNL) THEN
           MDATE = YRDOY
           YREND = YRDOY
+          CALL RDDTMP (IUNITD)
         ENDIF
       ENDIF
     ENDIF

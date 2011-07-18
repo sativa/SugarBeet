@@ -1036,7 +1036,7 @@ C=======================================================================
 
       SUBROUTINE WaterPotential(
      &    SW, SOILPROP,              !Input
-     &    MSkPa)                     !Output
+     &    WPkpa)                     !Output
 !-----------------------------------------------------------------------   
       USE ModuleDefs  
       IMPLICIT NONE
@@ -1044,11 +1044,11 @@ C=======================================================================
       !  vanGenuchten parameters
       REAL, DIMENSION(NL), INTENT(IN) :: SW
       TYPE (SoilType)    , INTENT(IN) :: SOILPROP
-      REAL, DIMENSION(NL), INTENT(OUT):: MSkPa
+      REAL, DIMENSION(NL), INTENT(OUT):: WPkpa
       INTEGER L
       REAL  Se, WPcm, WCr, SAT, mVG, nVG, alphaVG
 
-      MSkPa = 0.0
+      WPkpa = 0.0
       DO L = 1, SOILPROP % NLAYR
         WCr = SOILPROP % WCr(L)
         SAT = SOILPROP % SAT(L)
@@ -1062,7 +1062,7 @@ C=======================================================================
 
 !       Water Potential
         WPcm  = ((Se ** (-1.0/mVG) - 1.) ** (1./nVG)) / alphaVG  !cm H2O
-        MSkPa(L) = WPcm * 0.0981      !kPa
+        WPkpa(L) = WPcm * 0.0981      !kPa
       ENDDO
 
       RETURN      

@@ -257,7 +257,6 @@ END MODULE WSTRESS_MODULE
        				!Supposed the root could absorbe all avaliable water if it need, no maximum limitation. TAOLI 26 FEB 2010
         ALLOCATE(RUPAC1(NL), RUPAC2(NL), RUPAC3(NL), RUPAC4(NL))
         
-        OSMATA1 = FSWTD/1.5
         !CALCULATE WATER FRACTION AND ROOT FRACTION
         !1) THE TOTAL WATER AND ROOT MASS 
         TROOTF =0.0; TWATERF = 0.0; ZLL = 0.0

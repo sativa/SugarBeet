@@ -23,7 +23,7 @@
 !      real cCO2, cKNF, cNFLV, cREDFT
 !      common /gp_common/ cCO2, cKNF, cNFLV, cREDFT
 
-      SAVE
+      SAVE         !&#@TAOLI
 
 !     avoid compiler warnings on unused variables
       tmpr1 = xAmaxin
@@ -43,9 +43,11 @@
 
       if (SLNI.GE.0.5) then
 !        According to Shaobing Peng (IRRI, unpublished data):
-         Amax = 9.5+(22.*SLNI)*cREDFT*AmaxCO2
+!        Amax = 9.5+(22.*SLNI)*cREDFT*AmaxCO2
+         Amax = 9.5+(cAMaxSLN*SLNI)*cREDFT*AmaxCO2  !Modified by Dr. TaoLi, 25May 2011
       else
-         Amax = max (0.,68.33*(SLNI-0.2)*cREDFT*AmaxCO2)
+!         Amax = max (0.,68.33*(SLNI-0.2)*cREDFT*AmaxCO2)
+         Amax = max (0.,68.33*(SLNI-cMinSLN)*cREDFT*AmaxCO2) !Modified by Dr. TaoLi, 25May 2011
       end if
 
       xAmaxOut = Amax
