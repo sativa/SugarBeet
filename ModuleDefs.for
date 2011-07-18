@@ -191,11 +191,20 @@ C             CHP Added TRTNUM to CONTROL variable.
         CHARACTER (len=12) TEXTURE(NL)
         CHARACTER (len=17) SOILLAYERTYPE(NL)
         CHARACTER*50 SLDESC, TAXON
+        
+        LOGICAL COARSE(NL)
+        
         REAL ALES, DMOD, SLPF         !DMOD was SLNF
         REAL CMSALB, MSALB, SWALB, SALB      !Albedo 
         REAL, DIMENSION(NL) :: BD, CEC, CLAY, DLAYR, DS, DUL
         REAL, DIMENSION(NL) :: KG2PPM, LL, OC, PH, PHKCL
         REAL, DIMENSION(NL) :: SAND, SAT, SILT, STONES, SWCN
+        
+      !Residual water content
+        REAL, DIMENSION(NL) :: WCR
+
+      !vanGenuchten parameters
+        REAL, DIMENSION(NL) :: alphaVG, mVG, nVG
 
       !Second tier soils data:
         REAL, DIMENSION(NL) :: CACO3, EXTP, ORGP, PTERMA, PTERMB

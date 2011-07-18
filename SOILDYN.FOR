@@ -69,7 +69,7 @@ C-----------------------------------------------------------------------
       REAL CN, DMOD, KTRANS, SALB, SLDP, SLPF, SWCON, TEMP, TOTAW, U
       REAL, DIMENSION(NL) :: ADCOEF, BD, CEC, CLAY, DLAYR, DS, DUL
       REAL, DIMENSION(NL) :: KG2PPM, LL, OC, PH, SAND, SAT, SILT
-      REAL, DIMENSION(NL) :: SW, SWCN, TOTN, TotOrgN, WR
+      REAL, DIMENSION(NL) :: SW, SWCN, TOTN, TotOrgN, WCR, WR
 !     REAL, DIMENSION(NL) :: RGIMPF
       LOGICAL, DIMENSION(NL) :: COARSE
 
@@ -80,6 +80,11 @@ C-----------------------------------------------------------------------
       REAL, DIMENSION(NL) :: EXTP, TOTP, ORGP, CACO, CACO3
       REAL, DIMENSION(NL) :: EXTAL, EXTFE, EXTMN, TOTBAS, PTERMA
       REAL, DIMENSION(NL) :: PTERMB, EXK, EXMG, EXNA, EXTS, SLEC, EXCA
+
+!     vanGenuchten parameters
+      REAL, DIMENSION(NL) :: alphaVG, mVG, nVG, PSI
+!     Brook & Corey model parameters
+      Double Precision, DIMENSION(NL) :: hb, lambda
 
 !     From soil analysis section 
 !     Stable organic C, read from 2nd tier soil data in INP file.
@@ -328,8 +333,9 @@ C-----------------------------------------------------------------------
       IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY, ERRNUM, FILEIO, LNUM)
 
       DO L = 1, NLAYR
-        READ(LUNIO, 100, IOSTAT=ERRNUM,ERR=1000) NH4(L),NO3(L)
-100     FORMAT (14X, 2 (1X, F5.1))
+
+        READ(LUNIO, 100, IOSTAT=ERRNUM,ERR=1000)SW(L), NH4(L),NO3(L)
+100     FORMAT (8X, 3 (1X, F5.1))
         LNUM = LNUM + 1
         IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY, ERRNUM, FILEIO, LNUM)
       ENDDO
@@ -741,6 +747,52 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
       ENDDO
 
 !-----------------------------------------------------------------------
+!     Compute vanGenuchten parameters which describe water retention curve
+    ! NMSG = 2
+      DO L = 1, NLayr
+!       Brooks & Corey parameters
+	  call calBrokCryPara(TEXTURE(L), SAT(L), LL(L),    !Input
+     &     DUL(L),                                        !Input
+     +     wcr(L), Hb(L), lambda(L))                      !output
+
+    !    IF (SWCN(L) <= 0.0) THEN ! Problem is some layer is -99, but not all of layers
+!         Ksat calculation based on paper "Soil Water Characteristic Estimates 
+!         by Texture and Organic Matter for Hydrologic Solutions" by K. E. Saxton 
+!         and W. J. Rawls, Aug. 2006.
+!         Ksat in cm/h
+          SWCN(L) = 1930. * ((SAT(L) - DUL(L))**(3.-Lambda(L)))/10.0
+   !       NMSG = NMSG + 1
+   !       WRITE(MSG(NMSG),'(I5,F8.3,3F6.3)') 
+   !  &          L, SWCN(L), LL(L), DUL(L), SAT(L)
+ !       ENDIF
+
+!       van Genuchten parameters fit from known soil properties based on RETC code
+        CALL RETC_VG(TEXTURE(L), SWCN(L), LL(L), DUL(L),  !Input
+     &    SAT(L), wcr(L), Hb(L), lambda(L),               !Input
+     &    alphaVG(L), mVG(L), nVG(L))                     !Output
+         CALL MatrxPtntal(SW(L),                          !Input
+     &    SAT(L), WCR(L), alphaVG(L), mVG(L), nVG(L),     !Input
+     &    PSI(L))                                         !Output
+      ENDDO
+     
+   !   IF (NMsg > 2) THEN
+   !     MSG(1)='Ksat value(s) calculated from known soil parameters'
+   !     MSG(2)='Layer    KSat    LL   DUL   SAT'
+   !     CALL INFO(NMSG, ERRKEY, MSG)
+   !   ENDIF
+      ! Write RETC info to info.out
+      MSG(1) = "Soil RETC parameters: "
+      MSG(2) = 
+     &  " LYR DS  SWCN  WCR   Hb  Lambda  Alpha   m     n   Texture"
+      DO L = 1, NLAYR
+        WRITE(MSG(2+L),'(I3,I4, F6.1, 3F6.3, 1x, 3F6.3, 1x,A8)') 
+     &      L, NINT(DS(L)), SWCN(L), wcr(L), Hb(L), lambda(L),
+     &      alphaVG(L),mVG(L), nVG(L), TEXTURE(L) 
+      ENDDO
+      NMSG = NLAYR + 2
+      CALL INFO(NMSG, "RETC", MSG)
+
+!-----------------------------------------------------------------------
       CALL SoilLayerText(DS, NLAYR,                       !Input
      &    LayerText)                                      !Output
 
@@ -792,6 +844,7 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
       SOILPROP % TotOrgN= TotOrgN   
       SOILPROP % U      = U     
       SOILPROP % WR     = WR      !SHF
+      SOILPROP % WCR    = WCR   !residual water content
 
       SOILPROP % TOTP   = TOTP
       SOILPROP % ORGP   = ORGP
@@ -799,10 +852,16 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
       SOILPROP % EXNA   = EXNA
       SOILPROP % EXK    = EXK 
 
+      SOILPROP % alphaVG= alphaVG
+      SOILPROP % mVG    = mVG
+      SOILPROP % nVG    = nVG
+
       SOILPROP % SOILLAYERTYPE = SOILLAYERTYPE
       SOILPROP % LayerText     = LayerText
       SOILPROP % SLDESC        = SLDESC
       SOILPROP % TAXON         = TAXON
+
+      SOILPROP % COARSE = COARSE
 
       CALL PUT(SOILPROP)
 
@@ -909,6 +968,13 @@ C  tillage and rainfall kinetic energy
       ELSEIF (DYNAMIC .EQ. RATE) THEN
 !-----------------------------------------------------------------------
       IF (ISWWAT == 'N') RETURN
+
+!     Calculate the Matrix Potential
+      DO L = 1, NLAYR
+          CALL MatrxPtntal(SW(L),                          !Input
+     &      SAT(L), WCR(L), alphaVG(L), mVG(L), nVG(L),     !Input
+     &      PSI(L))
+      Enddo    
 
 !     Initial SOM not established until end of SEASINIT section so 
 !     remember initial values here.  Units are kg[Organic matter]/ha
@@ -1490,6 +1556,7 @@ c** wdb orig          SUMKEL = SUMKE * EXP(-0.15*MCUMDEP)
       REAL, DIMENSION(NL) :: CACO3, EXTP, ORGP, PTERMA, PTERMB
       REAL, DIMENSION(NL) :: TOTP, TOTBAS, EXCA, EXK, EXNA
       REAL, DIMENSION(NL) :: SASC   !stable organic C
+      REAL, DIMENSION(NL) :: WCR, alphaVG, mVG, nVG
 
       REAL CN, SWCON
       REAL, DIMENSION(NL) :: ADCOEF, TOTN, TotOrgN, WR
@@ -1540,6 +1607,11 @@ c** wdb orig          SUMKEL = SUMKE * EXP(-0.15*MCUMDEP)
       TOTN    = SOILPROP % TOTN   
       TotOrgN = SOILPROP % TotOrgN   
       WR      = SOILPROP % WR      !SHF
+      WCR     = SOILPROP % WCR     !residual water content
+
+      alphaVG = SOILPROP % alphaVG
+      mVG     = SOILPROP % mVG    
+      nVG     = SOILPROP % nVG    
 
       TOTP    = SOILPROP % TOTP  
       ORGP    = SOILPROP % ORGP  
@@ -1991,3 +2063,37 @@ c** wdb orig          SUMKEL = SUMKE * EXP(-0.15*MCUMDEP)
       RETURN      
       END SUBROUTINE SoilLayerText
 C=======================================================================
+
+C=======================================================================
+C  MatrxPtntal, Subroutine
+C  Calculates Matrix Potential 
+C-----------------------------------------------------------------------
+C  REVISION       HISTORY
+C-----------------------------------------------------------------------
+C  Called by: SOILDYN
+C=======================================================================
+
+      SUBROUTINE MatrxPtntal(SW,                   !Input
+     &    SAT, WCR, alphaVG, mVG, nVG,              !Input
+     &    PSI)                                         !Output
+!-----------------------------------------------------------------------     
+      IMPLICIT NONE
+      SAVE
+
+      !  vanGenuchten parameters
+      REAL, INTENT(IN) :: SW, SAT, WCR, alphaVG, mVG, nVG
+      REAL  Se, PSI
+      Se = (SW - WCr) / (SAT - WCr)
+      ! Assume (SW-WCr) >0.
+        PSI = (Se** (-1./mVG) - 1 ) ** (1/nVG) /alphaVG
+      RETURN      
+      END SUBROUTINE MatrxPtntal
+C=======================================================================
+!=======================================================================
+!     MatrxPtntal VARIABLE DEFINITIONS:
+!-----------------------------------------------------------------------
+! Se    Relative soil water content
+! PSI   Matrix potential
+!-----------------------------------------------------------------------
+!     END SUBROUTINE MatrxPtntal
+!=======================================================================
