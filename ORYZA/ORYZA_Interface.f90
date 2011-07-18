@@ -7,7 +7,7 @@
 !=======================================================================
       SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,               &    !Input
           EOP, HARVFRAC, NH4, NO3, SOILPROP, SomLitC, SomLitE,    &    !Input
-          ST, SW, SW_kPa, TRWUP, UPPM, WEATHER, YRPLT, YREND,     &    !Input
+          ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             &    !Input
           CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       &    !Output
           RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)              !Output
 
@@ -43,7 +43,7 @@
       REAL, DIMENSION(2)  :: HARVFRAC
 
 !     Soil water
-      REAL, DIMENSION(NL) :: BD, ST, SW, SW_kPa
+      REAL, DIMENSION(NL) :: BD, ST, SW
       REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA, SOILT
 
 !     Soil N
@@ -151,6 +151,9 @@
           SNH4X(L) = PV % PNH4(L)
           SNO3X(L) = PV % PNO3(L)
         END DO
+
+        CALL WaterPotential(SW, SOILPROP,  &    !Input
+          MSkPa)                                !Output
 
         FILEIOCS(1:30) = FILEIO
         TN = 0
@@ -294,12 +297,14 @@
         DO L = 1, NLAYR
           WCL(L)   = SW(L)      !Soil water content (mm3/mm3)
           SOILT(L) = ST(L)      !Soil temperature (oC)
-          MSKPA(L) = SW_kPa(L)  !Soil water potential (kPa)
           PV % PNO3(L) = NO3(L) / SOILPROP % KG2PPM(L) !NO3 (kg/ha)
           PV % PNH4(L) = NH4(L) / SOILPROP % KG2PPM(L) !NH4 (kg/ha)
           SNH4X(L) = PV % PNH4(L)
           SNO3X(L) = PV % PNO3(L)
         ENDDO
+
+        CALL WaterPotential(SW, SOILPROP,  &    !Input
+          MSkPa)                                !Output
 
 !-----  Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
 !                  3=day of transplanting; 4=main growth period

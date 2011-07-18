@@ -55,8 +55,7 @@ C=======================================================================
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
@@ -111,7 +110,7 @@ C-----------------------------------------------------------------------
 
       REAL, DIMENSION(2)  :: HARVFRAC
       REAL, DIMENSION(NL) :: NH4, NO3, RLV, UPPM
-      REAL, DIMENSION(NL) :: ST, SW, SW_kPa, UNO3, UNH4, UH2O
+      REAL, DIMENSION(NL) :: ST, SW, UNO3, UNH4, UH2O
 
       LOGICAL FixCanht    !, CRGRO
 c-----------------------------------------------------------------------
@@ -405,7 +404,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
       CASE('RIORZ')
         CALL ORYZA_Interface (CONTROL, ISWITCH,                  !Input
      &    EOP, HARVFRAC, NH4, NO3, SOILPROP, SomLitC, SomLitE,   !Input
-     &    ST, SW, SW_kPa, TRWUP, UPPM, WEATHER, YRPLT, YREND,    !Input
+     &    ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,            !Input
      &    CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,      !Output
      &    RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)        !Output
 

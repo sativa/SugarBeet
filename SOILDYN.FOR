@@ -82,7 +82,7 @@ C-----------------------------------------------------------------------
       REAL, DIMENSION(NL) :: PTERMB, EXK, EXMG, EXNA, EXTS, SLEC, EXCA
 
 !     vanGenuchten parameters
-      REAL, DIMENSION(NL) :: alphaVG, mVG, nVG, PSI
+      REAL, DIMENSION(NL) :: alphaVG, mVG, nVG, MSkPa
 !     Brook & Corey model parameters
       Double Precision, DIMENSION(NL) :: hb, lambda
 
@@ -770,11 +770,8 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
         CALL RETC_VG(TEXTURE(L), SWCN(L), LL(L), DUL(L),  !Input
      &    SAT(L), wcr(L), Hb(L), lambda(L),               !Input
      &    alphaVG(L), mVG(L), nVG(L))                     !Output
-         CALL MatrxPtntal(SW(L),                          !Input
-     &    SAT(L), WCR(L), alphaVG(L), mVG(L), nVG(L),     !Input
-     &    PSI(L))                                         !Output
       ENDDO
-     
+
    !   IF (NMsg > 2) THEN
    !     MSG(1)='Ksat value(s) calculated from known soil parameters'
    !     MSG(2)='Layer    KSat    LL   DUL   SAT'
@@ -968,13 +965,6 @@ C  tillage and rainfall kinetic energy
       ELSEIF (DYNAMIC .EQ. RATE) THEN
 !-----------------------------------------------------------------------
       IF (ISWWAT == 'N') RETURN
-
-!     Calculate the Matrix Potential
-      DO L = 1, NLAYR
-          CALL MatrxPtntal(SW(L),                          !Input
-     &      SAT(L), WCR(L), alphaVG(L), mVG(L), nVG(L),     !Input
-     &      PSI(L))
-      Enddo    
 
 !     Initial SOM not established until end of SEASINIT section so 
 !     remember initial values here.  Units are kg[Organic matter]/ha
@@ -2064,36 +2054,3 @@ c** wdb orig          SUMKEL = SUMKE * EXP(-0.15*MCUMDEP)
       END SUBROUTINE SoilLayerText
 C=======================================================================
 
-C=======================================================================
-C  MatrxPtntal, Subroutine
-C  Calculates Matrix Potential 
-C-----------------------------------------------------------------------
-C  REVISION       HISTORY
-C-----------------------------------------------------------------------
-C  Called by: SOILDYN
-C=======================================================================
-
-      SUBROUTINE MatrxPtntal(SW,                   !Input
-     &    SAT, WCR, alphaVG, mVG, nVG,              !Input
-     &    PSI)                                         !Output
-!-----------------------------------------------------------------------     
-      IMPLICIT NONE
-      SAVE
-
-      !  vanGenuchten parameters
-      REAL, INTENT(IN) :: SW, SAT, WCR, alphaVG, mVG, nVG
-      REAL  Se, PSI
-      Se = (SW - WCr) / (SAT - WCr)
-      ! Assume (SW-WCr) >0.
-        PSI = (Se** (-1./mVG) - 1 ) ** (1/nVG) /alphaVG
-      RETURN      
-      END SUBROUTINE MatrxPtntal
-C=======================================================================
-!=======================================================================
-!     MatrxPtntal VARIABLE DEFINITIONS:
-!-----------------------------------------------------------------------
-! Se    Relative soil water content
-! PSI   Matrix potential
-!-----------------------------------------------------------------------
-!     END SUBROUTINE MatrxPtntal
-!=======================================================================

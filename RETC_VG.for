@@ -1024,3 +1024,55 @@
 !     END SUBROUTINE calBrokCryPara	 
 !=====================================================================
 
+
+C=======================================================================
+C  WaterPotential, Subroutine
+C  Calculates Matrix Potential 
+C-----------------------------------------------------------------------
+C  REVISION       HISTORY
+C-----------------------------------------------------------------------
+C  Called by: SOILDYN
+C=======================================================================
+
+      SUBROUTINE WaterPotential(
+     &    SW, SOILPROP,              !Input
+     &    MSkPa)                     !Output
+!-----------------------------------------------------------------------   
+      USE ModuleDefs  
+      IMPLICIT NONE
+
+      !  vanGenuchten parameters
+      REAL, DIMENSION(NL), INTENT(IN) :: SW
+      TYPE (SoilType)    , INTENT(IN) :: SOILPROP
+      REAL, DIMENSION(NL), INTENT(OUT):: MSkPa
+      INTEGER L
+      REAL  Se, WPcm, WCr, SAT, mVG, nVG, alphaVG
+
+      MSkPa = 0.0
+      DO L = 1, SOILPROP % NLAYR
+        WCr = SOILPROP % WCr(L)
+        SAT = SOILPROP % SAT(L)
+        mVG = SOILPROP % mVG(L)
+        nVG = SOILPROP % nVG(L)
+        alphaVG = SOILPROP % alphaVG(L)
+
+!       Normalized water content
+        Se = (SW(L) - WCr) / (SAT - WCr)
+        Se = MIN(MAX(Se, 0.0),1.0)
+
+!       Water Potential
+        WPcm  = ((Se ** (-1.0/mVG) - 1.) ** (1./nVG)) / alphaVG  !cm H2O
+        MSkPa(L) = WPcm * 0.0981      !kPa
+      ENDDO
+
+      RETURN      
+      END SUBROUTINE WaterPotential
+C=======================================================================
+!=======================================================================
+!     WaterPotential VARIABLE DEFINITIONS:
+!-----------------------------------------------------------------------
+! Se    Relative soil water content
+! WPcm  Matrix potential
+!-----------------------------------------------------------------------
+!     END SUBROUTINE WaterPotential
+!=======================================================================

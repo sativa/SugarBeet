@@ -115,7 +115,7 @@ C     Soil Processes Module Variables
 C-----------------------------------------------------------------------
       REAL SNOW, WINF
       REAL, DIMENSION(NL) :: NH4, NO3, SPi_Avail, SKi_Avail, ST, UPPM
-      REAL, DIMENSION(NL) :: SW, SW_kPa, SWDELTS, UPFLOW
+      REAL, DIMENSION(NL) :: SW, SWDELTS, UPFLOW
       TYPE (SoilType) SOILPROP    !type defined in ModuleDefs
       TYPE (FloodWatType) FLOODWAT
       TYPE (FloodNType)   FloodN
@@ -241,8 +241,7 @@ C-----------------------------------------------------------------------
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
@@ -311,8 +310,7 @@ C-----------------------------------------------------------------------
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
@@ -385,8 +383,7 @@ C-----------------------------------------------------------------------
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
@@ -431,8 +428,7 @@ C-----------------------------------------------------------------------
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
@@ -483,8 +479,7 @@ C-----------------------------------------------------------------------
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
@@ -529,8 +524,7 @@ C     Print seasonal summaries and close files.
      &    EO, EOP, EOS, EP, ES, FLOODWAT, HARVFRAC,       !Input
      &    NH4, NO3, SKi_Avail, SomLitC, SomLitE,          !Input
      &    SPi_AVAIL, SNOW, SOILPROP, SRFTEMP, ST, SW,     !Input
-     &    SW_kPa, TRWU, TRWUP, UPPM, WEATHER,             !Input
-     &    YREND, YRPLT,                                   !Input
+     &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
      &    KUptake, MDATE, NSTRES, PUptake,                !Output
