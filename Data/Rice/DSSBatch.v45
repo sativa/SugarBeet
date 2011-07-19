@@ -8,5 +8,7 @@ $BATCH(RICE)
 ! Debug        : C:\DSSAT45\DSCSM045.EXE RICER045 " B DSSBatch.v45"
 !
 @FILEX                                                                                        TRTNO     RP     SQ     OP     CO
-C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                1      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                1      1      0      0      0
 !C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                2      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                3      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                4      1      0      0      0
