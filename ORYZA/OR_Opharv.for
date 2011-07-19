@@ -8,10 +8,9 @@
 !=======================================================================
 
       SUBROUTINE OR_OPHARV (CONTROL, ISWITCH, 
-     &    NSLLV, WAGT, WST, WLVG, WLVD, WSO, WRR, NGR,    !Input
-     &    HARVFRAC, ISDATE, ISTAGE, LAI, MDATE,           !Input
-     &    STGDOY, STNAME, YRPLT)                          !Input
-
+     &   HARVFRAC, ISDATE, ISTAGE, LAI, LESTRS, MDATE,    !Input
+     &   NGR, NSLLV, PCEW, STGDOY, STNAME,                !Input
+     &   WAGT, WLVD, WLVG, WRR, WSO, WST, YRPLT)          !Input
 
 !-----------------------------------------------------------------------
       USE ModuleDefs     !Definitions of constructed variable types, 
@@ -169,8 +168,8 @@
       Simulated = ' '
       Measured  = ' '
       YIELD     = 0
-      WTNCAN    = -99.
-      WTNSD     = -99.
+      WTNCAN    = 0.
+      WTNSD     = 0.
       MAXLAI = 0.0
       
 !     Establish #, names of stages for environmental & stress summary
@@ -197,8 +196,8 @@
       MAXLAI = AMAX1 (MAXLAI, LAI)      ! Maximum XLAI season
       XLAI = LAI
 
-      PlantStres % W_grow = LESTRS 
-      PlantStres % W_phot = PCEW  
+      PlantStres % W_grow = 1.0 - LESTRS 
+      PlantStres % W_phot = 1.0 - PCEW  
       PlantStres % N_grow = NSLLV 
       PlantStres % N_phot = NSTRES 
       PlantStres % P_grow = PSTRES2
@@ -275,60 +274,17 @@
          CALL READA (FILEA, PATHEX,OLAB, TRT_ROT, YRSIM, X)
 
 !       Convert from YRDOY format to DAP.  Change descriptions to match.
-!       Anthesis, flowering, heading
-        CALL READA_Dates(X(2), YRSIM, IFLR)
-        IF (IFLR .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
-          DFLR = TIMDIF(YRPLT,IFLR)
-        ELSE
-          DFLR  = -99
-        ENDIF
-        OLAP(2) = 'ADAP  '
-        CALL GetDesc(1,OLAP(2), DESCRIP(2))
-
-!       Maturity
-        CALL READA_Dates(X(4), YRSIM, IMAT)
-        IF (IMAT .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
-          DMAT = TIMDIF(YRPLT,IMAT)
-        ELSE
-          DMAT = -99
-        ENDIF
-        OLAP(4) = 'MDAP  '
-        CALL GetDesc(1,OLAP(4), DESCRIP(4))
-
-        CALL READA_Dates(X(1), YRSIM, IPIN)
-        IF (IPIN .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
-          DPIN = TIMDIF (YRPLT,IPIN)
-        ELSE
-          DPIN = -99
-        ENDIF
-        OLAP(1) = 'IDAP  '
-        CALL GetDesc(1,OLAP(1), DESCRIP(1))
-
-!       Emergence
-        CALL READA_Dates(X(19), YRSIM, IEMRG)
+!       Emergence - observed
+        CALL READA_Dates(X(1), YRSIM, IEMRG)
         IF (IEMRG .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
           DEMRG = TIMDIF(YRPLT,IEMRG)
         ELSE
           DEMRG  = -99
         ENDIF
-        OLAP(19) = 'EDAP  '
-        CALL GetDesc(1,OLAP(19), DESCRIP(19))
+        OLAP(1) = 'EDAP  '
+        CALL GetDesc(1,OLAP(1), DESCRIP(1))
 
-        DNR1 = TIMDIF (YRPLT,ISDATE)
-        IF (DNR1 .LE. 0) THEN
-           DNR1 = -99
-        ENDIF
-
-        DNR7 = TIMDIF (YRPLT,MDATE)
-        IF (DNR7 .LE. 0 .OR. YRPLT .LT. 0) THEN
-           DNR7 = -99
-        ENDIF
-
-        DNR0 = TIMDIF (YRPLT,YRNR2)
-        IF (DNR0 .LE. 0) THEN
-           DNR0 = -99
-        ENDIF
-
+!       Emergence - simulated
         IF (STGDOY(9) < 9999999) THEN
           YREMRG = STGDOY(9)    !emergence  
         ELSE
@@ -341,6 +297,54 @@
           ENDIF
         ELSE
           D_emerge = -99
+        ENDIF
+
+!       Anthesis, flowering, heading - observed
+        CALL READA_Dates(X(2), YRSIM, IFLR)
+        IF (IFLR .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
+          DFLR = TIMDIF(YRPLT,IFLR)
+        ELSE
+          DFLR  = -99
+        ENDIF
+        OLAP(2) = 'ADAP  '
+        CALL GetDesc(1,OLAP(2), DESCRIP(2))
+
+!       Anthesis, flowering, heading - simulated
+        DNR1 = TIMDIF (YRPLT,ISDATE)
+        IF (DNR1 .LE. 0) THEN
+           DNR1 = -99
+        ENDIF
+
+!       Panicle initiation - observed
+        CALL READA_Dates(X(3), YRSIM, IPIN)
+        IF (IPIN .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
+          DPIN = TIMDIF (YRPLT,IPIN)
+        ELSE
+          DPIN = -99
+        ENDIF
+        OLAP(3) = 'IDAP  '
+        CALL GetDesc(1,OLAP(3), DESCRIP(3))
+
+!       Panicle initiation - simulated
+        DNR0 = TIMDIF (YRPLT,YRNR2)
+        IF (DNR0 .LE. 0) THEN
+           DNR0 = -99
+        ENDIF
+
+!       Maturity - observed
+        CALL READA_Dates(X(4), YRSIM, IMAT)
+        IF (IMAT .GT. 0 .AND. IPLTI .EQ. 'R' .AND. ISENS .EQ. 0) THEN
+          DMAT = TIMDIF(YRPLT,IMAT)
+        ELSE
+          DMAT = -99
+        ENDIF
+        OLAP(4) = 'MDAP  '
+        CALL GetDesc(1,OLAP(4), DESCRIP(4))
+
+!       Maturity - simulated
+        DNR7 = TIMDIF (YRPLT,MDATE)
+        IF (DNR7 .LE. 0 .OR. YRPLT .LT. 0) THEN
+           DNR7 = -99
         ENDIF
 
       YIELD  = NINT(WRR)

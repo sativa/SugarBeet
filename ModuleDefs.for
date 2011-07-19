@@ -393,7 +393,8 @@ C             CHP Added TRTNUM to CONTROL variable.
         LOGICAL BUNDED        
         INTEGER NBUND         
         REAL ABUND            
-        REAL PUDPERC, PERC    
+        REAL PUDPERC, PERC
+        REAL PLOWPAN    !Depth of puddling (m) (ORYZA)
 
         !From Paddy_Mgmt
         INTEGER YRDRY, YRWET  

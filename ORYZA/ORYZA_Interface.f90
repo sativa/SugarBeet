@@ -156,7 +156,9 @@
           SUREA(L) = UPPM(L) / SOILPROP % KG2PPM(L)
           SNH4X(L) = PV % PNH4(L)
           SNO3X(L) = PV % PNO3(L)
-          MSKPA(L) = WPkpa(L)
+          MSKPA(L) = WPkPa(L)
+          WCL(L) = SW(L)
+          pv%PSWC = WCL(L)
         END DO
 
     
@@ -190,14 +192,18 @@
         KEP   = 1.0   !Energy extinction coef
         STGDOY= 9999999   !Dates for developement stages
 
-!       Depth to plowpan (cm)
-        PLOWPAN = (DS(NLAYR) + 10.)/100.0   !converted into m
-        DO L = 2, NLAYR
-          IF (SOILPROP % WR(L) < 0.001) THEN
-            PLOWPAN = DS(L-1) /100.0    !converted into m
-            EXIT
-          ENDIF
-        ENDDO
+!       Depth to plowpan (m)
+        PLOWPAN = FLOODWAT % PLOWPAN
+        IF (PLOWPAN < 1.) THEN
+!         No plowpan specified - check for WR values close to zero
+          PLOWPAN = (DS(NLAYR) + 10.)/100.0   !converted into m
+          DO L = 2, NLAYR
+            IF (SOILPROP % WR(L) < 0.001) THEN
+              PLOWPAN = DS(L-1) /100.0    !converted into m
+              EXIT
+            ENDIF
+          ENDDO
+        ENDIF
 
         WL0  = FLOODWAT % FLOOD
 
@@ -305,7 +311,7 @@
           PV % PNH4(L) = NH4(L) / SOILPROP % KG2PPM(L) !NH4 (kg/ha)
           SNH4X(L) = PV % PNH4(L)
           SNO3X(L) = PV % PNO3(L)
-          MSKPA(L) = WPkpa(L)
+          MSKPA(L) = WPkPa(L)
         ENDDO
 
 !-----  Set CROPSTA: 0=before sowing; 1=day of sowing; 2=in seedbed;
@@ -502,9 +508,9 @@
          WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, YRPLT, ZRT)
 
       CALL OR_OPHARV (CONTROL, ISWITCH,                 &
-         NSLLV, WAGT, WST, WLVG, WLVD, WSO, WRR, NGR,   & !Input
-         HARVFRAC, ISDATE, ISTAGE, LAI, MDATE,          & !Input
-         STGDOY, STNAME, YRPLT)                           !Input
+         HARVFRAC, ISDATE, ISTAGE, LAI, LESTRS, MDATE,  & !Input
+         NGR, NSLLV, PCEW, STGDOY, STNAME,              & !Input
+         WAGT, WLVD, WLVG, WRR, WSO, WST, YRPLT)          !Input
     END SELECT
 
 !-----------------------------------------------------------------------

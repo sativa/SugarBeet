@@ -62,7 +62,7 @@ C=======================================================================
      &    TRWU, TRWUP, U
       REAL EOS, EOP, WINF, MSALB, ET_ALB
       REAL XLAT, TAV, TAMP, SRFTEMP
-      REAL EORATIO, KSEVAP, KTRANS
+      REAL EORATIO, KSEVAP, KTRANS, TRAT, TRATIO
 
       REAL DLAYR(NL), DUL(NL), LL(NL), RLV(NL), RWU(NL),  
      &    SAT(NL), ST(NL), SW(NL), SW_AVAIL(NL), !SWAD(NL), 
@@ -139,8 +139,8 @@ C=======================================================================
       EF   = 0.0; CEF = 0.0
       EM   = 0.0; CEM = 0.0
       EO   = 0.0; CEO  = 0.0
-      EP   = 0.0; CEP  = 0.0
-      ES   = 0.0; CES  = 0.0
+      EP   = 0.0; EOP = 0.0; CEP  = 0.0
+      ES   = 0.0; EOS = 0.0; CES  = 0.0
       ET   = 0.0; CET  = 0.0
       ES_LYR = 0.0
       SWDELTX = 0.0
@@ -174,10 +174,10 @@ C=======================================================================
 !     ----------------------------
         END SELECT
 
-!       Initialize plant transpiration variables
-        CALL TRANS(DYNAMIC, 
-     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &    EOP)                                            !Output
+!!       Initialize plant transpiration variables
+!        CALL TRANS(DYNAMIC, 
+!     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &    EOP)                                            !Output
       ENDIF
 
       CALL MULCH_EVAP(DYNAMIC, MULCH, EOS, EM)
@@ -317,17 +317,28 @@ C       and total potential water uptake rate.
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
-            IF (FLOOD .GT. 0.0) THEN
-              !Use flood evaporation rate
-              CALL TRANS (RATE, 
-     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ELSE
-              !Use soil evaporation rate
-              CALL TRANS(RATE, 
-     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ENDIF
+!            IF (FLOOD .GT. 0.0) THEN
+!              !Use flood evaporation rate
+!              CALL TRANS (RATE, 
+!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ELSE
+!              !Use soil evaporation rate
+!              CALL TRANS(RATE, 
+!     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ENDIF
+
+!***************************************************************************
+!           07/19/2011 CHP/ JWJ replace this with TRANS
+!           Relative transpiration rate for CO2 effects
+            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+            EOP = (EO - EOS) * TRAT
+
+!           Recalculate potential evapotranspiration based on TRAT
+            EO  = EOP + EOS
+!***************************************************************************
+
           ELSE
             EOP = 0.0
           ENDIF
