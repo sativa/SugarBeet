@@ -107,7 +107,7 @@
         TIME =0.0
         TERMNL = .FALSE.
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
-
+        Call SET_ZERO_PV
 !       ORYZA does its own root water uptake - how to handle?
 !       Variables required by DSSAT for root water uptake calculations
         PORMIN = 0.0  !Minimum pore space required for supplying oxygen to roots for 
@@ -307,7 +307,7 @@
         IUNITL = IUNITL+20
         
         DELT = 1.0  !TIME STEP IS 1.0
-        IDOY = DOY
+        IDOY = INT(DOY)
         DAE = 0.0        
         
          !open a temporary file for ORYZA2000 outputs
@@ -479,7 +479,7 @@
                           TRW,    TRWL,   LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
         !       Check for potential production condition  
         ELSEIF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
-            TRW = EOP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+            TRC = EOP; TRW = TRC; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
             CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
         END IF
 
@@ -696,3 +696,42 @@
        RETURN
        END SUBROUTINE OR_IPRICE
  !=======================================================================
+SUBROUTINE SET_ZERO_PV
+
+	  USE PUBLIC_MODULE
+	
+		pv%CRUN=0;				pv%PROOT_NUTRIENT=.FALSE.
+		pv%pond_active ='NO';	pv%PYear=0;pv%Pdoy=0
+		pv%Pdae=0;				pv%Pdat=0
+		pv%Pno3=0.0;			pv%Pnh4=0.0
+		pv%Purea=0.0;			pv%pond_no3=0.0
+		pv%pond_nh4=0.0;		pv%pond_urea=0.0
+		pv%Psoc=0.0;			pv%Pson=0.0
+		pv%pph=7.0;				pv%PFOM_type=0.0
+		pv%PFOM_C=0.0;			pv%PFOM_N=0.0
+		pv%Pnl=0;				pv%Pdlayer=0.0
+		pv%Pbd=0.0;				pv%Psand=0.0
+		pv%Pclay=0.0;			pv%Pkst=0.0
+		pv%Pwcst=0.0;			pv%Pwcfc=0.0
+		pv%Pwcwp=0.0;			pv%Pwcad=0.0
+		pv%PplowDepth=0.0;		pv%psoiltx=0.0
+		pv%Pwl0=0.0;			pv%Pswc=0.0
+		pv%Pwflux=0.0;			pv%PTRWL=0.0
+		pv%Prunoff=0.0;			pv%Pdrain=0.0
+		pv%Pirrig=0.0;			pv%Plai=0.001
+		pv%PResNum=0;			pv%PResName=''
+		pv%PResType='';			pv%PResC=0.0
+		pv%PResN=0.0;			pv%dlt_res_c_biom=0.0
+		pv%dlt_res_c_hum=0.0;	pv%ProotD=0.0
+		pv%ProotDen=0.0;		pv%PSROOTL=0.0
+		pv%PRMINT=0.0;			pv%PROPTT=0.0
+		pv%PRTBS=0.0;			pv%PRCNL=0.0
+		pv%PMAXD=0.0;			pv%PSODT=0.0
+		pv%PmaxT=0.0;			pv%PminT=0.0
+		pv%PRad=0.0;			pv%PRain=0.0
+		pv%PPressur=0.0;		pv%Pwind=0.0
+		pv%PETp=0.0;			pv%PETa=0.0
+		pv%Pevap=0.0;			pv%Ptrans=0.0
+		pv%PDt=0.0;				pv%PRdn=0.0;		
+	  
+END SUBROUTINE SET_ZERO_PV

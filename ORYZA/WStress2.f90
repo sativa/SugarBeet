@@ -261,13 +261,7 @@ END MODULE WSTRESS_MODULE
         !1) THE TOTAL WATER AND ROOT MASS 
         TROOTF =0.0; TWATERF = 0.0; ZLL = 0.0
 		!------------------------------------------------------------------------------------------------
-		if((zrt.gt.0.10).and.(zrt.lt.0.15)) then
-			zrt =zrt
-		elseif (zrt.gt.0.20) then
-			zrt =zrt
-		end if
-			
-        DO I=1, NL			 	
+	    DO I=1, NL			 	
 			 ZRTL  = MIN(TKL(I), MAX((ZRT-ZLL),0.0))!MAX((pv%prootad-ZLL),0.0)) 
         	 TROOTF =TROOTF + ROOTC(I)
 			 IF(ZRTL.GT.0.0) THEN		!!
@@ -292,11 +286,15 @@ END MODULE WSTRESS_MODULE
              ENDDO
              TWATERF = TRUPAC; TRUPAC = 0.0
              !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
-             DO I = 1, NL
-			    RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
-			    TRUPAC = TRUPAC + RUPAC4(I) 		
-             ENDDO
-		     TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
+             IF (TWATERF > 0.0) THEN
+               DO I = 1, NL
+			      RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
+			      TRUPAC = TRUPAC + RUPAC4(I) 		
+               ENDDO
+ 		       TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
+             ELSE
+ 		       TRUPAC = 0.0
+             ENDIF
 		  ELSE
 		     TRUPAC = 0.0; RUPAC4(:)= 0.0
 		  END IF
