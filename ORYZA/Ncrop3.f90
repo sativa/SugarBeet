@@ -40,7 +40,8 @@
 !----------------------------------------------------------------------*
       SUBROUTINE NCROP3 (ITASK, IUNITD, IUNITL, FILEI1, FILEI2, FILEIT, DELT, TIME, OUTPUT, &
                        TERMNL, DVS, LLV, DLDR, WLVG, WST, WSO, GSO, GST, GLV, &
-                       PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, NFLV, NSLLV,NRT, RNSTRS)
+                       PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, ANSO, ANLV, ANST, ANLD, &
+                       ANRT, NFLV, NSLLV,NRT, RNSTRS)
 
       !USE CHART
 	  USE public_module		!VARIABLES

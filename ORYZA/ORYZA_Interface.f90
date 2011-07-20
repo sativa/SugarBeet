@@ -64,6 +64,7 @@
       REAL    LAI, LLV  , SLA , WLVG  , WST  , WSO, GSO, GGR, GST, GLV, PLTR 
       REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
       REAL    HU, WAGT, WLVD, WRR, NGR, PLOWPAN, TNSOIL, NACR
+      REAL    ANSO, ANLV, ANST, ANLD, ANRT
 
 !     FOR EXPERIMENT FILE 
       INTEGER YRSIM, EDATE, iPAGE, IRRCOD 
@@ -176,8 +177,32 @@
         HU = 0.0
         WAGT = 0.0
         WLVD = 0.0
+        WLVG = 0.0
+        WST = 0.0
+        WSO = 0.0
+        WRT = 0.0
+        WRR14 = 0.0
+        NGR = 0.0
+        GSO = 0.0
+        GGR = 0.0
+        GST = 0.0
+        GLV = 0.0
+        PLTR = 0.0
+        LLV = 0.0
         WRR = 0.0
+        SLA = 0.0
+        LAI = 0.0
+        LAIROL = 0.0
+        ZRT = 0.0
+        DVS = 0.0
+        DLDR =0.0
         TRC = 0.0
+        ANSO = 0.0
+        ANLV = 0.0
+        ANST = 0.0
+        ANLD = 0.0
+        ANRT = 0.0
+        CROPSTA = 0
 
 !       Water & N stresses
         LRSTRS = 1.0
@@ -447,15 +472,15 @@
                         LLV,    DLDR, WLVG, WST, WSO, GSO, GGR, GST, GLV, &
                         PLTR, WCL, WL0, WRT, WRR14, NGR, HU)
 
-!       IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
+        IF(INDEX(ISWNIT, "N").GT.0) THEN           !POTENTIAL NITROGEN CONDITION
             CALL NNOSTRESS2(DELT, IUNITD, IUNITL, ITASK, FILEI1, FILEIT, &
                            CROPSTA, DVS, WLVG, LAI, SLA, NFLV, NSLLV, RNSTRS)
-!        ELSE
-!            CALL NCROP3 (ITASK, IUNITD, IUNITL, FILEI1, FILEI2, FILEIT, DELT, TIME, OR_OUTPUT, &
-!                       TERMNL, DVS, LLV, DLDR, WLVG, WST, WSO, GSO, GST, GLV, &
-!                       PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, NFLV, NSLLV,NRT, RNSTRS, RNH4, RNO3)
-
-!        END IF
+        ELSE
+            CALL NCROP3 (ITASK, IUNITD, IUNITL, FILEI1, FILEI2, FILEIT, DELT, TIME, OR_OUTPUT, &
+                        TERMNL, DVS, LLV, DLDR, WLVG, WST, WSO, GSO, GST, GLV, &
+                        PLTR, LAI, SLA, CROPSTA, TNSOIL, NACR, ANSO, ANLV, ANST, ANLD, &
+                       ANRT, NFLV, NSLLV,NRT, RNSTRS)
+        END IF
 
       IF (ITASK == 2) THEN
         DO L = 1, NLAYR
