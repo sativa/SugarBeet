@@ -228,8 +228,8 @@ C     Read initial soil-plant-atmosphere data
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output
@@ -285,8 +285,8 @@ C     Seasonal initialization for soil-plant-atmosphere processes
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output
@@ -366,8 +366,8 @@ C     rates of evapotranspiration.
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output
@@ -412,8 +412,8 @@ C     Compute cumulative totals for soil-plant-atmosphere processes
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output
@@ -465,8 +465,8 @@ C***********************************************************************
 
         CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output
@@ -514,8 +514,8 @@ C     Print seasonal summaries and close files.
 
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output

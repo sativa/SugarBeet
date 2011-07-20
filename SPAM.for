@@ -34,8 +34,8 @@ C=======================================================================
 
       SUBROUTINE SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP,                   !Input
-     &    SW, SWDELTS, WEATHER, WINF, XHLAI, XLAI,        !Input
+     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
      &    TRWU, TRWUP, UPFLOW)                            !Output
@@ -68,6 +68,9 @@ C=======================================================================
      &    SAT(NL), ST(NL), SW(NL), SW_AVAIL(NL), !SWAD(NL), 
      &    SWDELTS(NL), SWDELTU(NL), SWDELTX(NL), UPFLOW(NL)
       REAL ES_LYR(NL)
+
+!     Root water uptake computed by some plant routines (optional)
+      REAL UH2O(NL)
 
 !     Species-dependant variables imported from PLANT module:
       REAL PORMIN, RWUMX
@@ -384,9 +387,9 @@ C       and total potential water uptake rate.
             ENDDO
           END SELECT
 
-C         Calculate actual soil water uptake and transpiration rates
+!         Calculate actual soil water uptake and transpiration rates
           CALL XTRACT(
-     &      NLAYR, DLAYR, LL, SW, SW_AVAIL, TRWUP,        !Input
+     &      NLAYR, DLAYR, LL, SW, SW_AVAIL, TRWUP, UH2O,  !Input
      &      EP, RWU,                                      !Input/Output
      &      SWDELTX, TRWU)                                !Output
         ENDIF   !ISWWAT = 'Y'

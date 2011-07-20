@@ -284,18 +284,22 @@ END MODULE WSTRESS_MODULE
 			 ZLL = ZLL+TKL(I)        	
          ENDDO
          TRUPAC = 0.0;XXXX=TWATERF
-         DO I = 1, NL
-         	RUPAC2(I) = ROOTC(I)/TROOTF	
-			RUPAC1(I) = RUPAC3(I)/ TWATERF	
-			TRUPAC = TRUPAC + RUPAC1(I)*RUPAC2(I)  
-         ENDDO
-         TWATERF = TRUPAC; TRUPAC = 0.0
-         !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
-         DO I = 1, NL
-			RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
-			TRUPAC = TRUPAC + RUPAC4(I) 		
-         ENDDO
-		 TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
+         IF((TROOTF.GT.0.0).AND.(TWATERF.GT.0.0)) THEN    
+             DO I = 1, NL            
+         	    RUPAC2(I) = ROOTC(I)/TROOTF	
+         	    RUPAC1(I) = RUPAC3(I)/ TWATERF
+			    TRUPAC = TRUPAC + RUPAC1(I)*RUPAC2(I)  
+             ENDDO
+             TWATERF = TRUPAC; TRUPAC = 0.0
+             !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
+             DO I = 1, NL
+			    RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
+			    TRUPAC = TRUPAC + RUPAC4(I) 		
+             ENDDO
+		     TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
+		  ELSE
+		     TRUPAC = 0.0; RUPAC4(:)= 0.0
+		  END IF
 		 !---------------------------------------------------------------------------------------------------
 		 !This algorithm is modified from Coelho M.B. et al., 2003. Modeling root growth and the soil-plant-atmosphere continuum 
 		 !of cotton crops, Agricultural Water Management 60, 99-118.
@@ -316,10 +320,9 @@ END MODULE WSTRESS_MODULE
 !--------UPDATE the soil water uptake
 		 DO I = 1, NL
 			pv%PTRWL(i) = TRWL(i)
-         ENDDO
-	
+         ENDDO	
          !Calculating the drought stress factors on transpiration, temporal function, will use GECROS function
-		 PCEW   =(1.0-(1.0 - NOTNUL(TRW/TRC))**(FSWTD/1.5))					! After 27 Aug, 2010
+		 PCEW = min(1.0, max(0.0,1.0-max(0.0,(1.0 - NOTNUL(TRW/NOTNUL(TRC))))**(FSWTD/1.5)))					! After 27 Aug, 2010
 		 DEALLOCATE(RUPAC1, RUPAC2, RUPAC3, RUPAC4)   
        endif
 !-------If crop is not in the main field, set all stres factors at 1.

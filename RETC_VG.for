@@ -1058,7 +1058,7 @@ C=======================================================================
 
 !       Normalized water content
         Se = (SW(L) - WCr) / (SAT - WCr)
-        Se = MIN(MAX(Se, 0.0),1.0)
+        Se = MIN(MAX(Se, 0.00001),1.0)
 
 !       Water Potential
         WPcm  = ((Se ** (-1.0/mVG) - 1.) ** (1./nVG)) / alphaVG  !cm H2O

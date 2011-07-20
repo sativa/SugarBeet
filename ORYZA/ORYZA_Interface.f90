@@ -17,6 +17,7 @@
       USE ModuleData
       USE Public_Module		!VARIABLES
 	  USE RootGrowth
+      USE Interface_IpSoil
 
       IMPLICIT NONE
       SAVE
@@ -35,7 +36,7 @@
       INTEGER STGDOY(20), YRPLT
       INTEGER, PARAMETER :: NL_OR = 10
 
-      REAL WUPT, EOP, EP, ET, TRWUP
+      REAL WUPT, EOP, ET, TRWUP
       REAL KCAN, KEP
       REAL NSTRES, XLAI, NFP
       REAL PORMIN, RWUMX
@@ -52,6 +53,7 @@
       REAL, DIMENSION(NL) :: NH4, NO3, UPPM, UNO3, UNH4, UH2O
       REAL SomLitC(0:NL), SomLitE(0:NL,NELEM)
       REAL, DIMENSION(NL_OR) :: SNH4X, SNO3X, SOC, SON, SUREA
+      REAL SNN0C, SNN1C, PRLIG, PSLIG
 
 !-----Formal ORYZA parameters
       INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, TDATE
@@ -103,6 +105,7 @@
 
         ITASK = 1
         TIME =0.0
+        TERMNL = .FALSE.
         ALLOCATE(pv)                              !Added by TaoLi, 24 April 2011
 
 !       ORYZA does its own root water uptake - how to handle?
@@ -162,7 +165,6 @@
           pv%PSWC = WCL(L)
         END DO
 
-    
         FILEIOCS(1:30) = FILEIO
         TN = 0
         RN = 0
@@ -219,7 +221,7 @@
 
 !       Depth to plowpan (m)
         PLOWPAN = FLOODWAT % PLOWPAN
-        IF (PLOWPAN < 1.) THEN
+        IF (PLOWPAN < .01) THEN
 !         No plowpan specified - check for WR values close to zero
           PLOWPAN = (DS(NLAYR) + 10.)/100.0   !converted into m
           DO L = 2, NLAYR
@@ -240,6 +242,15 @@
  
         STGDOY(14) = YRDOY !start of simulation
         ISTAGE = 14
+
+!       Lignin content of senesced root and surface matter - read from file
+        CALL IPSOIL (CONTROL, CROP='RI',               &  !Input
+          PRLIG=PRLIG, PSLIG=PSLIG)
+
+!       Cumulative senesced N to surface and soil
+        SNN0C = 0.0  ; SNN1C = 0.0
+        pv%PResC(L,1) = 0.0
+        PV%PResN(L,1) = 0.0
 
 !----------------------------------------------------------------
 !       ORYZA initialization section - moved up to initialization section
@@ -311,10 +322,6 @@
       ELSEIF (DYNAMIC == RATE) THEN
 
         ITASK = 2
-
-        CALL GET('SPAM','EP',  EP)
-!       CALL GET('SPAM','EO',  EO)
-!       CALL GET('SPAM','UH2O',UH2O)
 
 !       Transfer DSSAT variables into ORYZA variables
         RDD   = WEATHER % SRAD*1000000.0
@@ -396,25 +403,48 @@
         YRHAR = YREND
         WUPT  = TRWUP
 
-!          DO L=0, NLAYR
-!            SENESCE % ResWt(L)  = (SENC(L) + CRESC(L)) / 0.40
-!            SENESCE % ResLig(L) = SENLIG(L) + CRESLIG(L)
-!            SENESCE % ResE(L,1) = SENN(L) + CRESN(L)
-!          ENDDO
-!
-!        endif
-!
-!        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
-!          !Transfer harvest residue from senescence variable to 
-!          !harvest residue variable on day of harvest.
-!          HARVRES = SENESCE
-!          SENESCE % ResWt  = 0.0
-!          SENESCE % ResLig = 0.0
-!          SENESCE % ResE   = 0.0
-!        ELSE
-!          MDATE = -99
-!        ENDIF
+!       Add senesced roots to soil fresh organic matter pools
+!pv%presC(L,1) = roots (for SENESCE and HARVRES)
+!PV%PResN(L,1) =  N in roots at harvest (for SENESCE and HARVRES)
+        DO L=1, NLAYR
+          SENESCE % ResWt(L)  = pv%PResC(L,1) / 0.40
+          SENESCE % ResLig(L) = SENESCE % ResWt(L) * PRLIG
+          SENESCE % ResE(L,1) = PV%PResN(L,1)
+          SNN1C = SNN1C + SENESCE % ResWt(L)
+        ENDDO
 
+        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
+
+!*** NEED TO HANDLE?
+!for potential production, all N levels are at optimum - read from crop file
+
+!         Transfer harvest residue from senescence variable to 
+!         harvest residue variable on day of harvest.
+!         This includes all leftover root mass on day of harvest
+          HARVRES = SENESCE
+          SENESCE % ResWt  = 0.0
+          SENESCE % ResLig = 0.0
+          SENESCE % ResE   = 0.0
+
+!         For surface residues, use HARVFRAC, if available
+          IF (HARVFRAC(2) < 1.E-6) HARVFRAC(2) = 0.10
+          HARVRES % ResWt(0)  = (WLVG + WLVD + WST) * HARVFRAC(2)
+          HARVRES % ResLig(0) = HARVRES % ResWt(0) * PSLIG
+          HARVRES % ResE(0,1) = (ANLV + ANLD + ANST) * HARVFRAC(2)
+
+          SNN0C = HARVRES % ResWt(0)
+
+!wlvg = total leaf biomass - default 10% left in field (kg/ha)
+!wlvd = dead leaf biomass - default 10% left in field (kg/ha)
+!wst  = stem - default 10% left in field (kg/ha)
+!ANSO= N in storage + grain (not used here) (kg[N]/ha)
+!ANLV = N in leaf (kg[N]/ha)
+!ANST = N in stem (kg[N]/ha)
+!ANLD = N in dead leaf (kg[N]/ha) (only for W limited)
+
+        ELSE
+          MDATE = -99
+        ENDIF
 
 !***********************************************************************
 !***********************************************************************
@@ -449,7 +479,7 @@
                           TRW,    TRWL,   LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
         !       Check for potential production condition  
         ELSEIF(INDEX(ISWWAT, "N").GT.0) THEN              !POTENTIAL WATER CONDITION
-            TRW = EP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
+            TRW = EOP; TKLT = SUM(TKL); ZRTMS = TKLT   !THE TOTAL TRANSPIRATION EQUALS TO POTENTIAL TRANSPIRATION
             CALL WNOSTRESS (NLAYR, TRW, TRWL, ZRT, TKL, LRSTRS, LDSTRS, LESTRS, PCEW, CPEW)
         END IF
 
@@ -517,12 +547,13 @@
           MDATE = YRDOY
         ENDIF 
       
-        IF (TERMNL) THEN
-          MDATE = YRDOY
-          YREND = YRDOY
-          CALL RDDTMP (IUNITD)
-        ENDIF
       ENDIF
+    ENDIF
+
+    IF (TERMNL .AND. ITASK > 0) THEN
+      MDATE = YRDOY
+      YREND = YRDOY
+      CALL RDDTMP (IUNITD)
     ENDIF
 
     SELECT CASE(DYNAMIC)
