@@ -278,25 +278,25 @@ END MODULE WSTRESS_MODULE
 			 ZLL = ZLL+TKL(I)        	
          ENDDO
          TRUPAC = 0.0;XXXX=TWATERF
-         IF((TROOTF.GT.0.0).AND.(TWATERF.GT.0.0)) THEN    
-             DO I = 1, NL            
+         IF((TROOTF.GT.0.0).AND.(TWATERF.GT.0.0)) THEN
+             DO I = 1, NL
          	    RUPAC2(I) = ROOTC(I)/TROOTF	
-         	    RUPAC1(I) = RUPAC3(I)/ TWATERF
+			    RUPAC1(I) = RUPAC3(I)/ TWATERF	
 			    TRUPAC = TRUPAC + RUPAC1(I)*RUPAC2(I)  
              ENDDO
              TWATERF = TRUPAC; TRUPAC = 0.0
-             !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
-             IF (TWATERF > 0.0) THEN
-               DO I = 1, NL
-			      RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
-			      TRUPAC = TRUPAC + RUPAC4(I) 		
-               ENDDO
- 		       TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
-             ELSE
- 		       TRUPAC = 0.0
-             ENDIF
+          ELSE
+             TWATERF = 0.0; TRUPAC = 0.0
+          END IF
+         !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
+         IF(TWATERF.GT.0.0) THEN
+             DO I = 1, NL
+			    RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
+			    TRUPAC = TRUPAC + RUPAC4(I) 		
+             ENDDO
+		     TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
 		  ELSE
-		     TRUPAC = 0.0; RUPAC4(:)= 0.0
+		    TRUPAC = 0.0
 		  END IF
 		 !---------------------------------------------------------------------------------------------------
 		 !This algorithm is modified from Coelho M.B. et al., 2003. Modeling root growth and the soil-plant-atmosphere continuum 
@@ -313,14 +313,16 @@ END MODULE WSTRESS_MODULE
          		DO I = 1, NL
          			TRWL(I) = RUPAC4(I) * TROOTF/DELT
          		ENDDO
-            ENDIF 
+            ENDIF
+         ELSE
+            TRW = 0.0; TRWL(:) =0.0 
          ENDIF
 !--------UPDATE the soil water uptake
 		 DO I = 1, NL
 			pv%PTRWL(i) = TRWL(i)
          ENDDO	
          !Calculating the drought stress factors on transpiration, temporal function, will use GECROS function
-		 PCEW = min(1.0, max(0.0,1.0-max(0.0,(1.0 - NOTNUL(TRW/NOTNUL(TRC))))**(FSWTD/1.5)))					! After 27 Aug, 2010
+		 PCEW = min(1.0, max(0.0,1.0-max(0.0,1.0 - max(0.0001,TRW)/max(0.0001,TRC))**(FSWTD/1.5)))					! After 27 Aug, 2010
 		 DEALLOCATE(RUPAC1, RUPAC2, RUPAC3, RUPAC4)   
        endif
 !-------If crop is not in the main field, set all stres factors at 1.

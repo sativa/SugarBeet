@@ -403,48 +403,6 @@
         YRHAR = YREND
         WUPT  = TRWUP
 
-!       Add senesced roots to soil fresh organic matter pools
-!pv%presC(L,1) = roots (for SENESCE and HARVRES)
-!PV%PResN(L,1) =  N in roots at harvest (for SENESCE and HARVRES)
-        DO L=1, NLAYR
-          SENESCE % ResWt(L)  = pv%PResC(L,1) / 0.40
-          SENESCE % ResLig(L) = SENESCE % ResWt(L) * PRLIG
-          SENESCE % ResE(L,1) = PV%PResN(L,1)
-          SNN1C = SNN1C + SENESCE % ResWt(L)
-        ENDDO
-
-        IF (YREND == YRDOY .AND. DYNAMIC == INTEGR) THEN 
-
-!*** NEED TO HANDLE?
-!for potential production, all N levels are at optimum - read from crop file
-
-!         Transfer harvest residue from senescence variable to 
-!         harvest residue variable on day of harvest.
-!         This includes all leftover root mass on day of harvest
-          HARVRES = SENESCE
-          SENESCE % ResWt  = 0.0
-          SENESCE % ResLig = 0.0
-          SENESCE % ResE   = 0.0
-
-!         For surface residues, use HARVFRAC, if available
-          IF (HARVFRAC(2) < 1.E-6) HARVFRAC(2) = 0.10
-          HARVRES % ResWt(0)  = (WLVG + WLVD + WST) * HARVFRAC(2)
-          HARVRES % ResLig(0) = HARVRES % ResWt(0) * PSLIG
-          HARVRES % ResE(0,1) = (ANLV + ANLD + ANST) * HARVFRAC(2)
-
-          SNN0C = HARVRES % ResWt(0)
-
-!wlvg = total leaf biomass - default 10% left in field (kg/ha)
-!wlvd = dead leaf biomass - default 10% left in field (kg/ha)
-!wst  = stem - default 10% left in field (kg/ha)
-!ANSO= N in storage + grain (not used here) (kg[N]/ha)
-!ANLV = N in leaf (kg[N]/ha)
-!ANST = N in stem (kg[N]/ha)
-!ANLD = N in dead leaf (kg[N]/ha) (only for W limited)
-
-        ELSE
-          MDATE = -99
-        ENDIF
 
 !***********************************************************************
 !***********************************************************************
@@ -526,6 +484,16 @@
         WAGT = WST + WLVG + WSO + WLVD
         WRR  = WRR14 * 0.86
 
+!       Add senesced roots to soil fresh organic matter pools
+!       pv%presC(L,1) = roots (for SENESCE and HARVRES)
+!       PV%PResN(L,1) =  N in roots at harvest (for SENESCE and HARVRES)
+        DO L=1, NLAYR
+          SENESCE % ResWt(L)  = pv%PResC(L,1) / 0.40
+          SENESCE % ResLig(L) = SENESCE % ResWt(L) * PRLIG
+          SENESCE % ResE(L,1) = PV%PResN(L,1)
+          SNN1C = SNN1C + SENESCE % ResWt(L)
+        ENDDO
+
 !       Temporary
         WRITE(IUNITD+50,5000) DOY,DAE,DVS,ZRT,LAI,LLV,WLVD, WLVG, WST, WSO, WRR14, WRT,&
                             GSO, GGR, GST, GLV,WAGT
@@ -554,6 +522,35 @@
       MDATE = YRDOY
       YREND = YRDOY
       CALL RDDTMP (IUNITD)
+
+      IF (DYNAMIC == INTEGR) THEN 
+!       Transfer harvest residue from senescence variable to 
+!       harvest residue variable on day of harvest.
+!       This includes all leftover root mass on day of harvest
+        HARVRES = SENESCE
+        SENESCE % ResWt  = 0.0
+        SENESCE % ResLig = 0.0
+        SENESCE % ResE   = 0.0
+
+!       For surface residues, use HARVFRAC, if available
+        IF (HARVFRAC(2) < 1.E-6) HARVFRAC(2) = 0.10
+        HARVRES % ResWt(0)  = (WLVG + WLVD + WST) * HARVFRAC(2)
+        HARVRES % ResLig(0) = HARVRES % ResWt(0) * PSLIG
+        HARVRES % ResE(0,1) = (ANLV + ANLD + ANST) * HARVFRAC(2)
+
+        SNN0C = HARVRES % ResWt(0)
+
+!       wlvg = total leaf biomass - default 10% left in field (kg/ha)
+!       wlvd = dead leaf biomass - default 10% left in field (kg/ha)
+!       wst  = stem - default 10% left in field (kg/ha)
+!       ANSO= N in storage + grain (kg[N]/ha) (not used here)
+!       ANLV = N in leaf (kg[N]/ha)
+!       ANST = N in stem (kg[N]/ha)
+!       ANLD = N in dead leaf (kg[N]/ha) (only for W limited)
+
+!       *** NEED TO HANDLE HERE?
+!       for potential production, all N levels are at optimum - read from crop file
+      ENDIF
     ENDIF
 
     SELECT CASE(DYNAMIC)
