@@ -9,7 +9,7 @@
           EOP, FLOODWAT, HARVFRAC, NH4, NO3, SOILPROP,            &    !Input
           SomLitC, SomLitE,                                       &    !Input
           ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             &    !Input
-          CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES, PORMIN,       &    !Output
+          CANHT, HARVRES, KTRANS, KSEVAP, MDATE, NSTRES, PORMIN,  &    !Output
           RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)              !Output
 
       USE ModuleDefs
@@ -37,7 +37,8 @@
       INTEGER, PARAMETER :: NL_OR = 10
 
       REAL WUPT, EOP, ET, TRWUP
-      REAL KCAN, KEP
+!      REAL KCAN, KEP
+      REAL KTRANS, KSEVAP
       REAL NSTRES, XLAI, NFP
       REAL PORMIN, RWUMX
       REAL CANHT, TOTIR
@@ -215,9 +216,11 @@
         RNSTRS = 1.0
 
         CANHT = 0.0   !Canopy height
-        KCAN  = 0.85  !Canopy light extinction coef
-        KEP   = 1.0   !Energy extinction coef
+!        KCAN  = 0.85  !Canopy light extinction coef
+!        KEP   = 1.0   !Energy extinction coef
         STGDOY= 9999999   !Dates for developement stages
+        KSEVAP = 0.85
+        KTRANS = 1.0  !NOT USED UNDER NEW METHOD.
 
 !       Depth to plowpan (m)
         PLOWPAN = FLOODWAT % PLOWPAN
@@ -557,8 +560,9 @@
     CASE(RUNINIT, SEASINIT, OUTPUT, SEASEND)
       CALL OR_OPGROW (CONTROL, ISWITCH, SOILPROP,      &
          CPEW, DVS, HU, LAI, LDSTRS, LESTRS, LRSTRS,   &
-         NFLV, NGR, NSLLV, PCEW, RDCL,                 &
-         WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, YRPLT, ZRT)
+         NFLV, NGR, RNSTRS, PCEW, RDCL,                &
+         WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, YRPLT, ZRT, &
+         NACR, ANRT, ANLV, ANSO, ANST, ANLD, SNN1C)
 
       CALL OR_OPHARV (CONTROL, ISWITCH,                 &
          HARVFRAC, ISDATE, ISTAGE, LAI, LESTRS, MDATE,  & !Input
