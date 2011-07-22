@@ -177,10 +177,10 @@ C=======================================================================
 !     ----------------------------
         END SELECT
 
-!!       Initialize plant transpiration variables
-!        CALL TRANS(DYNAMIC, 
-!     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &    EOP)                                            !Output
+!       Initialize plant transpiration variables
+        CALL TRANS(DYNAMIC, 
+     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &    EOP)                                            !Output
       ENDIF
 
       CALL MULCH_EVAP(DYNAMIC, MULCH, EOS, EM)
@@ -320,27 +320,27 @@ C       and total potential water uptake rate.
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
-!            IF (FLOOD .GT. 0.0) THEN
-!              !Use flood evaporation rate
-!              CALL TRANS (RATE, 
-!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &          EOP)                                            !Output
-!            ELSE
-!              !Use soil evaporation rate
-!              CALL TRANS(RATE, 
-!     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &          EOP)                                            !Output
-!            ENDIF
+            IF (FLOOD .GT. 0.0) THEN
+              !Use flood evaporation rate
+              CALL TRANS (RATE, 
+     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &          EOP)                                            !Output
+            ELSE
+              !Use soil evaporation rate
+              CALL TRANS(RATE, 
+     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &          EOP)                                            !Output
+            ENDIF
 
-!***************************************************************************
-!           07/19/2011 CHP/ JWJ replace this with TRANS
-!           Relative transpiration rate for CO2 effects
-            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
-            EOP = (EO - EOS) * TRAT
-
-!           Recalculate potential evapotranspiration based on TRAT
-            EO  = EOP + EOS
-!***************************************************************************
+!!***************************************************************************
+!!           07/19/2011 CHP/ JWJ replace this with TRANS
+!!           Relative transpiration rate for CO2 effects
+!            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+!            EOP = (EO - EOS) * TRAT
+!
+!!           Recalculate potential evapotranspiration based on TRAT
+!            EO  = EOP + EOS
+!!***************************************************************************
 
           ELSE
             EOP = 0.0
