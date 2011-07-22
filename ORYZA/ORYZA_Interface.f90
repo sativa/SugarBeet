@@ -134,7 +134,7 @@
           CALL ERROR(ERRKEY,75," ",0)
         ENDIF
 
-        CALL WaterPotential(SW, SOILPROP,  &    !Input
+        CALL WaterPotential(SW, SOILPROP, FLOODWAT % FLOOD,  &    !Input
           WPkPa)                                !Output
 
 !       Transfer from DSSAT SOILPROP variables to ORYZA variables, by layer
@@ -335,7 +335,7 @@
         WL0  = FLOODWAT % FLOOD  !the surface water depth in mm
         pv%pwl0 = wl0
 
-        CALL WaterPotential(SW, SOILPROP,  &    !Input
+        CALL WaterPotential(SW, SOILPROP, FLOODWAT % FLOOD, &    !Input
           WPkPa)                                !Output
 
         DO L = 1, NLAYR

@@ -71,6 +71,7 @@ C=======================================================================
 
 !     Root water uptake computed by some plant routines (optional)
       REAL UH2O(NL)
+      REAL ETRD, ETAE
 
 !     Species-dependant variables imported from PLANT module:
       REAL PORMIN, RWUMX
@@ -268,14 +269,26 @@ C       and total potential water uptake rate.
      &      CANHT,   !Needed by dynamic Penman-Monteith
      &      EO)      !Output
 
-!-----------------------------------------------------------------------
-!         POTENTIAL SOIL EVAPORATION
-!-----------------------------------------------------------------------
-!         05/26/2007 CHP/MJ Use XLAI instead of XHLAI 
-!         This was important for Canegro and affects CROPGRO crops
-!             only very slightly (max 0.5% yield diff for one peanut
-!             experiment).  No difference to other crop models.
-          CALL PSE(EO, KSEVAP, XLAI, EOS)
+! *** TEMP REMOVE PSE CAL ***
+!!-----------------------------------------------------------------------
+!!         POTENTIAL SOIL EVAPORATION
+!!-----------------------------------------------------------------------
+!!         05/26/2007 CHP/MJ Use XLAI instead of XHLAI 
+!!         This was important for Canegro and affects CROPGRO crops
+!!             only very slightly (max 0.5% yield diff for one peanut
+!!             experiment).  No difference to other crop models.
+!          CALL PSE(EO, KSEVAP, XLAI, EOS)
+
+!***************************************************************************
+!           07/22/2011 CHP/TL replace this with TRANS
+!           Relative transpiration rate for CO2 effects
+            ETRD = EO * 0.75
+            ETAE = EO - ETRD
+            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
+
+!           Recalculate potential evapotranspiration based on TRAT
+            EOS  = EO - EOP
+!***************************************************************************
 
 !         Initialize soil, mulch and flood evaporation
           ES = 0.; EM = 0.; EF = 0.
@@ -320,22 +333,23 @@ C       and total potential water uptake rate.
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
-            IF (FLOOD .GT. 0.0) THEN
-              !Use flood evaporation rate
-              CALL TRANS (RATE, 
-     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ELSE
-              !Use soil evaporation rate
-              CALL TRANS(RATE, 
-     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ENDIF
+!            IF (FLOOD .GT. 0.0) THEN
+!              !Use flood evaporation rate
+!              CALL TRANS (RATE, 
+!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ELSE
+!              !Use soil evaporation rate
+!              CALL TRANS(RATE, 
+!     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ENDIF
 
 !!***************************************************************************
 !!           07/19/2011 CHP/ JWJ replace this with TRANS
 !!           Relative transpiration rate for CO2 effects
-!            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+!!            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+!            TRAT = 1.0
 !            EOP = (EO - EOS) * TRAT
 !
 !!           Recalculate potential evapotranspiration based on TRAT

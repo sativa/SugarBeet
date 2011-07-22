@@ -1035,7 +1035,7 @@ C  Called by: SOILDYN
 C=======================================================================
 
       SUBROUTINE WaterPotential(
-     &    SW, SOILPROP,              !Input
+     &    SW, SOILPROP, FLOOD,       !Input
      &    WPkpa)                     !Output
 !-----------------------------------------------------------------------   
       USE ModuleDefs  
@@ -1046,9 +1046,11 @@ C=======================================================================
       TYPE (SoilType)    , INTENT(IN) :: SOILPROP
       REAL, DIMENSION(NL), INTENT(OUT):: WPkpa
       INTEGER L
-      REAL  Se, WPcm, WCr, SAT, mVG, nVG, alphaVG
+      REAL  Se, WPcm, WCr, SAT, mVG, nVG, alphaVG, FLOOD
 
       WPkpa = 0.0
+      IF (FLOOD > 1.E-6) RETURN
+
       DO L = 1, SOILPROP % NLAYR
         WCr = SOILPROP % WCr(L)
         SAT = SOILPROP % SAT(L)
