@@ -282,7 +282,7 @@ C       and total potential water uptake rate.
 !***************************************************************************
 !           07/22/2011 CHP/TL replace this with TRANS
 !           Relative transpiration rate for CO2 effects
-            ETRD = EO * 0.75
+            ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
             ETAE = EO - ETRD
             EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
 

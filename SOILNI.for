@@ -653,10 +653,11 @@ C         If flooded, lose all nitrate --------REVISED-US
 !            DNFRATE = 0.0
 !          ENDIF
 
-!         chp/us 4/21/2006
-          IF (FLOOD .GT. 0.0 .AND. WFDENIT > 0.0) THEN
-            DENITRIF(L) = SNO3_AVAIL
-          ENDIF
+!         chp 7/22/2011 remove this - Tao Li, Jim Jones!!!!!!
+!!         chp/us 4/21/2006
+!          IF (FLOOD .GT. 0.0 .AND. WFDENIT > 0.0) THEN
+!            DENITRIF(L) = SNO3_AVAIL
+!          ENDIF
 
 !chp 4/20/2004   DENITRIF = AMAX1 (DENITRIF, DNFRATE)
           DENITRIF(L) = AMAX1 (DENITRIF(L), 0.0)

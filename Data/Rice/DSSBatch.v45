@@ -8,7 +8,32 @@ $BATCH(RICE)
 ! Debug        : C:\DSSAT45\DSCSM045.EXE RICER045 " B DSSBatch.v45"
 !
 @FILEX                                                                                        TRTNO     RP     SQ     OP     CO
-!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                1      1      0      0      0
+!Wet season - CERES
 !C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                2      1      0      0      0
-C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                3      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                5      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                6      1      0      0      0
+
+!Wet season - ORYZA
+!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                1      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                3      1      0      0      0
 !C:\DSSAT45\rice\ORYZA\IRMA9201.RIX                                                                4      1      0      0      0
+
+!Dry season - CERES
+!C:\DSSAT45\rice\ORYZA\IRMA9202.RIX                                                                2      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9202.RIX                                                                5      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9202.RIX                                                                6      1      0      0      0
+
+!Dry season - ORYZA
+!C:\DSSAT45\rice\ORYZA\IRMA9202.RIX                                                                1      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9202.RIX                                                                3      1      0      0      0
+!C:\DSSAT45\rice\ORYZA\IRMA9202.RIX                                                                4      1      0      0      0
+
+!Wet season IRRI - ORYZA - N Trials
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                1      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                2      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                3      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                4      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                5      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                6      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                7      1      0      0      0
+C:\DSSAT45\rice\ORYZA\IRMA9203.RIX                                                                8      1      0      0      0
