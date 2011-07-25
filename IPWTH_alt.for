@@ -813,7 +813,7 @@ C         Read in weather file header.
                 READ(LINE(C1:C2),*,IOSTAT=ERR) RHUM
                 IF (ERR .NE. 0) RHUM = -99.0
 
-              CASE('VAPR')
+              CASE('VAPR','VPRS')
                 READ(LINE(C1:C2),*,IOSTAT=ERR) VAPR
                 IF (ERR .NE. 0) VAPR = -99.0
             END SELECT
