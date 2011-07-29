@@ -417,7 +417,7 @@ C       Substitute default values if REFHT or WINDHT are missing.
 !     Error checking
       CALL DailyWeatherCheck(CONTROL,
      &    "WTHINIT", FILEWW, RAIN, RecNum, RHUM,          !Input
-     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOY, VAPR,    !Input
+     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOY,          !Input
      &    YREND)                                          !Output
 
       IF (YREND > 0) THEN
@@ -436,7 +436,7 @@ C       Substitute default values if REFHT or WINDHT are missing.
 !       Error checking
         CALL DailyWeatherCheck(CONTROL,
      &    ERRKEY, FILEWW, RAIN, RecNum, RHUM,             !Input
-     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOY, VAPR,    !Input
+     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOY,          !Input
      &    YREND)                                          !Output
 
       ENDIF
@@ -579,7 +579,7 @@ C         Read in weather file header.
 !     Error checking
       CALL DailyWeatherCheck(CONTROL,
      &    ERRKEY, FILEWW, RAIN, RecNum, RHUM,             !Input
-     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOY, VAPR,    !Input
+     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOY,          !Input
      &    YREND)                                          !Output
 
 !      ERR = 0
@@ -972,7 +972,7 @@ C         Read in weather file header.
 !-----------------------------------------------------------------------
       Subroutine DailyWeatherCheck(CONTROL,
      &    ERRKEY, FILEWW, RAIN, RecNum, RHUM,             !Input
-     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOYW, VAPR,   !Input
+     &    SRAD, TDEW, TMAX, TMIN, WINDSP, YRDOYW,         !Input
      &    YREND)                                          !Output
 
 !     Checks validity of daily weather for observed or generated values.
@@ -984,7 +984,7 @@ C         Read in weather file header.
       CHARACTER*(*) ERRKEY, FILEWW
       CHARACTER*78 MSG(10)
       Integer ErrCode, NChar, RecNum, YRDOYW, YREND
-      REAL RAIN, RHUM, SRAD, TDEW, TMAX, TMIN, WINDSP, VAPR
+      REAL RAIN, RHUM, SRAD, TDEW, TMAX, TMIN, WINDSP
       REAL CALC_TDEW
       TYPE (ControlType) CONTROL
 

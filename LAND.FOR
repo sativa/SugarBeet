@@ -139,7 +139,7 @@ C     PLANT Module Variables
 C-----------------------------------------------------------------------
       INTEGER MDATE
       INTEGER STGDOY(20)
-      REAL CANHT, EORATIO, NSTRES, PORMIN, RWUMX
+      REAL CANHT, EORATIO, NSTRES, PORMIN, PSTRES1, RWUMX
       REAL XHLAI, XLAI
       REAL KSEVAP, KTRANS
       REAL, Dimension(NL) :: PUptake, RLV, FracRts, UNH4, UNO3, KUptake
@@ -228,7 +228,7 @@ C     Read initial soil-plant-atmosphere data
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -244,9 +244,9 @@ C-----------------------------------------------------------------------
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
 
 C-----------------------------------------------------------------------
 C     Initialize summary.out information
@@ -285,7 +285,7 @@ C     Seasonal initialization for soil-plant-atmosphere processes
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -313,9 +313,9 @@ C-----------------------------------------------------------------------
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
 C-----------------------------------------------------------------------
 C     Initialize summary output file - possible output from 
 C     various modules.
@@ -366,7 +366,7 @@ C     rates of evapotranspiration.
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -386,9 +386,9 @@ C-----------------------------------------------------------------------
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
       ENDIF
 
 C***********************************************************************
@@ -412,7 +412,7 @@ C     Compute cumulative totals for soil-plant-atmosphere processes
 C-----------------------------------------------------------------------
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -431,9 +431,9 @@ C-----------------------------------------------------------------------
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
       ENDIF
 
 C-----------------------------------------------------------------------
@@ -465,7 +465,7 @@ C***********************************************************************
 
         CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -482,9 +482,9 @@ C-----------------------------------------------------------------------
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
         ENDIF
 
         CALL MGMTOPS(CONTROL, ISWITCH, 
@@ -514,7 +514,7 @@ C     Print seasonal summaries and close files.
 
       CALL SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,      !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -527,9 +527,9 @@ C     Print seasonal summaries and close files.
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
 
 !     Call management operations module for seasonal printout.
       CALL MGMTOPS(CONTROL, ISWITCH, 

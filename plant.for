@@ -58,9 +58,9 @@ C=======================================================================
      &    TRWU, TRWUP, UPPM, WEATHER, YREND, YRPLT,       !Input
      &    FLOODN,                                         !I/O
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS,        !Output
-     &    KUptake, MDATE, NSTRES, PUptake,                !Output
-     &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
-     &    FracRts, UNH4, UNO3, UH2O, XHLAI, XLAI)         !Output
+     &    KUptake, MDATE, NSTRES, PSTRES1,                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
+     &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
 
 C-----------------------------------------------------------------------
 !     The following models are currently supported:
@@ -127,6 +127,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 	REAL, DIMENSION(1:NumOfStalks,CanopyLayers) :: LFmntDEF
 !     P model
       REAL, DIMENSION(NL) :: PUptake, SPi_AVAIL, FracRts
+      REAL PSTRES1
 
 !     K model
       REAL, DIMENSION(NL) :: KUptake, SKi_Avail
@@ -298,7 +299,8 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
      &    EOP, HARVFRAC, NH4, NO3, SOILPROP, SPi_AVAIL,   !Input
      &    ST, SW, TRWUP, WEATHER, YREND, YRPLT,           !Input
      &    CANHT, EORATIO, HARVRES, KSEVAP, KTRANS, MDATE, !Output
-     &    NSTRES, PUptake, PORMIN, RLV, RWUMX, SENESCE,   !Output
+     &    NSTRES, PSTRES1,                                !Output
+     &    PUptake, PORMIN, RLV, RWUMX, SENESCE,           !Output
      &    STGDOY, FracRts, UNH4, UNO3, XHLAI, XLAI)       !Output
 
 !     -------------------------------------------------

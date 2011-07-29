@@ -136,6 +136,7 @@
 
         CALL WaterPotential(SW, SOILPROP, FLOODWAT % FLOOD,  &    !Input
           WPkPa)                                !Output
+        CALL PotentialOp(CONTROL, ISWITCH, SOILPROP, WPkPa)
 
 !       Transfer from DSSAT SOILPROP variables to ORYZA variables, by layer
         PV % PNL = NLAYR
@@ -335,8 +336,7 @@
         WL0  = FLOODWAT % FLOOD  !the surface water depth in mm
         pv%pwl0 = wl0
 
-        CALL WaterPotential(SW, SOILPROP, FLOODWAT % FLOOD, &    !Input
-          WPkPa)                                !Output
+        CALL WaterPotential(SW, SOILPROP, FLOODWAT % FLOOD, WPkPa)
 
         DO L = 1, NLAYR
           WCL(L) = SW(L)      !Soil water content (mm3/mm3)
@@ -414,6 +414,7 @@
       ELSE
 
         ITASK = 0
+        CALL PotentialOp(CONTROL, ISWITCH, SOILPROP, WPkPa)
 
         IF (DYNAMIC == SEASEND) THEN
           STGDOY(20) = YRDOY

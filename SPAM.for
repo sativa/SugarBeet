@@ -34,7 +34,7 @@ C=======================================================================
 
       SUBROUTINE SPAM(CONTROL, ISWITCH,
      &    CANHT, EORATIO, KSEVAP, KTRANS, MULCH,          !Input
-     &    PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
+     &    PSTRES1, PORMIN, RLV, RWUMX, SOILPROP, SW,               !Input
      &    SWDELTS, UH2O, WEATHER, WINF, XHLAI, XLAI,      !Input
      &    FLOODWAT, SWDELTU,                              !I/O
      &    EO, EOP, EOS, EP, ES, SRFTEMP, ST, SWDELTX,     !Output
@@ -78,6 +78,9 @@ C=======================================================================
 
 !     Flood management variables:
       REAL FLOOD
+      
+!     P Stress on photosynthesis
+      REAL PSTRES1
 
 !-----------------------------------------------------------------------
 !     Define constructed variable types based on definitions in
@@ -129,8 +132,8 @@ C=======================================================================
 !-----------------------------------------------------------------------
       IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z') THEN
         CALL ETPHOT(CONTROL, ISWITCH,
-     &    PORMIN, RLV, RWUMX, SOILPROP, ST, SW,           !Input
-     &    WEATHER, XHLAI,                                 !Input
+     &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
+     &    WEATHER, XLAI,                                 !Input
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
       ENDIF
 
@@ -190,8 +193,8 @@ C=======================================================================
       IF (CROP .NE. 'FA') THEN
         IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z') THEN
           CALL ETPHOT(CONTROL, ISWITCH,
-     &    PORMIN, RLV, RWUMX, SOILPROP, ST, SW,           !Input
-     &    WEATHER, XHLAI,                                 !Input
+     &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
+     &    WEATHER, XLAI,                                 !Input
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
         ENDIF
       ENDIF
@@ -381,8 +384,8 @@ C       and total potential water uptake rate.
           !or for both photosynthesis and evapotranspiration
           !   (MEPHO = 'L' and MEEVP = 'Z').
           CALL ETPHOT(CONTROL, ISWITCH,
-     &    PORMIN, RLV, RWUMX, SOILPROP, ST, SW,           !Input
-     &    WEATHER, XHLAI,                                 !Input
+     &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
+     &    WEATHER, XLAI,                                 !Input
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
         ENDIF
 
@@ -473,8 +476,8 @@ C-----------------------------------------------------------------------
 
       IF (CROP .NE. 'FA' .AND. MEPHO .EQ. 'L') THEN
         CALL ETPHOT(CONTROL, ISWITCH,
-     &    PORMIN, RLV, RWUMX, SOILPROP, ST, SW,           !Input
-     &    WEATHER, XHLAI,                                 !Input
+     &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
+     &    WEATHER, XLAI,                                 !Input
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
       ENDIF
 
@@ -497,8 +500,8 @@ C-----------------------------------------------------------------------
 
       IF (MEPHO .EQ. 'L') THEN
         CALL ETPHOT(CONTROL, ISWITCH,
-     &    PORMIN, RLV, RWUMX, SOILPROP, ST, SW,           !Input
-     &    WEATHER, XHLAI,                                 !Input
+     &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
+     &    WEATHER, XLAI,                                 !Input
      &    EOP, EP, ES, RWU, TRWUP)                        !Output
       ENDIF
 

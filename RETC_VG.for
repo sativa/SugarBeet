@@ -1078,3 +1078,141 @@ C=======================================================================
 !-----------------------------------------------------------------------
 !     END SUBROUTINE WaterPotential
 !=======================================================================
+!=======================================================================
+!  PotentialOp, Subroutine
+!  Output daily info for Potential 
+!-----------------------------------------------------------------------
+!  REVISION       HISTORY
+!  
+!=======================================================================
+
+      Subroutine PotentialOp(CONTROL, ISWITCH, SOILPROP, WPkPa) !MgmtWTD,
+      ! JKZW should change the MgmtWTD to Flood depth
+!-----------------------------------------------------------------------
+      USE ModuleDefs
+      IMPLICIT NONE
+      SAVE
+!-----------------------------------------------------------------------
+      integer DYNAMIC, YR2, DY2, DAS, LUNPotential, LIMIT_2D, L
+      INTEGER INCDAT, N1_LYR, N2_LYR
+      ! REAL, INTENT(IN) :: MgmtWTD
+      TYPE (ControlType), INTENT(IN) :: CONTROL
+      Type(SoilType) , INTENT(INOUT):: SOILPROP
+      TYPE (SwitchType)   ISWITCH
+
+      REAL, DIMENSION(NL):: WPkPa, DUL, LL, SAT, LrTop, DS !NLAYR
+      REAL ThetaCa(25)
+      CHARACTER*17, PARAMETER :: PotentialOut = 'Potential.OUT'
+      LOGICAL FEXIST, DOPRINT
+      !    CALL GET('MGMT','WATTAB',MgmtWTD)
+
+      DYNAMIC = CONTROL % DYNAMIC
+      
+!***********************************************************************
+!     Seasonal initialization - run once per season
+!***********************************************************************
+      IF (DYNAMIC .EQ. SEASINIT) THEN
+!-----------------------------------------------------------------------
+        DOPRINT=.TRUE.
+        IF (ISWITCH % IDETW .EQ. 'N') THEN
+          DOPRINT=.FALSE.
+        ENDIF
+        IF (ISWITCH % ISWWAT .EQ. 'N') THEN
+          DOPRINT=.FALSE.
+        ENDIF
+        IF (ISWITCH % IDETL /= 'D') THEN
+          DOPRINT=.FALSE.
+        ENDIF
+        IF (.NOT. DOPRINT) RETURN
+
+        DO L = 1, min(25, SOILPROP % NLAYR)
+          DS(L) = SOILPROP % DS(L)
+          LrTop(L) = DS(L) - SOILPROP % DLAYR(L)
+          LL(L)   = SOILPROP % LL(L)
+          DUL(L)  = SOILPROP % DUL(L)
+          SAT(L)  = SOILPROP % SAT(L)
+        EndDo
+
+!       Open output file
+        CALL GETLUN('PotentialOut', LUNPotential)
+        INQUIRE (FILE = PotentialOut, EXIST = FEXIST)
+        IF (FEXIST) THEN
+          OPEN (UNIT = LUNPotential,FILE =PotentialOut,STATUS = 'OLD',
+     &          POSITION = 'APPEND')
+        ELSE
+          OPEN (UNIT = LUNPotential,FILE =PotentialOut,STATUS = 'NEW')
+          WRITE(LUNPotential,
+     &         '("*Daily Potential for each Soil layer")')
+        ENDIF
+
+        CALL HEADER(SEASINIT, LUNPotential, CONTROL % RUN)
+!        if (CONTROL % RUN .eq. 1) then
+        !  WRITE (LUNPotential, '(I2)') &
+        !      ('! LIMIT_2D is ', LIMIT_2D) 
+  !      Endif
+ 
+        N1_LYR = Min (11, SOILPROP % NLAYR)
+        N2_LYR = Min (25, SOILPROP % NLAYR) 
+
+        WRITE (LUNPotential,1115, ADVANCE='NO')'!    Variable ' 
+        WRITE (LUNPotential,1116) ("LYR",L, L=1,N1_LYR),          
+     &         ("LYR",L, L=13,N2_LYR, 2)
+        WRITE (LUNPotential,1115, ADVANCE='NO')'!   Top Layer'
+        WRITE (LUNPotential,1118) (LrTop(L),L=1,N1_LYR),           
+     &         (LrTop(L),L=13,N2_LYR,2)
+        WRITE (LUNPotential,1115, ADVANCE='NO')'!Bottom Layer'
+        WRITE (LUNPotential,1118) (DS(L),L=1,N1_LYR),              
+     &         (DS(L),L=13,N2_LYR,2)
+        WRITE (LUNPotential,1115, ADVANCE='NO')'!          LL'
+        WRITE (LUNPotential,1119) (LL(L),L=1,N1_LYR),              
+     &         (LL(L),L=13,N2_LYR,2)
+        WRITE (LUNPotential,1115, ADVANCE='NO')'!         DUL'
+        WRITE (LUNPotential,1119) (DUL(L),L=1,N1_LYR),             
+     &         (DUL(L),L=13,N2_LYR,2)
+        WRITE (LUNPotential,1115, ADVANCE='NO')'!         SAT'
+        WRITE (LUNPotential,1119) (SAT(L),L=1,N1_LYR),             
+     &         (SAT(L),L=13,N2_LYR,2)
+        WRITE (LUNPotential,1115)
+ 
+        WRITE (LUNPotential,1120, ADVANCE='NO')'@YEAR DOY DAS '
+        WRITE (LUNPotential,1116) ("LYR",L, L=1,N1_LYR), 
+     &      ("LYR",L, L=13,N2_LYR, 2)
+    !    WRITE (LUNPotential,1120)' mgWTD LIMIT_2D'
+        
+        CALL YR_DOY(INCDAT(CONTROL % YRDOY,-1),YR2,DY2)
+        WRITE (LUNPotential,1300) YR2, DY2, DAS, 
+     &        (WPkPa(L),L=1,N1_LYR), (WPkPa(L),L=13,N2_LYR,2)
+  !      WRITE (LUNPotential,1400) MgmtWTD 
+      
+!***********************************************************************
+!       DAILY RATE CALCULATIONS
+!***********************************************************************
+      ELSEIF (DYNAMIC .EQ. RATE) THEN        
+      
+        CALL YR_DOY(CONTROL % YRDOY, YR2, DY2)
+        DAS = CONTROL % DAS
+        WRITE (LUNPotential,1300) YR2, DY2, DAS, 
+     &      (WPkPa(L),L=1,N1_LYR), (WPkPa(L),L=13,N2_LYR,2)
+  !      WRITE (LUNPotential,1400) MgmtWTD  
+ 1115   FORMAT(13A)
+ 1116   FORMAT(9(2X,A5,I1), 9(1X,A5,I2)) 
+ 1118   FORMAT(1x, 18F8.1) 
+ 1119   FORMAT(1x, 18F8.2) 
+ 1120   FORMAT(14A)     
+ 1122   FORMAT(A1, 7X, A5, 1X, 18F8.3, F8.1,3X)   
+ 1300   FORMAT(1X,I4,1X,I3,1X,I3, 1X, 18F8.3, F8.1,3X, I2) 
+ 1400   FORMAT(F8.1,3X, I2) 
+!***********************************************************************
+!       END OF DYNAMIC IF CONSTRUCT
+!***********************************************************************  
+      Endif  
+      RETURN
+      End Subroutine PotentialOp
+!=======================================================================
+!=======================================================================
+!     PotentialOp VARIABLE DEFINITIONS:
+!-----------------------------------------------------------------------
+!
+!-----------------------------------------------------------------------
+!     END SUBROUTINE PotentialOp
+!=======================================================================

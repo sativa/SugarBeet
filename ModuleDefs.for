@@ -61,13 +61,22 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 10
+        INTEGER :: Build = 16 
       END TYPE VersionType
       TYPE (VersionType) Version
 !     CHARACTER(len=10) :: VBranch = '-Release  '
       CHARACTER(len=10) :: VBranch = '-ORYZA2000'
 
 !     Version history:  
+!       4.6.0.2  gh  06/29/2011 Sorghum cul file re-order.
+!       4.6.0.1  chp 06/28/2011 v4.6
+!                               Changes to CSCER, CSCRP, incl. spe, eco, cul formats
+!       4.5.1.15 chp 06/27/2011 Fixed zero divide in ROOTWU
+!       4.5.1.14 chp 05/18/2011 More changes to CSCER, CSCRP; MDATE initialization
+!       4.5.1.13 chp 05/05/2011 More changes to CSCER (see file CSCER040.FOR)
+!       4.5.1.12 chp 05/04/2011 Revised format for CSCER species, ecotype files
+!                               Other changes to CSCER (see file CSCER040.FOR)
+!       4.5.1.11 chp 04/29/2011 ETPHOT P stress, P for peanut enabled
 !       4.5.1.10 chp 03/23/2011 Environmental summary for wheat, WH species change
 !       4.5.1.9  chp 02/23/2011 Environmental summary in Summary.OUT
 !       4.5.1.8  chp 02/14/2011 SLPF enabled for Canegro
@@ -498,6 +507,11 @@ C             CHP Added TRTNUM to CONTROL variable.
         Character*8 WSTAT
       End Type WeathType
 
+      TYPE PDLABETATYPE
+        REAL PDLA
+        REAL BETALS
+      END TYPE
+
 !     Data which can be transferred between modules
       Type TransferType
         Type (ControlType) CONTROL
@@ -511,6 +525,7 @@ C             CHP Added TRTNUM to CONTROL variable.
         Type (SPAMType)    SPAM
         Type (WatType)     WATER
         Type (WeathType)   WEATHER
+        TYPE (PDLABETATYPE) PDLABETA
       End Type TransferType
 
 !     The variable SAVE_data contains all of the components to be 
@@ -708,6 +723,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         Case DEFAULT; ERR = .TRUE.
         END SELECT
 
+      CASE ('PDLABETA')
+        SELECT CASE(VarName)
+        CASE('PDLA'); Value = SAVE_data % PDLABETA % PDLA
+        CASE('BETA'); Value = SAVE_data % PDLABETA % BETALS
+        CASE DEFAULT; ERR = .TRUE.
+        END SELECT
+            
       Case DEFAULT; ERR = .TRUE.
       END SELECT
 
@@ -800,6 +822,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         Case DEFAULT; ERR = .TRUE.
         END SELECT
 
+      CASE ('PDLABETA')
+        SELECT CASE(VarName)
+        CASE('PDLA'); SAVE_data % PDLABETA % PDLA = Value
+        CASE('BETA'); SAVE_data % PDLABETA % BETALS = Value
+        CASE DEFAULT; ERR = .TRUE.
+        END SELECT
+            
       Case DEFAULT; ERR = .TRUE.
       END SELECT
 
