@@ -120,6 +120,7 @@ C  ??/??/?? JWJ Written as subroutine ETRATIO.
 C  12/05/93 NBP Changed to TRATIO function.  Changed VPDF to VPSLOP.
 C  10/18/95 GH  Modified for multiple species.
 !  10/17/97 CHP Modified for modular format.
+!  08/23/2011 CHP/
 !-----------------------------------------------------------------------
 !  Called by: TRANS
 !  Calls:     BLRRES
@@ -183,18 +184,23 @@ C     C-3 Crops
 
 C     Compute canopy resistances, RL and RLC.
 
-      RL = RLF / XHLAI
-      RLC = RLFC / XHLAI
+!      RL = RLF / XHLAI
+!      RLC = RLFC / XHLAI
 
-C     Compute boundary layer resistance (Jagtap and Jones, 1990).
+      RL = RLF / (0.5 * 2.88)   !FAO-56 assumption LAI = 2.88 reference
+      RLC = RLFC / (0.5 * 2.88)
 
-      CALL BLRRES(
-     &    CHIGHT, UAVG,                   !Input
-     &    RS1, RS2, RC1, RC2)             !Output
+!C     Compute boundary layer resistance (Jagtap and Jones, 1990).
+!      CALL BLRRES(
+!     &    CHIGHT, UAVG,                   !Input
+!     &    RS1, RS2, RC1, RC2)             !Output
+!
+!      RATIO = XHLAI/LAIMAX
+!      IF (RATIO .GT. 1.0) RATIO = 1.0
+!      RA = RC1 + (RC2 - RC1) * RATIO
 
-      RATIO = XHLAI/LAIMAX
-      IF (RATIO .GT. 1.0) RATIO = 1.0
-      RA = RC1 + (RC2 - RC1) * RATIO
+!     Replace boundary layer resistance function with this eqn
+      RA = 208. / UAVG  !FAO-56
 
 C     Compute delta and gamma.
 
