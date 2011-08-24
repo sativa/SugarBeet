@@ -212,6 +212,9 @@ C     Compute delta and gamma.
       XDEN = DELTA + GAMMA*(1.0+RLC/RA)
       TRATIO = XNUM / XDEN
 
+!     CHP 8/23/11
+!     print, then plot, RA and TRATIO for old and new models.
+
       END ! FUNCTION TRATIO
 
 !-----------------------------------------------------------------------
