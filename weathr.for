@@ -315,8 +315,12 @@ C     Calculate hourly weather data.
      &    RADHR, RHUMHR, TAIRHR, TAVG, TDAY, TGRO,        !Output
      &    TGROAV, TGRODY, WINDHR)                         !Output
 
-      !Adjust wind speed from reference height to 2m height.
-      WINDSP = WINDSP * (2.0 / WINDHT) ** 2.0
+C     Adjust wind speed from reference height to 2m height.
+      IF (WINDSP > 0.0) THEN
+        WINDSP = WINDSP * (2.0 / WINDHT) ** 2.0
+      ELSE
+        WINDSP = 86.4
+      ENDIF
 
 C     Compute daily normal temperature.
       TA = TAV - SIGN(1.0,XLAT) * TAMP * COS((DOY-20.0)*RAD)

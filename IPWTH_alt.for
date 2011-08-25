@@ -15,6 +15,7 @@ C  01/14/2005 CHP Modified checks for TAMP, TAV
 C  02/08/2005 CHP Added check for weather file name when first day of
 C                   a sequence occurs on Jan 1.
 !  08/02/2006 CHP Read and store weather data in arrays
+!  08/25/2011 CHP Read vapor pressure (VAPR or VPRS) 
 C-----------------------------------------------------------------------
 C  Called by: WEATHR
 C  Calls:     None
@@ -781,39 +782,41 @@ C         Read in weather file header.
               !  READ(LINE(C1:C2),*,IOSTAT=ERR) YRDOYW
               !  IF (ERR .NE. 0) EXIT
 
-              CASE('SRAD')
+              CASE('SRAD')  !Solar radiation MJ/m2/d
                 READ(LINE(C1:C2),*,IOSTAT=ERR) SRAD
                 IF (ERR .NE. 0) SRAD = -99.
 
-              CASE('TMAX')
+              CASE('TMAX')  !Max daily temperature (C)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) TMAX
                 IF (ERR .NE. 0) TMAX = -99.
 
-              CASE('TMIN')
+              CASE('TMIN')  !Min daily temperature (C)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) TMIN
                 IF (ERR .NE. 0) TMIN = -99.
 
-              CASE('RAIN')
+              CASE('RAIN')  !Daily precip (mm)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) RAIN
                 IF (ERR .NE. 0) RAIN = -99.
 
-              CASE('DEWP', 'TDEW')
+              CASE('DEWP', 'TDEW')  !Dewpoint temp (C)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) TDEW
                 IF (ERR .NE. 0) TDEW = -99.0
 
-              CASE('WIND')
+              CASE('WIND')  !Daily wind run (km/d)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) WINDSP
                 IF (ERR .NE. 0) WINDSP = -99.0
 
-              CASE('PAR')
+              CASE('PAR')   
+!               Photosynthetically active radiation (Einstein/m2/day)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) PAR
                 IF (ERR .NE. 0) PAR = -99.0
 
-              CASE('RHUM')
+              CASE('RHUM')  
+!               Relative humidity at TMIN (or max rel. hum) (%)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) RHUM
                 IF (ERR .NE. 0) RHUM = -99.0
 
-              CASE('VAPR','VPRS')
+              CASE('VAPR','VPRS')   !Vapor pressure (kPa)
                 READ(LINE(C1:C2),*,IOSTAT=ERR) VAPR
                 IF (ERR .NE. 0) VAPR = -99.0
             END SELECT
@@ -1056,7 +1059,7 @@ c                   available.
           ENDIF
       ENDIF
 
-      IF (WINDSP <= 0.) WINDSP = 86.4
+!      IF (WINDSP <= 0.) WINDSP = 86.4
 !      IF (WINDSP <= -1.E-6) THEN
 !        WINDSP = 86.4
 !      ELSEIF (WINDSP < 1.0) THEN

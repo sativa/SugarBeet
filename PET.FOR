@@ -125,6 +125,7 @@ C  02/06/2003 KJB/CHP Added EORATIO as input from plant routines.
 !  07/24/2006 CHP Use MSALB instead of SALB (includes mulch and soil 
 !                 water effects on albedo)
 !  09/19/2006 SSJ Fixed error in REFHT calc as noted below.
+!  08/25/2011 CHP Use measured vapor pressure (VAPR), if available
 !-----------------------------------------------------------------------
 !  Called from:   PET
 !  Calls:         None
