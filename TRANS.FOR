@@ -89,7 +89,7 @@ C       will depend on whether actual soil evapo (ES) meets EOS
       ENDIF
 !-----------------------------------------------------------------------
       RETURN
-      END !SUBROUTINE TRANS
+      END SUBROUTINE TRANS
 
 !-----------------------------------------------------------------------
 !     TRANS VARIABLE DEFINITIONS:
@@ -286,7 +286,7 @@ C=======================================================================
       RC1 = RC1 - RS1
 
       RETURN
-      END !SUBROUTINE BLRRES
+      END SUBROUTINE BLRRES
 
 !-----------------------------------------------------------------------
 !     BLRRES VARIABLE DEFINITIONS:

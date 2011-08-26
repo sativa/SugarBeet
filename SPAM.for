@@ -273,25 +273,41 @@ C       and total potential water uptake rate.
      &      EO)      !Output
 
 ! *** TEMP REMOVE PSE CAL ***
-!!-----------------------------------------------------------------------
-!!         POTENTIAL SOIL EVAPORATION
-!!-----------------------------------------------------------------------
-!!         05/26/2007 CHP/MJ Use XLAI instead of XHLAI 
-!!         This was important for Canegro and affects CROPGRO crops
-!!             only very slightly (max 0.5% yield diff for one peanut
-!!             experiment).  No difference to other crop models.
-!          CALL PSE(EO, KSEVAP, XLAI, EOS)
+!-----------------------------------------------------------------------
+!         POTENTIAL SOIL EVAPORATION
+!-----------------------------------------------------------------------
+!         05/26/2007 CHP/MJ Use XLAI instead of XHLAI 
+!         This was important for Canegro and affects CROPGRO crops
+!             only very slightly (max 0.5% yield diff for one peanut
+!             experiment).  No difference to other crop models.
+          CALL PSE(EO, KSEVAP, XLAI, EOS)
 
-!***************************************************************************
-!           07/22/2011 CHP/TL replace this with TRANS
-!           Relative transpiration rate for CO2 effects
-            ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
-            ETAE = EO - ETRD
-            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
+!         Potential transpiration - model dependent
+          SELECT CASE (MODEL)
+          CASE ('RIORZ')
+!!***************************************************************************
+!!           07/22/2011 CHP/TL replace TRANS with this  
+!!           Relative transpiration rate for CO2 effects
+!            ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
+!            ETAE = EO - ETRD
+!            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
+!
+!!           Recalculate potential evapotranspiration based on TRAT
+!            EOS  = EO - EOP
+!!***************************************************************************
 
-!           Recalculate potential evapotranspiration based on TRAT
-            EOS  = EO - EOP
-!***************************************************************************
+          CASE DEFAULT
+!           For all models except ORYZA
+!           From TRANS:
+            EOP = 0.0
+            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+            FDINT = 1.0 - EXP(-(KTRANS) * XHLAI)  
+            EOP = EO * FDINT * TRAT 
+
+            EOS = EO - EOP  
+          END SELECT
+
+          
 
 !         Initialize soil, mulch and flood evaporation
           ES = 0.; EM = 0.; EF = 0.
@@ -336,28 +352,28 @@ C       and total potential water uptake rate.
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
-!            IF (FLOOD .GT. 0.0) THEN
-!              !Use flood evaporation rate
-!              CALL TRANS (RATE, 
-!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &          EOP)                                            !Output
-!            ELSE
-!              !Use soil evaporation rate
-!              CALL TRANS(RATE, 
-!     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &          EOP)                                            !Output
-!            ENDIF
+            IF (FLOOD .GT. 0.0) THEN
+              !Use flood evaporation rate
+              CALL TRANS (RATE, 
+     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &          EOP)                                            !Output
+            ELSE
+              !Use soil evaporation rate
+              CALL TRANS(RATE, 
+     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &          EOP)                                            !Output
+            ENDIF
 
-!!***************************************************************************
-!!           07/19/2011 CHP/ JWJ replace this with TRANS
-!!           Relative transpiration rate for CO2 effects
-!!            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+!***************************************************************************
+!           07/19/2011 CHP/ JWJ replace this with TRANS
+!           Relative transpiration rate for CO2 effects
+            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
 !            TRAT = 1.0
-!            EOP = (EO - EOS) * TRAT
-!
-!!           Recalculate potential evapotranspiration based on TRAT
-!            EO  = EOP + EOS
-!!***************************************************************************
+            EOP = (EO - EOS) * TRAT
+
+!           Recalculate potential evapotranspiration based on TRAT
+            EO  = EOP + EOS
+!***************************************************************************
 
           ELSE
             EOP = 0.0
