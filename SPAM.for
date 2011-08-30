@@ -384,6 +384,10 @@ C         Calculate actual soil water uptake and transpiration rates
         ENDIF   !ISWWAT = 'Y'
       ENDIF
 
+!     Recalculate potential evapotranspiration based on adjusted potential transpiration
+!     CHP / JWJ / KJB 08/30/2011
+      EO = EOP + EOS
+
 !     Transfer computed value of potential floodwater evaporation to
 !     flood variable.
       FLOODWAT % EF = EF
