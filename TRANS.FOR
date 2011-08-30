@@ -25,7 +25,8 @@ C  02/06/2003 KJB/CHP Replaced KCAN with KEP
 !  Calls:     None
 C=======================================================================
       SUBROUTINE TRANS(DYNAMIC, 
-     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!    &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &    CO2, CROP, EO, EOS, KTRANS, TAVG, WINDSP, XHLAI,!Input
      &    EOP)                                            !Output
 
 !-----------------------------------------------------------------------
@@ -36,7 +37,7 @@ C=======================================================================
 
       INTEGER DYNAMIC
 
-      REAL CO2, EO, ES, FDINT, KTRANS, TAVG, WINDSP, XHLAI
+      REAL CO2, EO, EOS, FDINT, KTRANS, TAVG, WINDSP, XHLAI
       REAL EOP, TRAT
 
 !     FUNCTION SUBROUTINES:
@@ -188,8 +189,8 @@ C     C-3 Crops
 !     CHP / JWJ 8/23/2011
 
 !C     Compute canopy resistances, RL and RLC.
-!     RL = RLF / XHLAI
-!     RLC = RLFC / XHLAI
+!      RL = RLF / XHLAI
+!      RLC = RLFC / XHLAI
 
 !C     Compute boundary layer resistance (Jagtap and Jones, 1990).
 !      CALL BLRRES(

@@ -320,17 +320,17 @@ C       and total potential water uptake rate.
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
-            IF (FLOOD .GT. 0.0) THEN
-              !Use flood evaporation rate
-              CALL TRANS (RATE, 
-     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ELSE
+!            IF (FLOOD .GT. 0.0) THEN
+!              !Use flood evaporation rate
+!              CALL TRANS (RATE, 
+!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ELSE
               !Use soil evaporation rate
               CALL TRANS(RATE, 
-     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &          CO2, CROP, EO, EOS, KTRANS, TAVG, WINDSP, XHLAI, !Input
      &          EOP)                                            !Output
-            ENDIF
+!            ENDIF
           ELSE
             EOP = 0.0
           ENDIF
