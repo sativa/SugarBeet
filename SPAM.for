@@ -22,6 +22,8 @@ C  04/01/2004 CHP/US Added Penman - Meyer routine for potential ET
 !  08/25/2006 CHP Add SALUS soil evaporation routine, triggered by new
 !                 FILEX parameter MESEV
 !  12/09/2008 CHP Remove METMP
+!  08/30/2011 CHP / JWJ / KJB Reduce potential evapotranspiration, EO, 
+!               based on reduced potential transpiration, EOP, due to high CO2
 C-----------------------------------------------------------------------
 C  Called by: Main
 C  Calls:     XTRACT, OPSPAM    (File SPSUBS.FOR)

@@ -20,6 +20,7 @@ C  09/01/1999 GH  Incorporated into CROPGRO
 C  01/13/2000 NBP Added DYNAMIC contruct to input KCAN and calc. FDINT
 C  02/06/2003 KJB/CHP Replaced KCAN with KEP
 !  06/19/2003 JWJ/CHP Replaced KEP with KTRANS
+!  08/30/2011 JWJ/CHP Revise EOP limitation to (EO - EOS), was (EO*TRAT -ES)
 !-----------------------------------------------------------------------
 !  Called by: WATBAL
 !  Calls:     None
@@ -123,7 +124,9 @@ C  ??/??/?? JWJ Written as subroutine ETRATIO.
 C  12/05/93 NBP Changed to TRATIO function.  Changed VPDF to VPSLOP.
 C  10/18/95 GH  Modified for multiple species.
 !  10/17/97 CHP Modified for modular format.
-!  08/23/2011 CHP/
+!  08/23/2011 CHP/JWJ revised canopy and boundary layer resistances to
+!               be consistent with FAO-56 assumptions. 
+!               Remove call to BLRRES subroutine.
 !-----------------------------------------------------------------------
 !  Called by: TRANS
 !  Calls:     BLRRES

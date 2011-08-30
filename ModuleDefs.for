@@ -61,12 +61,15 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 6
         INTEGER :: Model = 0
-        INTEGER :: Build = 2 
+        INTEGER :: Build = 3 
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-JWJ_CO2  '
 
 !     Version history:  
+!       4.6.0.3  chp 08/30/2011 Added vapor pressure as optional weather input.
+!                               JWJ_CO2 branch - Change CO2 effects on transpiration,
+!                                 Change partitioning of EO into EOP and EOS.
 !       4.6.0.2  gh  06/29/2011 Sorghum cul file re-order.
 !       4.6.0.1  chp 06/28/2011 v4.6
 !                               Changes to CSCER, CSCRP, incl. spe, eco, cul formats
