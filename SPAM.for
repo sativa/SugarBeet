@@ -22,6 +22,8 @@ C  04/01/2004 CHP/US Added Penman - Meyer routine for potential ET
 !  08/25/2006 CHP Add SALUS soil evaporation routine, triggered by new
 !                 FILEX parameter MESEV
 !  12/09/2008 CHP Remove METMP
+!  08/30/2011 CHP / JWJ / KJB Reduce potential evapotranspiration, EO, 
+!               based on reduced potential transpiration, EOP, due to high CO2
 C-----------------------------------------------------------------------
 C  Called by: Main
 C  Calls:     XTRACT, OPSPAM    (File SPSUBS.FOR)
@@ -62,8 +64,7 @@ C=======================================================================
      &    TRWU, TRWUP, U
       REAL EOS, EOP, WINF, MSALB, ET_ALB
       REAL XLAT, TAV, TAMP, SRFTEMP
-      REAL EORATIO, KSEVAP, KTRANS, TRAT, TRATIO
-      REAL FDINT
+      REAL EORATIO, KSEVAP, KTRANS
 
       REAL DLAYR(NL), DUL(NL), LL(NL), RLV(NL), RWU(NL),  
      &    SAT(NL), ST(NL), SW(NL), SW_AVAIL(NL), !SWAD(NL), 
@@ -82,6 +83,31 @@ C=======================================================================
       
 !     P Stress on photosynthesis
       REAL PSTRES1
+
+!-----------------------------------------------------------------------
+!     Jim's suggested order of calculation 9/1/2011
+!     1. Compute E0
+!     2. Compute Eos(1)
+!     3. Compute Eop(1)
+!     4. Compare Eos(1) + Eop(1) with E0. E0 is less than that sum, 
+!           reduce both proportionally (to compute Eos(2) and Eop(2)) 
+!           such that their sum is equal to E0. This will ensure up 
+!           front that our starting point partitioning is accurate (adding to E0).
+!     5. Modify Eop to compute Eop(3) = Eop(2)*TRAT   This will reduce 
+!           potential transpiration based on CO2.
+!     6. Now, re-compute E0. E0(2) = Eos(2) + Eop(3). This will reduce 
+!           potential evapotranspiration but only due to the reduction 
+!           in Eop, not Eos. This E0(2) is our final calculation of potential 
+!           evapotranspiration that should be output, which takes into account 
+!           the CO2 effect on leaves stomatal conduction.
+!     7. Now, compute Es as before, and follow the code from before, which 
+!           puts some energy back into the canopy Eop if the soil does not evaporate enough.
+!     8. Continue as before
+
+!     Move calculations from TRANS so we can split the order, based on above
+!     FUNCTION SUBROUTINES:
+      REAL TRATIO, TRAT, FDINT, FACTOR
+      REAL EO1, EO2, EOP1, EOP2, EOP3, EOP4, EOS1, EOS2, EVAP
 
 !-----------------------------------------------------------------------
 !     Define constructed variable types based on definitions in
@@ -182,10 +208,10 @@ C=======================================================================
 !     ----------------------------
         END SELECT
 
-!       Initialize plant transpiration variables
-        CALL TRANS(DYNAMIC, 
-     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &    EOP)                                            !Output
+!!       Initialize plant transpiration variables
+!        CALL TRANS(DYNAMIC, 
+!     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &    EOP)                                            !Output
       ENDIF
 
       CALL MULCH_EVAP(DYNAMIC, MULCH, EOS, EM)
@@ -267,13 +293,20 @@ C       and total potential water uptake rate.
             ET_ALB = MSALB
           ENDIF
 
+!         Initialize intermediate variables for Jim's 8-step program
+          EO1  = 0.0; EO2  = 0.0
+          EOP1 = 0.0; EOP2 = 0.0; EOP3 = 0.0; EOP4 = 0.0
+          EOS1 = 0.0; EOS2 = 0.0; EVAP = 0.0
+
+!         Step 1 - compute EO
           CALL PET(CONTROL, 
      &      ET_ALB, XHLAI, MEEVP, WEATHER,  !Input for all
      &      EORATIO, !Needed by Penman-Monteith
      &      CANHT,   !Needed by dynamic Penman-Monteith
      &      EO)      !Output
 
-! *** TEMP REMOVE PSE CAL ***
+          EO1 = EO
+
 !-----------------------------------------------------------------------
 !         POTENTIAL SOIL EVAPORATION
 !-----------------------------------------------------------------------
@@ -281,34 +314,53 @@ C       and total potential water uptake rate.
 !         This was important for Canegro and affects CROPGRO crops
 !             only very slightly (max 0.5% yield diff for one peanut
 !             experiment).  No difference to other crop models.
+!         Step 2 - compute EOS(1)
           CALL PSE(EO, KSEVAP, XLAI, EOS)
+          EOS1 = EOS
 
+!-----------------------------------------------------------------------
 !         Potential transpiration - model dependent
+          EOP = 0.0
+!-----------------------------------------------------------------------
           SELECT CASE (CONTROL % MODEL(1:5))
           CASE ('RIORZ')
-!!***************************************************************************
-!!           07/22/2011 CHP/TL replace TRANS with this  
-!!           Relative transpiration rate for CO2 effects
-!            ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
-!            ETAE = EO - ETRD
-!            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
-!
-!!           Recalculate potential evapotranspiration based on TRAT
-!            EOS  = EO - EOP
-!!***************************************************************************
+!           07/22/2011 CHP/TL replace TRANS with this  
+!           Relative transpiration rate for CO2 effects
+            ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
+            ETAE = EO - ETRD
+            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
+            EOP1 = EOP
+
+!           Recalculate potential evapotranspiration based on TRAT
+            EOS  = EO - EOP
+            EOS2 = EOS
 
           CASE DEFAULT
 !           For all models except ORYZA
 !           From TRANS:
-            EOP = 0.0
-            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+!           Step 3 - compute EOP(1)
             FDINT = 1.0 - EXP(-(KTRANS) * XHLAI)  
-            EOP = EO * FDINT * TRAT 
-
-            EOS = EO - EOP  
-          END SELECT
-
+            EOP = EO * FDINT   
+            EOP1 = EOP
           
+!           Step 4 - Adjust EOP and EOS proportionally to add up to EO
+            Factor = EO / (EOP + EOS)
+            EOP = EOP * Factor
+            EOS = EOS * Factor 
+            EOP2 = EOP
+            EOS2 = EOS
+          
+!           Step 5
+            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+            EOP = EOP * TRAT
+            EOP3 = EOP
+          
+!           Step 6
+            EO = EOP + EOS
+            EO2 = EO
+
+          END SELECT
+!-----------------------------------------------------------------------
 
 !         Initialize soil, mulch and flood evaporation
           ES = 0.; EM = 0.; EF = 0.
@@ -353,29 +405,28 @@ C       and total potential water uptake rate.
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
-            IF (FLOOD .GT. 0.0) THEN
-              !Use flood evaporation rate
-              CALL TRANS (RATE, 
-     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ELSE
-              !Use soil evaporation rate
-              CALL TRANS(RATE, 
-     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                            !Output
-            ENDIF
+!            IF (FLOOD .GT. 0.0) THEN
+!              !Use flood evaporation rate
+!              CALL TRANS (RATE, 
+!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ELSE
+!              !Use soil evaporation rate
+!              CALL TRANS(RATE, 
+!     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+!     &          EOP)                                            !Output
+!            ENDIF
 
-!***************************************************************************
-!           07/19/2011 CHP/ JWJ replace this with TRANS
-!           Relative transpiration rate for CO2 effects
-            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
-!            TRAT = 1.0
-            EOP = (EO - EOS) * TRAT
-
-!           Recalculate potential evapotranspiration based on TRAT
-            EO  = EOP + EOS
-!***************************************************************************
-
+!!           Step 7 - increase EOP when EVAP < EOS
+!            IF (FLOOD > 1.E-6) THEN
+!              EVAP = EF       !Flood evaporation
+!            ELSE
+!              EVAP = ES + EM  !Soil + mulch evaporation
+!            ENDIF
+!            IF (EVAP < EOS) THEN
+!              EOP = EOP + EOS - EVAP
+!              EOP4 = EOP
+!            ENDIF
           ELSE
             EOP = 0.0
           ENDIF
