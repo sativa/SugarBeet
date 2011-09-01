@@ -202,8 +202,9 @@ C     C-3 Crops
 !      IF (RATIO .GT. 1.0) RATIO = 1.0
 !      RA = RC1 + (RC2 - RC1) * RATIO
  
-      RL = RLF / XHLAI
-      RLC = RLFC / XHLAI
+!     Use FAO-56 assumption LAI = 2.88 reference for canopy resistances
+      RL = RLF / (0.5 * 2.88)   
+      RLC = RLFC / (0.5 * 2.88)
  
 !     Replace boundary layer resistance function with this eqn
       RA = 208. / UAVG  !FAO-56
@@ -257,66 +258,66 @@ C     Compute delta and gamma.
 !     END FUNCTION TRATIO
 !-----------------------------------------------------------------------
 
-C=======================================================================
-C  BLRRES, Subroutine, J.W. Jones
-C  Computes boundary layer resistance (Jagtap and Jones, 1990).
-C-----------------------------------------------------------------------
-C  REVISION HISTORY
-C  ??/??/?? JWJ Written
-!  10/17/97 CHP Modified for modular format.
-!-----------------------------------------------------------------------
-!  Called by: TRATIO
-!  Calls:     None
-C=======================================================================
-      SUBROUTINE BLRRES(
-     &    CHIGHT, UAVG,                   !Input
-     &    RS1, RS2, RC1, RC2)             !Output
-
-      IMPLICIT NONE
-!-----------------------------------------------------------------------
-      REAL CHIGHT, UAVG
-      REAL RC1, RC2, RS1, RS2
-      REAL D, E1, E2, E3, E4, E5, E6, EN, X, Z0, Z1
-
-!-----------------------------------------------------------------------
-      EN = 3.0
-      Z1 = 0.01
-      X = 2.0
-      D = 0.7 * CHIGHT**0.979
-      Z0 = 0.13 * CHIGHT**0.997
-
-      E1 = EXP(EN*(1. - (D + Z0) / CHIGHT))
-      E2 = EXP(EN)
-      E3 = CHIGHT/(EN*(CHIGHT-D))
-      E4 = ALOG((X - D)/Z0)
-      E5 = 0.4 * 0.4 * UAVG
-      E6 = ALOG((X - D) / (CHIGHT - D))
-
-      RS2 = E4 * E3 * (E2 - E1) / E5
-      RC2 = E4 * (E6 + E3 * (E1 - 1.)) / E5
-      RS1 = ALOG(X/Z1) * ALOG((D + Z0)/Z1) / E5
-      RC1 = (ALOG(X/Z1)**2) / E5
-      RC1 = RC1 - RS1
-
-      RETURN
-      END SUBROUTINE BLRRES
-
-!-----------------------------------------------------------------------
-!     BLRRES VARIABLE DEFINITIONS:
-!-----------------------------------------------------------------------
-! CHIGHT   Reference height for crop (m)
-! D
-! E1, E2, E3, E4, E5, E6
-! EN
-! RC1, RC2
-! RS1, RS2
-! UAVG     Average wind speed (m/s)
-! X
-! Z0
-! Z1
-!-----------------------------------------------------------------------
-!     END SUBROUTINE BLRRES
-!-----------------------------------------------------------------------
+!C=======================================================================
+!C  BLRRES, Subroutine, J.W. Jones
+!C  Computes boundary layer resistance (Jagtap and Jones, 1990).
+!C-----------------------------------------------------------------------
+!C  REVISION HISTORY
+!C  ??/??/?? JWJ Written
+!!  10/17/97 CHP Modified for modular format.
+!!-----------------------------------------------------------------------
+!!  Called by: TRATIO
+!!  Calls:     None
+!C=======================================================================
+!      SUBROUTINE BLRRES(
+!     &    CHIGHT, UAVG,                   !Input
+!     &    RS1, RS2, RC1, RC2)             !Output
+!
+!      IMPLICIT NONE
+!!-----------------------------------------------------------------------
+!      REAL CHIGHT, UAVG
+!      REAL RC1, RC2, RS1, RS2
+!      REAL D, E1, E2, E3, E4, E5, E6, EN, X, Z0, Z1
+!
+!!-----------------------------------------------------------------------
+!      EN = 3.0
+!      Z1 = 0.01
+!      X = 2.0
+!      D = 0.7 * CHIGHT**0.979
+!      Z0 = 0.13 * CHIGHT**0.997
+!
+!      E1 = EXP(EN*(1. - (D + Z0) / CHIGHT))
+!      E2 = EXP(EN)
+!      E3 = CHIGHT/(EN*(CHIGHT-D))
+!      E4 = ALOG((X - D)/Z0)
+!      E5 = 0.4 * 0.4 * UAVG
+!      E6 = ALOG((X - D) / (CHIGHT - D))
+!
+!      RS2 = E4 * E3 * (E2 - E1) / E5
+!      RC2 = E4 * (E6 + E3 * (E1 - 1.)) / E5
+!      RS1 = ALOG(X/Z1) * ALOG((D + Z0)/Z1) / E5
+!      RC1 = (ALOG(X/Z1)**2) / E5
+!      RC1 = RC1 - RS1
+!
+!      RETURN
+!      END SUBROUTINE BLRRES
+!
+!!-----------------------------------------------------------------------
+!!     BLRRES VARIABLE DEFINITIONS:
+!!-----------------------------------------------------------------------
+!! CHIGHT   Reference height for crop (m)
+!! D
+!! E1, E2, E3, E4, E5, E6
+!! EN
+!! RC1, RC2
+!! RS1, RS2
+!! UAVG     Average wind speed (m/s)
+!! X
+!! Z0
+!! Z1
+!!-----------------------------------------------------------------------
+!!     END SUBROUTINE BLRRES
+!!-----------------------------------------------------------------------
 !***********************************************************************
 !     END OF TRANSPIRATION MODULE
 !***********************************************************************
