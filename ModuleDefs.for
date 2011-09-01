@@ -68,6 +68,8 @@ C             CHP Added TRTNUM to CONTROL variable.
       CHARACTER(len=10) :: VBranch = '-ORYZA2000'
 
 !     Version history:  
+!       4.6.0.4  chp 08/30/2011 Sorghum changes GH, CSCER, CSCRP changes, LAH.
+!       4.6.0.3  chp 08/30/2011 Added vapor pressure as optional weather input.
 !       4.6.0.2  gh  06/29/2011 Sorghum cul file re-order.
 !       4.6.0.1  chp 06/28/2011 v4.6
 !                               Changes to CSCER, CSCRP, incl. spe, eco, cul formats
