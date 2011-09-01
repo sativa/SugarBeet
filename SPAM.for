@@ -63,6 +63,7 @@ C=======================================================================
       REAL EOS, EOP, WINF, MSALB, ET_ALB
       REAL XLAT, TAV, TAMP, SRFTEMP
       REAL EORATIO, KSEVAP, KTRANS, TRAT, TRATIO
+      REAL FDINT
 
       REAL DLAYR(NL), DUL(NL), LL(NL), RLV(NL), RWU(NL),  
      &    SAT(NL), ST(NL), SW(NL), SW_AVAIL(NL), !SWAD(NL), 
@@ -283,7 +284,7 @@ C       and total potential water uptake rate.
           CALL PSE(EO, KSEVAP, XLAI, EOS)
 
 !         Potential transpiration - model dependent
-          SELECT CASE (MODEL)
+          SELECT CASE (CONTROL % MODEL(1:5))
           CASE ('RIORZ')
 !!***************************************************************************
 !!           07/22/2011 CHP/TL replace TRANS with this  

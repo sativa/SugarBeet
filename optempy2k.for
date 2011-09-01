@@ -31,6 +31,7 @@ C  01/16/2007 GH  Modified sorghum cultivar coefficients
 C  08/03/2009 FSR Added numerous variables for CASUPRO
 C  06/30/2010 FSR Added PLF2 variable for CASUPRO
 C  05/19/2011 GH  Updated for sorghum
+!  09/01/2011 CHP Added van Genuchten parameters for ORYZA
 C-----------------------------------------------------------------------
 C  INPUT  : YRIC,PRCROP,WRESR,WRESND,EFINOC,EFNFIX,SWINIT,INH4,INO3,
 C           TOTN,NYRS,VARNO,VRNAME,CROP,MODEL,PATHMO,ECONO,FROP,RUN,FILEIO
@@ -487,6 +488,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C
 C-----------------------------------------------------------------------
+!       1st tier soils
         DO I = 1, NLAYR
           LINIO = LINIO + 1
 !          IF (TOTN(I) .LT. -9.0) THEN
@@ -541,6 +543,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C
 C-----------------------------------------------------------------------
+!       2nd tier soils
         LINIO = LINIO + 1
         WRITE (LUNIO,40)'                    '
         DO I = 1, NLAYR
@@ -560,9 +563,21 @@ C-----------------------------------------------------------------------
           IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY,ERRNUM,FILEIO,LINIO)
         END DO
         LINIO = LINIO + 1
-      ENDIF   !End of non-sequence soils write
 C-------------------------------------------------------------------------
 
+C-----------------------------------------------------------------------
+!       3rd tier soils - chp added 9/01/2011 for van Genuchten parameters
+        LINIO = LINIO + 1
+        WRITE (LUNIO,40)'                    '
+        DO I = 1, NLAYR
+          LINIO = LINIO + 1
+          WRITE (LUNIO,992,IOSTAT=ERRNUM) 
+     &      DS(I), alphaVG(I), mVG(I), nVG(I), WCR(I)
+  992     FORMAT (1X,F5.0,4F6.2)
+          IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY,ERRNUM,FILEIO,LINIO)
+        END DO
+      ENDIF   !End of non-sequence soils write
+C-------------------------------------------------------------------------
 C-----------------------------------------------------------------------
       IF (CROP .NE. 'FA') THEN
          WRITE (LUNIO,40)'*CULTIVAR           '

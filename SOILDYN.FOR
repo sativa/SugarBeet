@@ -82,7 +82,7 @@ C-----------------------------------------------------------------------
       REAL, DIMENSION(NL) :: PTERMB, EXK, EXMG, EXNA, EXTS, SLEC, EXCA
 
 !     vanGenuchten parameters
-      REAL, DIMENSION(NL) :: alphaVG, mVG, nVG, MSkPa
+      REAL, DIMENSION(NL) :: alphaVG, mVG, nVG  !, MSkPa
 !     Brook & Corey model parameters
       Double Precision, DIMENSION(NL) :: hb, lambda
 
@@ -153,7 +153,8 @@ C-----------------------------------------------------------------------
 !     Labels for soil layer depth info
       CHARACTER*8 LayerText(11)
 
-      LOGICAL PRINT_TODAY
+      LOGICAL PRINT_TODAY, VG_ok
+      REAL WCR_TEMP
 
 !     ---------------------------------------------------------------
 !     Composite variables
@@ -315,6 +316,27 @@ C-----------------------------------------------------------------------
      &      EXTAL(L), EXTFE(L), EXTMN(L), TOTBAS(L), PTERMA(L),
      &      PTERMB(L), EXK(L), EXMG(L), EXNA(L), EXTS(L), SLEC(L),
      &      EXCA(L), SASC(L)
+        LNUM = LNUM + 1
+        IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY,ERRNUM,FILEIO,LNUM)
+      ENDDO
+
+!     Third tier soils data (van Genuchten parameters):
+      DO L = 1, NLAYR
+!       Need to read the blank line between soil tiers
+        IF (L == 1) THEN
+!         If number of layers = NL, need to read the blank line between soil tiers
+          READ(LUNIO,'(/,F6.0,A200)',IOSTAT=ERRNUM,ERR=1000) DS(L), CHAR
+        ELSE
+          READ(LUNIO,'(F6.0,A200)',IOSTAT=ERRNUM,ERR=1000) DS(L), CHAR
+        ENDIF
+        IF (ERRNUM .NE. 0) EXIT
+        IF (L .GT. 1) THEN
+          IF (DS(L) .LT. DS(L-1)) EXIT
+        ENDIF
+        LNUM = LNUM + 1
+
+        READ (CHAR,'(20(F6.0))',IOSTAT=ERRNUM,ERR=1000) 
+     &      alphaVG(L), mVG(L), nVG(L), WCR(L)
         LNUM = LNUM + 1
         IF (ERRNUM .NE. 0) CALL ERROR (ERRKEY,ERRNUM,FILEIO,LNUM)
       ENDDO
@@ -748,41 +770,57 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
 
 !-----------------------------------------------------------------------
 !     Compute vanGenuchten parameters which describe water retention curve
-    ! NMSG = 2
+!     Calculate all VG parameters if any one is missing
+      VG_OK  = .TRUE.
+      DO L = 1, NLAYR
+        IF (alphaVG(L) < -1.E-6) VG_OK = .FALSE.
+        IF (mVG(L)     < -90.)   VG_OK = .FALSE.   !Negative values OK
+        IF (nVG(L)     < -1.E-6) VG_OK = .FALSE.
+      ENDDO
+
+      NMSG = 2
       DO L = 1, NLayr
 !       Brooks & Corey parameters
 	  call calBrokCryPara(TEXTURE(L), SAT(L), LL(L),    !Input
      &     DUL(L),                                        !Input
-     +     wcr(L), Hb(L), lambda(L))                      !output
+     +     wcr_temp, Hb(L), lambda(L))                 !output
 
-    !    IF (SWCN(L) <= 0.0) THEN ! Problem is some layer is -99, but not all of layers
+        IF (WCR(L) < -1.E-6) THEN
+!         Replace individual missing residual water content values.
+          WCR(L) = wcr_temp
+        ENDIF
+
+        IF (SWCN(L) <= -1.E-6) THEN 
 !         Ksat calculation based on paper "Soil Water Characteristic Estimates 
 !         by Texture and Organic Matter for Hydrologic Solutions" by K. E. Saxton 
 !         and W. J. Rawls, Aug. 2006.
 !         Ksat in cm/h
           SWCN(L) = 1930. * ((SAT(L) - DUL(L))**(3.-Lambda(L)))/10.0
-   !       NMSG = NMSG + 1
-   !       WRITE(MSG(NMSG),'(I5,F8.3,3F6.3)') 
-   !  &          L, SWCN(L), LL(L), DUL(L), SAT(L)
- !       ENDIF
+          NMSG = NMSG + 1
+          WRITE(MSG(NMSG),'(I5,F8.3,3F6.3)') 
+     &        L, SWCN(L), LL(L), DUL(L), SAT(L)
+        ENDIF
 
-!       van Genuchten parameters fit from known soil properties based on RETC code
-        CALL RETC_VG(TEXTURE(L), SWCN(L), LL(L), DUL(L),  !Input
-     &    SAT(L), wcr(L), Hb(L), lambda(L),               !Input
-     &    alphaVG(L), mVG(L), nVG(L))                     !Output
+        IF (.NOT. VG_OK) THEN
+!         van Genuchten parameters fit from known soil properties based on RETC code
+          CALL RETC_VG(TEXTURE(L), SWCN(L), LL(L), DUL(L),  !Input
+     &      SAT(L), wcr(L), Hb(L), lambda(L),               !Input
+     &      alphaVG(L), mVG(L), nVG(L))                     !Output
+        ENDIF
       ENDDO
 
-   !   IF (NMsg > 2) THEN
-   !     MSG(1)='Ksat value(s) calculated from known soil parameters'
-   !     MSG(2)='Layer    KSat    LL   DUL   SAT'
-   !     CALL INFO(NMSG, ERRKEY, MSG)
-   !   ENDIF
-      ! Write RETC info to info.out
+      IF (NMsg > 2) THEN
+        MSG(1)='Ksat value(s) calculated from known soil parameters'
+        MSG(2)='Layer    KSat    LL   DUL   SAT'
+        CALL INFO(NMSG, ERRKEY, MSG)
+      ENDIF
+
+!     Write RETC info to info.out
       MSG(1) = "Soil RETC parameters: "
       MSG(2) = 
      &  " LYR DS  SWCN  WCR   Hb  Lambda  Alpha   m     n   Texture"
       DO L = 1, NLAYR
-        WRITE(MSG(2+L),'(I3,I4, F6.1, 3F6.3, 1x, 3F6.3, 1x,A8)') 
+        WRITE(MSG(2+L),'(I3,I4, F6.2, 3F6.3, 1x, 3F6.3, 1x,A8)') 
      &      L, NINT(DS(L)), SWCN(L), wcr(L), Hb(L), lambda(L),
      &      alphaVG(L),mVG(L), nVG(L), TEXTURE(L) 
       ENDDO
@@ -841,7 +879,6 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
       SOILPROP % TotOrgN= TotOrgN   
       SOILPROP % U      = U     
       SOILPROP % WR     = WR      !SHF
-      SOILPROP % WCR    = WCR   !residual water content
 
       SOILPROP % TOTP   = TOTP
       SOILPROP % ORGP   = ORGP
@@ -852,6 +889,7 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
       SOILPROP % alphaVG= alphaVG
       SOILPROP % mVG    = mVG
       SOILPROP % nVG    = nVG
+      SOILPROP % WCR    = WCR   !residual water content
 
       SOILPROP % SOILLAYERTYPE = SOILLAYERTYPE
       SOILPROP % LayerText     = LayerText
