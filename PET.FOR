@@ -290,6 +290,7 @@ C     !MJ/m2/d
 !       temp chp - partition ET0  
         eta = S*RNETMG / (S*RNETMG + (DAIR*SHAIR*VPD)/ra)
         etb = (DAIR*SHAIR*VPD)/ra / (S*RNETMG + (DAIR*SHAIR*VPD)/ra)
+        WRITE(*,3000) ETA, ETB
 
 C     !Converts MJ/m2/d to mm/d
         ET0 = ET0/ (LHVAP / 1000000.)
