@@ -323,7 +323,7 @@ C       and total potential water uptake rate.
           EOP = 0.0
 !-----------------------------------------------------------------------
           SELECT CASE (CONTROL % MODEL(1:5))
-          CASE ('RIORZ')
+          CASE ('RIORZ')    !ORYZA2000 Rice
 !           07/22/2011 CHP/TL replace TRANS with this  
 !           Relative transpiration rate for CO2 effects
             ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
