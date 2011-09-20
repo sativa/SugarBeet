@@ -408,7 +408,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
      &   SomLitC, SomLitE,                                       !Input
      &   ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             !Input
      &   CANHT, HARVRES, KTRANS, KSEVAP, MDATE, NSTRES, PORMIN,  !Output
-     &   RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)         !Output
+     &   RLV, RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)    !Output
 
         IF (DYNAMIC .EQ. INTEGR) THEN
           XHLAI = XLAI

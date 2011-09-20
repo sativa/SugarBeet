@@ -64,7 +64,6 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Build = 16 
       END TYPE VersionType
       TYPE (VersionType) Version
-!     CHARACTER(len=10) :: VBranch = '-Release  '
       CHARACTER(len=10) :: VBranch = '-ORYZA2000'
 
 !     Version history:  

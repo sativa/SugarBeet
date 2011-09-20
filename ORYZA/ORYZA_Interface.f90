@@ -10,7 +10,7 @@
           SomLitC, SomLitE,                                       &    !Input
           ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             &    !Input
           CANHT, HARVRES, KTRANS, KSEVAP, MDATE, NSTRES, PORMIN,  &    !Output
-          RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)              !Output
+          RLV, RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)         !Output
 
       USE ModuleDefs
       USE FloodModule
@@ -51,7 +51,7 @@
       REAL, DIMENSION(NL_OR) :: SANDX, CLAYX, MSKPA
 
 !     Soil N
-      REAL, DIMENSION(NL) :: NH4, NO3, UPPM, UNO3, UNH4, UH2O
+      REAL, DIMENSION(NL) :: NH4, NO3, UPPM, UNO3, UNH4, UH2O, RLV
       REAL SomLitC(0:NL), SomLitE(0:NL,NELEM)
       REAL, DIMENSION(NL_OR) :: SNH4X, SNO3X, SOC, SON, SUREA
       REAL SNN0C, SNN1C, PRLIG, PSLIG
@@ -115,6 +115,7 @@
 !                      optimal growth and function (cm3/cm3)
         RWUMX  = 0.03 !Maximum water uptake per unit root length, constrained by soil 
 !                      water (cm3[water] / cm [root])
+        RLV = 0.0
 
         FILEIO  = CONTROL % FILEIO
         YRSIM   = CONTROL % YRSIM
@@ -220,8 +221,8 @@
 !        KCAN  = 0.85  !Canopy light extinction coef
 !        KEP   = 1.0   !Energy extinction coef
         STGDOY= 9999999   !Dates for developement stages
-        KSEVAP = 0.85
-        KTRANS = 1.0  !NOT USED UNDER NEW METHOD.
+        KSEVAP = -99.
+        KTRANS = 0.5  
 
 !       Depth to plowpan (m)
         PLOWPAN = FLOODWAT % PLOWPAN
@@ -496,6 +497,7 @@
           SENESCE % ResLig(L) = SENESCE % ResWt(L) * PRLIG
           SENESCE % ResE(L,1) = PV%PResN(L,1)
           SNN1C = SNN1C + SENESCE % ResWt(L)
+          RLV(L) = pv%prootden(L) !* 1.E-10
         ENDDO
 
 !       Temporary

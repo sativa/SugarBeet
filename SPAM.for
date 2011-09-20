@@ -106,8 +106,13 @@ C=======================================================================
 
 !     Move calculations from TRANS so we can split the order, based on above
 !     FUNCTION SUBROUTINES:
-      REAL TRATIO, TRAT, FDINT, FACTOR
+      REAL TRATIO, TRAT, FDINT  !, FACTOR
       REAL EO1, EO2, EOP1, EOP2, EOP3, EOP4, EOS1, EOS2, EVAP
+
+!     temp chp
+      CHARACTER*80  :: FormatTxt 
+      CHARACTER*120 :: HeaderTxt
+      INTEGER       :: NVars, Width
 
 !-----------------------------------------------------------------------
 !     Define constructed variable types based on definitions in
@@ -212,6 +217,22 @@ C=======================================================================
 !        CALL TRANS(DYNAMIC, 
 !     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
 !     &    EOP)                                            !Output
+
+!     TEMP CHP
+      NVars = 12
+      trat = 1.0
+      fdint = 0.0
+
+      HeaderTxt = "  KTRANS  KSEVAP    XLAI   XHLAI     EO1    EOS1" // 
+     &            "    EOP1    EVAP    EOP2    EOP3    EOS2     EO2"
+      Width = 96
+      FormatTxt = "(12F8.3)"
+
+      CALL OPGENERIC(
+     &  NVars, Width, HeaderTxt, FormatTxt,  
+     &  KTRANS, KSEVAP, XLAI, XHLAI, EO1, EOS1, 
+     &  EOP1, EVAP, EOP2, EOP3, EOS2, EO2)
+!-----------------------------------------------------------------------
       ENDIF
 
       CALL MULCH_EVAP(DYNAMIC, MULCH, EOS, EM)
@@ -324,16 +345,15 @@ C       and total potential water uptake rate.
 !-----------------------------------------------------------------------
           SELECT CASE (CONTROL % MODEL(1:5))
           CASE ('RIORZ')    !ORYZA2000 Rice
-!           07/22/2011 CHP/TL replace TRANS with this  
-!           Relative transpiration rate for CO2 effects
+!           07/22/2011 CHP/TL replace TRANS with this (from ET2.F90 in ORYZA2000) 
+!           Estimate radiation-driven and wind- and humidity-driven part
             ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
             ETAE = EO - ETRD
-            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
-            EOP1 = EOP
 
-!           Recalculate potential evapotranspiration based on TRAT
-            EOS  = EO - EOP
-            EOS2 = EOS
+            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
+            EOP = MAX(0.0, EOP)
+            EOP = MIN(EO, EOP)
+            EOP1 = EOP
 
           CASE DEFAULT
 !           For all models except ORYZA
@@ -343,23 +363,14 @@ C       and total potential water uptake rate.
             EOP = EO * FDINT   
             EOP1 = EOP
           
-!           Step 4 - Adjust EOP and EOS proportionally to add up to EO
-            Factor = EO / (EOP + EOS)
-            EOP = EOP * Factor
-            EOS = EOS * Factor 
-            EOP2 = EOP
-            EOS2 = EOS
-          
-!           Step 5
-            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
-            EOP = EOP * TRAT
-            EOP3 = EOP
-          
-!           Step 6
-            EO = EOP + EOS
-            EO2 = EO
-
+!!           Step 4 - Adjust EOP and EOS proportionally to add up to EO
+!            Factor = EO / (EOP + EOS)
+!            EOP = EOP * Factor
+!            EOS = EOS * Factor 
+!            EOP2 = EOP
+!            EOS2 = EOS
           END SELECT
+          
 !-----------------------------------------------------------------------
 
 !         Initialize soil, mulch and flood evaporation
@@ -401,10 +412,39 @@ C       and total potential water uptake rate.
 !           ------------------------
           ENDIF
 
+!         Total evaporation from soil, mulch, flood
+          EVAP = ES + EM + EF
+
 !-----------------------------------------------------------------------
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
+
+!           Step 5
+            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+            EOP = EOP * TRAT
+            EOP2 = EOP
+            
+!           Step 6
+            IF (XHLAI > 2.) THEN  
+!           Arbitrary limit of LAI = 2.0 to prevent stress in young plants
+!             Limit EOP to what's left over after evaporation
+              EOP = MIN(EOP, EO - EVAP)
+!             Readjust EOS, so that EOP + EOS = EO
+              EOS = EO - EOP
+              EOP3 = EOP
+              EOS2 = EOS
+            ELSE
+!             Dont' boost EOP for LAI < 2. (arbitrary)
+              EOP = MIN(EOP, EO - EOS)
+              EOP3 = EOP
+            ENDIF
+
+            IF (EOP + EOS < EO) THEN
+              EO = EOP + EOS
+              EO2 = EO
+            ENDIF
+
 !            IF (FLOOD .GT. 0.0) THEN
 !              !Use flood evaporation rate
 !              CALL TRANS (RATE, 
@@ -439,6 +479,12 @@ C       and total potential water uptake rate.
             EP = 0.0
           ENDIF
         ENDIF
+
+        CALL OPGENERIC(
+     &  NVars, Width, HeaderTxt, FormatTxt,  
+     &  KTRANS, KSEVAP, XLAI, XHLAI, EO1, EOS1, 
+     &  EOP1, EVAP, EOP2, EOP3, EOS2, EO2)
+
       ENDIF
 
 !-----------------------------------------------------------------------
