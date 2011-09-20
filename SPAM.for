@@ -341,36 +341,44 @@ C       and total potential water uptake rate.
 
 !-----------------------------------------------------------------------
 !         Potential transpiration - model dependent
-          EOP = 0.0
 !-----------------------------------------------------------------------
-          SELECT CASE (CONTROL % MODEL(1:5))
-          CASE ('RIORZ')    !ORYZA2000 Rice
-!           07/22/2011 CHP/TL replace TRANS with this (from ET2.F90 in ORYZA2000) 
-!           Estimate radiation-driven and wind- and humidity-driven part
-            ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
-            ETAE = EO - ETRD
-
-            EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) + ETAE*MIN(2.0, XHLAI)
-            EOP = MAX(0.0, EOP)
-            EOP = MIN(EO, EOP)
-            EOP1 = EOP
-
-          CASE DEFAULT
-!           For all models except ORYZA
-!           From TRANS:
-!           Step 3 - compute EOP(1)
-            FDINT = 1.0 - EXP(-(KTRANS) * XHLAI)  
-            EOP = EO * FDINT   
-            EOP1 = EOP
+          IF (XHLAI > 1.E-6) THEN
+            SELECT CASE (CONTROL % MODEL(1:5))
+            CASE ('RIORZ')    !ORYZA2000 Rice
+!             07/22/2011 CHP/TL replace TRANS with this (from ET2.F90 in ORYZA2000) 
+!             Estimate radiation-driven and wind- and humidity-driven part
+              ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
+              ETAE = EO - ETRD
           
-!!           Step 4 - Adjust EOP and EOS proportionally to add up to EO
-!            Factor = EO / (EOP + EOS)
-!            EOP = EOP * Factor
-!            EOS = EOS * Factor 
-!            EOP2 = EOP
-!            EOS2 = EOS
-          END SELECT
+              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
+              EOP = MAX(0.0, EOP)
+              EOP = MIN(EO, EOP)
+              EOP1 = EOP
           
+            CASE DEFAULT
+!             For all models except ORYZA
+!             From TRANS:
+!             Step 3 - compute EOP(1)
+              FDINT = 1.0 - EXP(-(KTRANS) * XHLAI)  
+              EOP = EO * FDINT   
+              EOP1 = EOP
+            
+!!             Step 4 - Adjust EOP and EOS proportionally to add up to EO
+!              Factor = EO / (EOP + EOS)
+!              EOP = EOP * Factor
+!              EOS = EOS * Factor 
+!              EOP2 = EOP
+!              EOS2 = EOS
+            END SELECT
+            
+!           Step 5 - CO2 effects
+            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+            EOP = EOP * TRAT
+            EOP2 = EOP
+          ELSE
+            EOP = 0.0
+          ENDIF
+            
 !-----------------------------------------------------------------------
 
 !         Initialize soil, mulch and flood evaporation
@@ -418,28 +426,23 @@ C       and total potential water uptake rate.
 !-----------------------------------------------------------------------
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
-          IF (XHLAI .GT. 0.0) THEN
-
-!           Step 5
-            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
-            EOP = EOP * TRAT
-            EOP2 = EOP
-            
-!           Step 6
-            IF (XHLAI > 2.) THEN  
-!           Arbitrary limit of LAI = 2.0 to prevent stress in young plants
-!             Limit EOP to what's left over after evaporation
-              EOP = MIN(EOP, EO - EVAP)
-!             Readjust EOS, so that EOP + EOS = EO
-              EOS = EO - EOP
-              EOP3 = EOP
-              EOS2 = EOS
-            ELSE
-!             Dont' boost EOP for LAI < 2. (arbitrary)
-              EOP = MIN(EOP, EO - EOS)
-              EOP3 = EOP
-            ENDIF
-
+!          IF (XHLAI .GT. 0.0) THEN
+!
+!!           Step 6
+!            IF (XHLAI > 2.) THEN  
+!!           Arbitrary limit of LAI = 2.0 to prevent stress in young plants
+!!             Limit EOP to what's left over after evaporation
+!              EOP = MIN(EOP, EO - EVAP)
+!!             Readjust EOS, so that EOP + EOS = EO
+!              EOS = EO - EOP
+!              EOP3 = EOP
+!              EOS2 = EOS
+!            ELSE
+!!             Dont' boost EOP for LAI < 2. (arbitrary)
+!              EOP = MIN(EOP, EO - EOS)
+!              EOP3 = EOP
+!            ENDIF
+!
             IF (EOP + EOS < EO) THEN
               EO = EOP + EOS
               EO2 = EO
@@ -467,9 +470,9 @@ C       and total potential water uptake rate.
 !              EOP = EOP + EOS - EVAP
 !              EOP4 = EOP
 !            ENDIF
-          ELSE
-            EOP = 0.0
-          ENDIF
+!          ELSE
+!            EOP = 0.0
+!          ENDIF
 
           IF (XHLAI .GT. 1.E-4 .AND. EOP .GT. 1.E-4) THEN
             !These calcs replace the old SWFACS subroutine
