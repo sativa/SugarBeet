@@ -218,11 +218,14 @@
         RNSTRS = 1.0
 
         CANHT = 0.0   !Canopy height
+        STGDOY= 9999999   !Dates for developement stages
+
 !        KCAN  = 0.85  !Canopy light extinction coef
 !        KEP   = 1.0   !Energy extinction coef
-        STGDOY= 9999999   !Dates for developement stages
-        KSEVAP = -99.
-        KTRANS = 0.5  
+        KSEVAP = 0.85
+        KTRANS = 1.0  
+!        KSEVAP = -99.
+!        KTRANS = 0.5  
 
 !       Depth to plowpan (m)
         PLOWPAN = FLOODWAT % PLOWPAN

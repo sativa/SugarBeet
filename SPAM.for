@@ -350,10 +350,15 @@ C       and total potential water uptake rate.
               ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
               ETAE = EO - ETRD
           
-              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
-              EOP = MAX(0.0, EOP)
-              EOP = MIN(EO, EOP)
-              EOP1 = EOP
+!     TEMP CHP
+      EOP = EO
+!              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
+!              EOP = MAX(0.0, EOP)
+!              EOP = MIN(EO, EOP)
+!              EOP1 = EOP
+
+              EOS = EO - EOP
+              EOS1 = EOS
           
             CASE DEFAULT
 !             For all models except ORYZA

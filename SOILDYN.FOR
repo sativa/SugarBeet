@@ -818,9 +818,9 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
 !     Write RETC info to info.out
       MSG(1) = "Soil RETC parameters: "
       MSG(2) = 
-     &  " LYR DS  SWCN  WCR   Hb  Lambda  Alpha   m     n   Texture"
+     &  " LYR DS  SWCN   WCR    Hb Lambd  Alpha     m     n Texture"
       DO L = 1, NLAYR
-        WRITE(MSG(2+L),'(I3,I4, F6.2, 3F6.3, 1x, 3F6.3, 1x,A8)') 
+        WRITE(MSG(2+L),'(I3,I4,F6.2,F6.3,F6.1, F6.3, 1x, 3F6.3, 1x,A)')
      &      L, NINT(DS(L)), SWCN(L), wcr(L), Hb(L), lambda(L),
      &      alphaVG(L),mVG(L), nVG(L), TEXTURE(L) 
       ENDDO
