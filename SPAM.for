@@ -349,13 +349,10 @@ C       and total potential water uptake rate.
 !             Estimate radiation-driven and wind- and humidity-driven part
               ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
               ETAE = EO - ETRD
-          
-!     TEMP CHP
-      EOP = EO
-!              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
-!              EOP = MAX(0.0, EOP)
-!              EOP = MIN(EO, EOP)
-!              EOP1 = EOP
+              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
+              EOP = MAX(0.0, EOP)
+              EOP = MIN(EO, EOP)
+              EOP1 = EOP
 
               EOS = EO - EOP
               EOS1 = EOS
@@ -367,13 +364,6 @@ C       and total potential water uptake rate.
               FDINT = 1.0 - EXP(-(KTRANS) * XHLAI)  
               EOP = EO * FDINT   
               EOP1 = EOP
-            
-!!             Step 4 - Adjust EOP and EOS proportionally to add up to EO
-!              Factor = EO / (EOP + EOS)
-!              EOP = EOP * Factor
-!              EOS = EOS * Factor 
-!              EOP2 = EOP
-!              EOS2 = EOS
             END SELECT
             
 !           Step 5 - CO2 effects
