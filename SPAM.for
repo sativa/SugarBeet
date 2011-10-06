@@ -354,8 +354,8 @@ C       and total potential water uptake rate.
               EOP = MIN(EO, EOP)
               EOP1 = EOP
 
-              EOS = EO - EOP
-              EOS1 = EOS
+!              EOS = EO - EOP
+!              EOS1 = EOS
           
             CASE DEFAULT
 !             For all models except ORYZA
