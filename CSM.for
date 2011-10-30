@@ -1,26 +1,24 @@
 C=======================================================================
-C  COPYRIGHT 1998-2010 The University of Georgia, Griffin, Georgia
+C  COPYRIGHT 1998-2011 DSSAT Foundation
 C                      University of Florida, Gainesville, Florida
-C                      Mississippi State University, Starkville, MS
-C                      International Center for Soil Fertility and 
-C                       Agricultural Development, Muscle Shoals, Alabama
+C                      International Fertilizer Development Center
 C                      University of Guelph, Guelph, Ontario
-C                      USDA-ARS U.S Arid Land Agricultural Research Center
+C                      Washington State University
 C  ALL RIGHTS RESERVED
 C=======================================================================
 C=======================================================================
 C
-C     CROPPING SYSTEM MODEL Version 4.5
+C     CROPPING SYSTEM MODEL Version 4.6
 C
 C     Decision Support System for Agrotechnology Transfer (DSSAT)
 C
-C     July 2010  CSM Version 4.5
+C     July 2011  CSM Version 4.6
 C
 C     Gerrit Hoogenboom, J.W. Jones, Cheryl Porter, K.J. Boote, 
 C
 C     Tony Hunt, Arjan Gijsman, Jon Lizaso
 C
-C     Paul Wilkens, Upendra Singh, Jeff W. White, Bill Batchelor
+C     Paul Wilkens, Upendra Singh, Jeff W. White
 C
 C=======================================================================
 C
