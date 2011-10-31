@@ -179,7 +179,8 @@ C=======================================================================
 
 !       Initialize plant transpiration variables
         CALL TRANS(DYNAMIC, 
-     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
+     &    CO2, CROP, EO, EOS, EVAP, KTRANS, TAVG,         !Input
+     &    WINDSP, XHLAI,                                  !Input
      &    EOP)                                            !Output
       ENDIF
 
@@ -342,8 +343,9 @@ C       and total potential water uptake rate.
 !-----------------------------------------------------------------------
           IF (XHLAI .GT. 0.0) THEN
             CALL TRANS(RATE, 
-     &          CO2, CROP, EO, EVAP, KTRANS, TAVG, WINDSP, XHLAI, !Input
-     &          EOP)                                             !Output
+     &        CO2, CROP, EO, EOS, EVAP, KTRANS, TAVG,     !Input
+     &        WINDSP, XHLAI,                              !Input
+     &        EOP)                                        !Output
           ELSE
             EOP = 0.0
           ENDIF

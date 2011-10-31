@@ -61,12 +61,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 18
+        INTEGER :: Build = 19
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
+!       4.5.1.19 chp 10/31/2011 Deployment version for testing
 !       4.5.1.18 chp 10/30/2011 Synch with v4.6.0.6
 !                               Modified CO2 effects to transpiration (SPAM, TRANS)
 !                               Drainage modifications JTR
