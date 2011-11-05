@@ -22,8 +22,6 @@ C  04/01/2004 CHP/US Added Penman - Meyer routine for potential ET
 !  08/25/2006 CHP Add SALUS soil evaporation routine, triggered by new
 !                 FILEX parameter MESEV
 !  12/09/2008 CHP Remove METMP
-!  08/30/2011 CHP / JWJ / KJB Reduce potential evapotranspiration, EO, 
-!               based on reduced potential transpiration, EOP, due to high CO2
 C-----------------------------------------------------------------------
 C  Called by: Main
 C  Calls:     XTRACT, OPSPAM    (File SPSUBS.FOR)
@@ -60,7 +58,7 @@ C=======================================================================
 
       REAL CANHT, CO2, SRAD, TAVG, 
      &    TMAX, TMIN, WINDSP, XHLAI, XLAI
-      REAL CEF, CEM, CEO, CEP, CES, CET, EF, EM, EO, EP, ES, ET,
+      REAL CEF, CEM, CEO, CEP, CES, CET, EF, EM, EO, EP, ES, ET, EVAP, 
      &    TRWU, TRWUP, U
       REAL EOS, EOP, WINF, MSALB, ET_ALB
       REAL XLAT, TAV, TAMP, SRFTEMP
@@ -71,9 +69,10 @@ C=======================================================================
      &    SWDELTS(NL), SWDELTU(NL), SWDELTX(NL), UPFLOW(NL)
       REAL ES_LYR(NL)
 
+!     ORYZA model
 !     Root water uptake computed by some plant routines (optional)
       REAL UH2O(NL)
-      REAL ETRD, ETAE
+      REAL ETRD, ETAE, TRAT, TRATIO
 
 !     Species-dependant variables imported from PLANT module:
       REAL PORMIN, RWUMX
@@ -83,36 +82,6 @@ C=======================================================================
       
 !     P Stress on photosynthesis
       REAL PSTRES1
-
-!-----------------------------------------------------------------------
-!     Jim's suggested order of calculation 9/1/2011
-!     1. Compute E0
-!     2. Compute Eos(1)
-!     3. Compute Eop(1)
-!     4. Compare Eos(1) + Eop(1) with E0. E0 is less than that sum, 
-!           reduce both proportionally (to compute Eos(2) and Eop(2)) 
-!           such that their sum is equal to E0. This will ensure up 
-!           front that our starting point partitioning is accurate (adding to E0).
-!     5. Modify Eop to compute Eop(3) = Eop(2)*TRAT   This will reduce 
-!           potential transpiration based on CO2.
-!     6. Now, re-compute E0. E0(2) = Eos(2) + Eop(3). This will reduce 
-!           potential evapotranspiration but only due to the reduction 
-!           in Eop, not Eos. This E0(2) is our final calculation of potential 
-!           evapotranspiration that should be output, which takes into account 
-!           the CO2 effect on leaves stomatal conduction.
-!     7. Now, compute Es as before, and follow the code from before, which 
-!           puts some energy back into the canopy Eop if the soil does not evaporate enough.
-!     8. Continue as before
-
-!     Move calculations from TRANS so we can split the order, based on above
-!     FUNCTION SUBROUTINES:
-      REAL TRATIO, TRAT, FDINT  !, FACTOR
-      REAL EO1, EO2, EOP1, EOP2, EOP3, EOP4, EOS1, EOS2, EVAP
-
-!     temp chp
-      CHARACTER*80  :: FormatTxt 
-      CHARACTER*120 :: HeaderTxt
-      INTEGER       :: NVars, Width
 
 !-----------------------------------------------------------------------
 !     Define constructed variable types based on definitions in
@@ -213,26 +182,11 @@ C=======================================================================
 !     ----------------------------
         END SELECT
 
-!!       Initialize plant transpiration variables
-!        CALL TRANS(DYNAMIC, 
-!     &    CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &    EOP)                                            !Output
-
-!     TEMP CHP
-      NVars = 12
-      trat = 1.0
-      fdint = 0.0
-
-      HeaderTxt = "  KTRANS  KSEVAP    XLAI   XHLAI     EO1    EOS1" // 
-     &            "    EOP1    EVAP    EOP2    EOP3    EOS2     EO2"
-      Width = 96
-      FormatTxt = "(12F8.3)"
-
-      CALL OPGENERIC(
-     &  NVars, Width, HeaderTxt, FormatTxt,  
-     &  KTRANS, KSEVAP, XLAI, XHLAI, EO1, EOS1, 
-     &  EOP1, EVAP, EOP2, EOP3, EOS2, EO2)
-!-----------------------------------------------------------------------
+!       Initialize plant transpiration variables
+        CALL TRANS(DYNAMIC, 
+     &    CO2, CROP, EO, EOS, EVAP, KTRANS, TAVG,         !Input
+     &    WINDSP, XHLAI,                                  !Input
+     &    EOP)                                            !Output
       ENDIF
 
       CALL MULCH_EVAP(DYNAMIC, MULCH, EOS, EM)
@@ -314,19 +268,11 @@ C       and total potential water uptake rate.
             ET_ALB = MSALB
           ENDIF
 
-!         Initialize intermediate variables for Jim's 8-step program
-          EO1  = 0.0; EO2  = 0.0
-          EOP1 = 0.0; EOP2 = 0.0; EOP3 = 0.0; EOP4 = 0.0
-          EOS1 = 0.0; EOS2 = 0.0; EVAP = 0.0
-
-!         Step 1 - compute EO
           CALL PET(CONTROL, 
      &      ET_ALB, XHLAI, MEEVP, WEATHER,  !Input for all
      &      EORATIO, !Needed by Penman-Monteith
      &      CANHT,   !Needed by dynamic Penman-Monteith
      &      EO)      !Output
-
-          EO1 = EO
 
 !-----------------------------------------------------------------------
 !         POTENTIAL SOIL EVAPORATION
@@ -335,56 +281,20 @@ C       and total potential water uptake rate.
 !         This was important for Canegro and affects CROPGRO crops
 !             only very slightly (max 0.5% yield diff for one peanut
 !             experiment).  No difference to other crop models.
-!         Step 2 - compute EOS(1)
           CALL PSE(EO, KSEVAP, XLAI, EOS)
-          EOS1 = EOS
-
-!-----------------------------------------------------------------------
-!         Potential transpiration - model dependent
-!-----------------------------------------------------------------------
-          IF (XHLAI > 1.E-6) THEN
-            SELECT CASE (CONTROL % MODEL(1:5))
-            CASE ('RIORZ')    !ORYZA2000 Rice
-!             07/22/2011 CHP/TL replace TRANS with this (from ET2.F90 in ORYZA2000) 
-!             Estimate radiation-driven and wind- and humidity-driven part
-              ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
-              ETAE = EO - ETRD
-              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
-              EOP = MAX(0.0, EOP)
-              EOP = MIN(EO, EOP)
-              EOP1 = EOP
-
-!              EOS = EO - EOP
-!              EOS1 = EOS
-          
-            CASE DEFAULT
-!             For all models except ORYZA
-!             From TRANS:
-!             Step 3 - compute EOP(1)
-              FDINT = 1.0 - EXP(-(KTRANS) * XHLAI)  
-              EOP = EO * FDINT   
-              EOP1 = EOP
-            END SELECT
-            
-!           Step 5 - CO2 effects
-            TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
-            EOP = EOP * TRAT
-            EOP2 = EOP
-          ELSE
-            EOP = 0.0
-          ENDIF
-            
-!-----------------------------------------------------------------------
-
-!         Initialize soil, mulch and flood evaporation
-          ES = 0.; EM = 0.; EF = 0.; UPFLOW = 0.0; ES_LYR = 0.0
 
 !-----------------------------------------------------------------------
 !         ACTUAL SOIL, MULCH AND FLOOD EVAPORATION
 !-----------------------------------------------------------------------
+!         Initialize soil, mulch and flood evaporation
+          ES = 0.; EM = 0.; EF = 0.; EVAP = 0.0
+          UPFLOW = 0.0; ES_LYR = 0.0
+
+!         First meet evaporative demand from floodwater
           IF (FLOOD .GT. 1.E-4) THEN
             CALL FLOOD_EVAP(XLAI, EO, EF)   
             IF (EF > FLOOD) THEN
+!             Floodwater not enough to supply EOS demand
               EOS_SOIL = MIN(EF - FLOOD, EOS)
               EF = FLOOD
             ELSE
@@ -394,16 +304,18 @@ C       and total potential water uptake rate.
             EOS_SOIL = EOS
           ENDIF
 
+!         Next meet evaporative demand from mulch
           IF (EOS_SOIL > 1.E-6 .AND. INDEX('RSM',MEINF) > 0) THEN
-!           Mulch evaporation unless switched off. This modifies EOS
             CALL MULCH_EVAP(DYNAMIC, MULCH, EOS_SOIL, EM)
             IF (EOS_SOIL > EM) THEN
+!             Some evaporative demand leftover for soil
               EOS_SOIL = EOS_SOIL - EM
             ELSE
               EOS_SOIL = 0.0
             ENDIF
           ENDIF
 
+!         Soil evaporation after flood and mulch evaporation
           IF (EOS_SOIL > 1.E-6) THEN
             SELECT CASE(MESEV)
 !           ------------------------
@@ -432,56 +344,37 @@ C       and total potential water uptake rate.
           EVAP = ES + EM + EF
 
 !-----------------------------------------------------------------------
+!         Potential transpiration - model dependent
+!-----------------------------------------------------------------------
+          IF (XHLAI > 1.E-6) THEN
+            SELECT CASE (CONTROL % MODEL(1:5))
+            CASE ('RIORZ')    !ORYZA2000 Rice
+!             07/22/2011 CHP/TL replace TRANS with this (from ET2.F90 in ORYZA2000) 
+!             Estimate radiation-driven and wind- and humidity-driven part
+              ETRD = EO * 0.75  !s/b 1st term in FAO energy balance eqn
+              ETAE = EO - ETRD
+              EOP = ETRD*(1. - EXP(-KTRANS*XHLAI)) +ETAE*MIN(2.0, XHLAI)
+              EOP = MAX(0.0, EOP)
+              EOP = MIN(EO, EOP)
+
+              TRAT = TRATIO(CROP, CO2, TAVG, WINDSP, XHLAI)
+              EOP = EOP * TRAT
+
+            CASE DEFAULT
+!             For all models except ORYZA
+              CALL TRANS(RATE, 
+     &        CO2, CROP, EO, EOS, EVAP, KTRANS, TAVG,     !Input
+     &        WINDSP, XHLAI,                              !Input
+     &        EOP)                                        !Output
+            END SELECT
+            
+          ELSE
+            EOP = 0.0
+          ENDIF
+
+!-----------------------------------------------------------------------
 !         ACTUAL TRANSPIRATION
 !-----------------------------------------------------------------------
-!          IF (XHLAI .GT. 0.0) THEN
-!
-!!           Step 6
-!            IF (XHLAI > 2.) THEN  
-!!           Arbitrary limit of LAI = 2.0 to prevent stress in young plants
-!!             Limit EOP to what's left over after evaporation
-!              EOP = MIN(EOP, EO - EVAP)
-!!             Readjust EOS, so that EOP + EOS = EO
-!              EOS = EO - EOP
-!              EOP3 = EOP
-!              EOS2 = EOS
-!            ELSE
-!!             Dont' boost EOP for LAI < 2. (arbitrary)
-!              EOP = MIN(EOP, EO - EOS)
-!              EOP3 = EOP
-!            ENDIF
-!
-            IF (EOP + EOS < EO) THEN
-              EO = EOP + EOS
-              EO2 = EO
-            ENDIF
-
-!            IF (FLOOD .GT. 0.0) THEN
-!              !Use flood evaporation rate
-!              CALL TRANS (RATE, 
-!     &          CO2, CROP, EO, EF, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &          EOP)                                            !Output
-!            ELSE
-!              !Use soil evaporation rate
-!              CALL TRANS(RATE, 
-!     &          CO2, CROP, EO, ES, KTRANS, TAVG, WINDSP, XHLAI, !Input
-!     &          EOP)                                            !Output
-!            ENDIF
-
-!!           Step 7 - increase EOP when EVAP < EOS
-!            IF (FLOOD > 1.E-6) THEN
-!              EVAP = EF       !Flood evaporation
-!            ELSE
-!              EVAP = ES + EM  !Soil + mulch evaporation
-!            ENDIF
-!            IF (EVAP < EOS) THEN
-!              EOP = EOP + EOS - EVAP
-!              EOP4 = EOP
-!            ENDIF
-!          ELSE
-!            EOP = 0.0
-!          ENDIF
-
           IF (XHLAI .GT. 1.E-4 .AND. EOP .GT. 1.E-4) THEN
             !These calcs replace the old SWFACS subroutine
             !Stress factors now calculated as needed in PLANT routines.
@@ -490,12 +383,6 @@ C       and total potential water uptake rate.
             EP = 0.0
           ENDIF
         ENDIF
-
-        CALL OPGENERIC(
-     &  NVars, Width, HeaderTxt, FormatTxt,  
-     &  KTRANS, KSEVAP, XLAI, XHLAI, EO1, EOS1, 
-     &  EOP1, EVAP, EOP2, EOP3, EOS2, EO2)
-
       ENDIF
 
 !-----------------------------------------------------------------------
@@ -556,7 +443,7 @@ C       and total potential water uptake rate.
 !-----------------------------------------------------------------------
       IF (ISWWAT .EQ. 'Y') THEN
 !       Perform daily summation of water balance variables.
-        ET  = ES  + EM + EP + EF
+        ET  = EVAP + EP
         CEF = CEF + EF
         CEM = CEM + EM
         CEO = CEO + EO

@@ -61,17 +61,24 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 16 
+        INTEGER :: Build = 20
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-ORYZA2000'
 
 !     Version history:  
-!       4.6.0.4  chp 08/30/2011 Sorghum changes GH, CSCER, CSCRP changes, LAH.
-!       4.6.0.3  chp 08/30/2011 Added vapor pressure as optional weather input.
-!       4.6.0.2  gh  06/29/2011 Sorghum cul file re-order.
-!       4.6.0.1  chp 06/28/2011 v4.6
-!                               Changes to CSCER, CSCRP, incl. spe, eco, cul formats
+!       4.5.1.20 chp 11/05/2011 Synch with v4.5
+!       4.5.1.19 chp 10/31/2011 Deployment version for testing
+!       4.5.1.18 chp 10/30/2011 Synch with v4.6.0.6
+!                               Modified CO2 effects to transpiration (SPAM, TRANS)
+!                               Drainage modifications JTR
+!                               Enabled Canola
+!                               CO2 response for potato
+!                               Sorghum changes GH, CSCER, CSCRP changes, LAH
+!                               Added vapor pressure as optional weather input.
+!       4.5.1.17 gh  06/28/2011 Sorghum cul file re-order.
+!       4.5.1.16 chp 06/28/2011 More changes to CSCER, CSCRP, incl. spe, eco & cul files.
+!                               This version matches first commit for v4.6
 !       4.5.1.15 chp 06/27/2011 Fixed zero divide in ROOTWU
 !       4.5.1.14 chp 05/18/2011 More changes to CSCER, CSCRP; MDATE initialization
 !       4.5.1.13 chp 05/05/2011 More changes to CSCER (see file CSCER040.FOR)

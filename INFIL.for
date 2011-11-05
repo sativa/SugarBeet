@@ -12,6 +12,11 @@ C  06/13/1997 WDB Added tile drainage
 !  10/29/2001 CHP Removed read stmts for soil info.  These variables
 !                 now come from soil module.
 !  08/12/2003 CHP Reset EXCS to zero daily.
+!  06/29/2011 CHP Suleiman-Ritchie changes to daily drainage from paper:
+!     Suleiman, A.A., J.T. Ritchie. 2004. Modifications to the DSSAT vertical 
+!       drainage model for more accurate soil water dynamics estimation. 
+!       Soil Science 169(11):745-757.
+!  06/29/2011 CHP Combine INFIL and SATFLO - no need for two separate routines.
 !-----------------------------------------------------------------------
 !  Called by: WATBAL
 !  Calls:     None
@@ -22,25 +27,42 @@ C           water content of a layer reaches saturation, the excess
 C           amount of infiltration is added to the next soil layer(s),
 C           depending on their water holding capacity and actual soil
 C           water content.  Then saturated flow is calculated.
+
+!     Ksat = cm/hr;  SWCN = cm/d
 C=======================================================================
       SUBROUTINE INFIL(
-     &    DLAYR, DUL, NLAYR, PINF, SAT, SW, SWCN, SWCON,  !Input
-     &    DRAIN, DRN, EXCS, SWDELTS)                    !Output
+     &    DYNAMIC, DLAYR, DUL, KSAT, NLAYR, PINF, SAT,    !Input
+     &    SW, SWCON,                                      !Input
+     &    DRAIN, DRN, EXCS, SWDELTS)                      !Output
 
 !     ------------------------------------------------------------------
-      USE ModuleDefs     !Definitions of constructed variable types, 
-                         ! which contain control information, soil
-                         ! parameters, hourly weather data.
-!     NL defined in ModuleDefs.for
+      USE ModuleDefs
       IMPLICIT NONE
       SAVE
 
-      INTEGER L, LK, NLAYR
+      INTEGER DYNAMIC, L, LK, NLAYR
 
       REAL DRAIN, DRCM, EXCS, HOLD, PINF, SWCON, TMPEXCS
       REAL DLAYR(NL), DRN(NL), DUL(NL), SAT(NL), SW(NL)
-      REAL SWCN(NL), SWDELTS(NL), SWTEMP(NL)
+      REAL KSAT(NL), SWDELTS(NL), SWTEMP(NL)
+      REAL DrainC(NL), F
 
+!***********************************************************************
+!***********************************************************************
+!     Initialization
+!***********************************************************************
+      IF (DYNAMIC .EQ. INIT) THEN
+!-----------------------------------------------------------------------
+      DO L = 1, NLAYR
+!       Eqns from Suleiman & Ritchie, 2004
+        DrainC(L) = 3.*DUL(L)**2. - 2.6*DUL(L) + 0.85  !Eqn. 23
+      ENDDO
+
+!***********************************************************************
+!***********************************************************************
+!     DAILY RATE CALCULATIONS
+!***********************************************************************
+      ELSEIF (DYNAMIC .EQ. RATE) THEN
 !-----------------------------------------------------------------------
       DO L = 1, NLAYR
         DRN(L) = 0.0
@@ -49,27 +71,29 @@ C=======================================================================
       ENDDO
       EXCS    = 0.0
       TMPEXCS = 0.0
+      DRN = 0.0
 
       DO L = 1,NLAYR
-        HOLD = (SAT(L) - SWTEMP(L)) * DLAYR(L)
+        HOLD = (SAT(L) - SWTEMP(L)) * DLAYR(L)      !cm
+
+!       Equation 25, PINF and KSAT both in cm/d
+!       F modifies drainage every day, each layer based on current drainage from above
+        F = MAX(0.0, 1.0 - (LOG(PINF + 1.0) / LOG(KSAT(L) + 1.0)))
+        SWCON = F * DrainC(L)
+
         IF (PINF .GT. 1.E-4 .AND. PINF .GT. HOLD) THEN
 
-! 11/30/2006 JTR/CHP reduce SWCON in top layer to allow for
-!     increased evaporation for wet soils
-
-          IF (L == 1) THEN                                        !JTR
-            DRCM = 0.9 * SWCON * (SAT(L) - DUL(L)) * DLAYR(L)     !JTR
-          ELSE                                                    !JTR
-            DRCM = SWCON * (SAT(L) - DUL(L)) * DLAYR(L)
-          ENDIF                                                   !JTR
+          DRCM = SWCON * (SAT(L) - DUL(L)) * DLAYR(L)
+!         11/30/2006 JTR/CHP reduce SWCON in top layer to allow for
+!           increased evaporation for wet soils
+          IF (L == 1) THEN 
+            DRCM = DRCM * 0.9
+          ENDIF      
 
           DRN(L) = PINF - HOLD + DRCM
 
-!         Failed experiment -- too many problems with zero SWCN and 
-!           historic soil profiles
-!         IF (SWCN(L) .GE. 0.0 .AND. DRN(L) .GT. SWCN(L)*24.0) THEN
-          IF (SWCN(L) .GT. 0.0 .AND. DRN(L) .GT. SWCN(L)*24.0) THEN
-            DRN(L) = SWCN(L) * 24.0
+          IF (KSAT(L) .GT. 0.0 .AND. DRN(L) .GT. KSAT(L)*24.0) THEN
+            DRN(L) = KSAT(L) * 24.0
             DRCM = DRN(L) + HOLD - PINF
           ENDIF
 
@@ -101,26 +125,24 @@ C           If there is excess water, redistribute it in layers above.
   760       CONTINUE
 
           ENDIF
+
           PINF = DRN(L)
 
         ELSE
           SWTEMP(L) = SWTEMP(L) + PINF / DLAYR(L)
           IF (SWTEMP(L) .GE. DUL(L) + 0.003) THEN
 
-! 11/30/2006 JTR/CHP reduce SWCON in top layer to allow for
-!     increased evaporation for wet soils
-
-            IF (L == 1) THEN                                        !JTR
-              DRCM = 0.9 * (SWTEMP(L) - DUL(L)) * SWCON * DLAYR(L)  !JTR
-            ELSE                                                    !JTR
-              DRCM = (SWTEMP(L) - DUL(L)) * SWCON * DLAYR(L)
-            ENDIF                                                   !JTR
+            DRCM = SWCON * (SWTEMP(L) - DUL(L)) * DLAYR(L)
+!           11/30/2006 JTR/CHP reduce SWCON in top layer to allow for
+!             increased evaporation for wet soils
+            IF (L == 1) THEN 
+              DRCM = DRCM * 0.9
+            ENDIF      
 
             DRN(L) = DRCM
 
-!           IF (SWCN(L) .GE. 0.0 .AND. DRN(L) .GT. SWCN(L)*24.0) THEN
-            IF (SWCN(L) .GT. 0.0 .AND. DRN(L) .GT. SWCN(L)*24.0) THEN
-               DRN(L) = SWCN(L) * 24.0
+            IF (KSAT(L) .GT. 0.0 .AND. DRN(L) .GT. KSAT(L)*24.0) THEN
+               DRN(L) = KSAT(L) * 24.0
                DRCM = DRN(L)
             ENDIF
 
@@ -128,18 +150,25 @@ C           If there is excess water, redistribute it in layers above.
             PINF = DRCM
 
           ELSE
-            PINF = 0.0
             DRN(L) = 0.0
+            PINF = 0.0
           ENDIF
+
         ENDIF
       ENDDO
 
       DRAIN = PINF * 10.0
+
 !-----------------------------------------------------------------------
       DO L = 1, NLAYR
           SWDELTS(L) = SWTEMP(L) - SW(L)
       ENDDO
 
+!***********************************************************************
+!***********************************************************************
+!     END OF DYNAMIC IF CONSTRUCT
+!***********************************************************************
+      ENDIF
 !-----------------------------------------------------------------------
       RETURN
       END SUBROUTINE INFIL
@@ -162,7 +191,7 @@ C           If there is excess water, redistribute it in layers above.
 !               (cm3 [water] / cm3 [soil])
 ! SW(L)       Volumetric soil water content in layer L
 !               (cm3 [water] / cm3 [soil])
-! SWCN(L)     Saturated hydraulic conductivity in layer L (cm/hr)
+! KSAT(L)     Saturated hydraulic conductivity in layer L (cm/hr)
 ! SWCON       Soil water conductivity constant; whole profile drainage rate 
 !               coefficient (1/d)
 ! SWDELTS(L) Change in soil water content due to drainage in layer L

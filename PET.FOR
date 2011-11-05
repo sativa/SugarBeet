@@ -165,9 +165,6 @@ C     PARAMETER (SHAIR = 1005.0)
 !     FUNCTION SUBROUTINES:
       REAL VPSLOP, VPSAT      !Found in file HMET.FOR
 
-!     temp chp
-      real eta, etb
-
 C-----------------------------------------------------------------------
 C     Compute air properties.
       LHVAP = (2501.0-2.373*TAVG) * 1000.0                ! J/kg
@@ -286,12 +283,6 @@ C     Compute EO using Penman-Montieth
       RNETMG = (RNET-G)
 C     !MJ/m2/d
         ET0 = ((S*RNETMG + (DAIR*SHAIR*VPD)/ra)/(S+PSYCON*(1+rs/ra)))
-
-!       temp chp - partition ET0  
-        eta = S*RNETMG / (S*RNETMG + (DAIR*SHAIR*VPD)/ra)
-        etb = (DAIR*SHAIR*VPD)/ra / (S*RNETMG + (DAIR*SHAIR*VPD)/ra)
-        WRITE(3000,*) ETA, ETB
-
 C     !Converts MJ/m2/d to mm/d
         ET0 = ET0/ (LHVAP / 1000000.)
         IF (XHLAI .LE. 6.0) THEN
@@ -1083,7 +1074,9 @@ c
 
 !       Old computation:
         IF (XLAI .LE. 1.0) THEN   !<-------!
-          EOS = EO*(1.0 - 0.43*XLAI)       !
+!         EOS = EO*(1.0 - 0.43*XLAI)       !
+!         get rid of discontinuity:
+          EOS = EO*(1.0 - 0.39*XLAI)       !
         ELSE                               !-> old code
           EOS = EO/1.1*EXP(-0.4*XLAI)      !
         ENDIF    !<------------------------! 
