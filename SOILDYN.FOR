@@ -795,7 +795,14 @@ C     Initialize curve number (according to J.T. Ritchie) 1-JUL-97 BDB
 !         by Texture and Organic Matter for Hydrologic Solutions" by K. E. Saxton 
 !         and W. J. Rawls, Aug. 2006.
 !         Ksat in cm/h
-          SWCN(L) = 1930. * ((SAT(L) - DUL(L))**(3.-Lambda(L)))/10.0
+!         SWCN(L) = 1930. * ((SAT(L) - DUL(L))**(3.-Lambda(L)))/10.0
+
+!         Eqn. 10 from 
+!         Suleiman, A.A., J.T. Ritchie. 2004. Modifications to the DSSAT vertical 
+!           drainage model for more accurate soil water dynamics estimation. 
+!           Soil Science 169(11):745-757.
+          SWCN(L) = 75. * ((SAT(L) - DUL(L)) / DUL(L))**2. / 24. !cm/h
+
           NMSG = NMSG + 1
           WRITE(MSG(NMSG),'(I5,F8.3,3F6.3)') 
      &        L, SWCN(L), LL(L), DUL(L), SAT(L)
