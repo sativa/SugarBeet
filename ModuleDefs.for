@@ -61,12 +61,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 20
+        INTEGER :: Build = 21
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
+!       4.5.1.21 chp 11/05/2011 Go back to older drainage routines - no Ritchie mod
 !       4.5.1.20 chp 11/05/2011 Denitrification rate for flooded field = 50% NO3/d
 !       4.5.1.19 chp 10/31/2011 Deployment version for testing
 !       4.5.1.18 chp 10/30/2011 Synch with v4.6.0.6
