@@ -3,22 +3,22 @@
 !========================================================================================================
 ! Initial SOM fractions are based on previous land use / management,
 !   soil type, number of years under this management and on initial
-!   carbon composition.  
+!   carbon composition.
 !
 ! Values in these tables represent the fraction of total organic C (OC)
-!   that is stable (SOM3). Intermediate (SOM2) and microbial (SOM1) SOM 
-!   are estimated in the DSSAT-CENTURY model based on these stable SOM 
+!   that is stable (SOM3). Intermediate (SOM2) and microbial (SOM1) SOM
+!   are estimated in the DSSAT-CENTURY model based on these stable SOM
 !   fractions as follows:
 !      SOM1 = 0.05 * (1.0 - SOM3).
 !      SOM2 = 1.0 - SOM3 - SOM1
 !
-! If measured values are entered into Soil Analysis section of 
+! If measured values are entered into Soil Analysis section of
 !   experiment file, those values supercede these.  If no measured
 !   values or field history are available, model uses Adiku's equaton:
-!         SOM3 = (0.015 * (CLAY + SILT) + 0.069) / OC    
+!         SOM3 = (0.015 * (CLAY + SILT) + 0.069) / OC
 !
-!Five character field history code (FLHST) needs to be placed in 
-! "FIELDS" section of FILEX:  
+!Five character field history code (FLHST) needs to be placed in
+! "FIELDS" section of FILEX:
 !*FIELDS
 !@L ID_FIELD WSTA....  FLSA  FLOB  FLDT  FLDD  FLDS  FLST SLTX  SLDP  ID_SOIL    FLNAME
 ! 1 PLmodame ISDA9901   -99   -99   -99   200   -99     0 S      200  ISDA250001 Sample field history
@@ -66,7 +66,7 @@
  12  Clay            0.44   0.44   0.54   0.59   0.58   0.71   0.63   0.84   0.75   0.95   0.80   0.96
 
 
-@FH201 Cultivated with good management practices, initially grassland/forest 
+@FH201 Cultivated with good management practices, initially grassland/forest
 !100 yr continuous simulation approach, irrigated, high N application rate
 !Initial conditions: 34% stable C
 !Years this mgmt ->|---0 yrs----|----5 yrs----|---10 yrs----|---20 yrs----|---60 yrs----|-Steady State|
@@ -86,7 +86,7 @@
  12  Clay            0.34   0.34   0.47   0.50   0.54   0.62   0.61   0.74   0.67   0.85   0.67   0.86
 
 
-@FH202 Cultivated with poor management practices, initially grassland/forest 
+@FH202 Cultivated with poor management practices, initially grassland/forest
 !100 yr continuous simulation approach, non-irrigated, non-fertilzed
 !Initial conditions: 34% stable C
 !Years this mgmt ->|---0 yrs----|----5 yrs----|---10 yrs----|---20 yrs----|---60 yrs----|-Steady State|
@@ -106,7 +106,7 @@
  12  Clay            0.34   0.34   0.47   0.52   0.53   0.66   0.60   0.82   0.75   0.95   0.82   0.96
 
 
-@FH301 Cultivated with good management practices, initially degraded 
+@FH301 Cultivated with good management practices, initially degraded
 !100 yr continuous simulation approach, irrigated, high N application rate
 !Initial conditions: Stable C from 100 year continuous simulations for FH102
 !Initial conditions: previously degraded land, use initial SOM from transient simulation scenarios

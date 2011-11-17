@@ -59,12 +59,12 @@ C             CHP Added TRTNUM to CONTROL variable.
 !     Global CSM Version Number
       TYPE VersionType
         INTEGER :: Major = 4
-        INTEGER :: Minor = 5
+        INTEGER :: Minor = 4
         INTEGER :: Model = 1
         INTEGER :: Build = 22
       END TYPE VersionType
       TYPE (VersionType) Version
-      CHARACTER(len=10) :: VBranch = '-Stub     '
+      CHARACTER(len=10) :: VBranch = '-GFF v4.4 '
 
 !     Version history:  
 !       4.5.1.22 chp 11/17/2011 Version for GFF
@@ -374,13 +374,13 @@ C             CHP Added TRTNUM to CONTROL variable.
       CASE ('WINDO','DOS  ')
 !       DOS, Windows
         SLASH = '\' 
-        DSSATPRO = 'DSSATPRO.V45'
+        DSSATPRO = 'DSSATPRO.V44'
         STDPATH = 'C:\DSSAT45\'
 
       CASE ('LINUX','UNIX ')
 !       Linux, Unix
         SLASH = '/' 
-        DSSATPRO = 'DSSATPRO.L45'
+        DSSATPRO = 'DSSATPRO.L44'
         STDPATH = './DSSAT45/'
       END SELECT
 

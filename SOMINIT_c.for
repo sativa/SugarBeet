@@ -733,7 +733,7 @@
       REAL, DIMENSION(NL) :: SASC, SILT, SOM_TOT
 
       LOGICAL DONE
-      CHARACTER*12, PARAMETER :: SOMFILE = 'SOMFR045.SDA'
+      CHARACTER*12, PARAMETER :: SOMFILE = 'SOMFR044.SDA'
 
 !     ------------------------------------------------------------------
       DS      = SOILPROP % DS
@@ -817,7 +817,7 @@
 
         INQUIRE(FILE = SOMPF, EXIST = FEXIST)
         IF (FEXIST) THEN
-!         Open the SOMFR045.SDA file to read the fractions of SOM3C
+!         Open the SOMFR044.SDA file to read the fractions of SOM3C
           CALL GETLUN('FINPUT', LUN)
           LNUM = 0
           OPEN (UNIT = LUN, FILE = SOMPF, STATUS = 'OLD', IOSTAT=ERRNUM)

@@ -97,9 +97,9 @@ C=======================================================================
          ISWTIL  = 'Y'
 
          IF (INDEX('FNQS',RNMODE) > 0) THEN
-           ICO2 = 'D' !Default CO2 from CO2045.WDA file
+           ICO2 = 'D' !Default CO2 from CO2044.WDA file
          ELSE
-           ICO2 = 'M' !Measured CO2 from CO2045.WDA file
+           ICO2 = 'M' !Measured CO2 from CO2044.WDA file
          ENDIF
 
          MEWTH   = 'M'
@@ -437,7 +437,7 @@ C    Select Model Name and Path -- order of priority:
 !         over all other values if valid. (Done in Default_SimControls)
 !     CRMODEL is read from FILEX.  Use this if no control file.  
 !     MODELARG is from command line argument list. Third priority. 
-!     Last, use value from DSSATPRO.v45.
+!     Last, use value from DSSATPRO.v44.
 C-----------------------------------------------------------------------
 !     First check model name from FILEX
       TRY_MODEL = CRMODEL
@@ -445,7 +445,7 @@ C-----------------------------------------------------------------------
 
 !     If FILEX model name was not acceptable, then try the 
 !       model name read from command line.  If this is not OK, 
-!       MODEL contains value from DSSATPRO.V45
+!       MODEL contains value from DSSATPRO.V44
       IF (TRY_MODEL /= MODEL) THEN
         CALL MODEL_NAME (CROP, DSSATP, MODELARG, MODEL)
       ENDIF
@@ -772,7 +772,7 @@ C-----------------------------------------------------------------------
       DATA FIRST /.TRUE./
 
       PARAMETER (ERRKEY = 'SIMCTR')
-!      PARAMETER (DSSATS = 'DSCSM045.CTR')
+!      PARAMETER (DSSATS = 'DSCSM044.CTR')
 
 !-----------------------------------------------------------------------
       IF (FIRST) THEN
@@ -793,7 +793,7 @@ C-----------------------------------------------------------------------
 !     1) Go to pull down menu Project -> Settings -> Fortran (Tab) ->
 !       Debug (Category) -> Check box for Compile Debug(D) Lines
 !     2)  Specify name of DSSATPRO file here:
-D     INPUTX = 'C:\DSSAT45\DSCSM045.EXE'
+D     INPUTX = 'C:\DSSAT45\DSCSM044.EXE'
 D     IPX = 22
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1250,7 +1250,7 @@ C    Select Model Name and Path -- order of priority:
 !         over all other values if valid. (Done in Default_SimControls)
 !     CRMODEL is read from FILEX.  Use this if no control file.  
 !     MODELARG is from command line argument list. Third priority. 
-!     Last, use value from DSSATPRO.v45.
+!     Last, use value from DSSATPRO.v44.
 C-----------------------------------------------------------------------
 !     First check model from simulation control file 
       TRY_MODEL = CTRMODEL
@@ -1264,7 +1264,7 @@ C-----------------------------------------------------------------------
 
 !       If FILEX model name was not acceptable, then try the 
 !       model name read from command line.  If this is not OK, 
-!       MODEL contains value from DSSATPRO.V45
+!       MODEL contains value from DSSATPRO.V44
         IF (TRY_MODEL /= MODEL) THEN
           TRY_MODEL = MODELARG
           CALL MODEL_NAME (CONTROL%CROP, DSSATP, TRY_MODEL, MODEL)

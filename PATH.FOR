@@ -1,7 +1,7 @@
 C=======================================================================
 C  PATH, Subroutine
 C
-C  Program to read the PATH from DSSATPRO.V45
+C  Program to read the PATH from DSSATPRO.V44
 C-----------------------------------------------------------------------
 C  Revision history
 C
@@ -99,9 +99,9 @@ C-SUN       PATHC  = LINE(8:80)
 C=======================================================================
 C  PATHD, Subroutine
 C
-C  Program to read the PATH of DSSATPRO.V45
+C  Program to read the PATH of DSSATPRO.V44
 C    Assume in current directory first.
-C    If not in current directory, DSSATPRO.V45 is stored with the EXEs
+C    If not in current directory, DSSATPRO.V44 is stored with the EXEs
 C-----------------------------------------------------------------------
 C  Revision history
 C
@@ -138,7 +138,7 @@ C=======================================================================
 
       LOGICAL      FEXIST
 
-!     PARAMETER (DSSATF = 'DSSATPRO.V45')
+!     PARAMETER (DSSATF = 'DSSATPRO.V44')
 
 !     DSSATP(1:12) = DSSATF
       DSSATP(1:12) = DSSATPRO
@@ -169,7 +169,7 @@ C=======================================================================
 C=======================================================================
 C  MODEL_NAME, Subroutine
 C
-C  Program to read the Module name from DSSATPRO.V45
+C  Program to read the Module name from DSSATPRO.V44
 C-----------------------------------------------------------------------
 C  Revision history
 C
@@ -229,7 +229,7 @@ C=======================================================================
 !              MODELVER = PATHX((IPX-2):IPX)
 !            ENDIF
 !            CRMODEL(6:8) = MODELVER
-             CRMODEL(6:8) = '045'
+             CRMODEL(6:8) = '044'
             EXIT
           ENDIF
         ENDDO
@@ -282,7 +282,7 @@ C=======================================================================
       IF (ERRNUM /= 0) CALL ERROR (ERRKEY,ERRNUM,DSSATP,0)
 
 !     CHP 5/13/2008
-!     MODEL(6:8) = '045'
+!     MODEL(6:8) = '044'
 
       RETURN
       END SUBROUTINE MODEL_NAME
