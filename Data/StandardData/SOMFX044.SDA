@@ -1,13 +1,13 @@
-*SOMFX045.SDA Coefficients - DSCSM045 Model 09/30/2010
+*SOMFX044.SDA Coefficients - DSCSM045 Model 09/30/2010
 ======================================================
-This is an input file for the CENTURY-based soil organic matter/residue 
-module. These variables and parameters can be considered as constant. 
+This is an input file for the CENTURY-based soil organic matter/residue
+module. These variables and parameters can be considered as constant.
 The user does not have to modify these under normal circumstances.
 
 The variables CES1(L,IEL), CES2(L,IEL) an CES3(L,IEL), as given here,
 are only used to initialize the model; their value is modified during
-the model run. Even though these variables exist for each soil layer 
-independently, only one common start value is given here as array 
+the model run. Even though these variables exist for each soil layer
+independently, only one common start value is given here as array
 element number 1.
 
 NAME           VALUE        UNITS
@@ -124,8 +124,8 @@ NAME           VALUE        UNITS
 'DECS1(1)'     0.02000      d-1
 'DECS2(1)'     0.000548     d-1
 'DECS3(1)'     0.000012     d-1
-'DECSTR(0)'    0.01068      d-1 [JWJ-new 0.001989]  
-'DECSTR(1)'    0.01342      d-1 [JWJ-new 0.002500]  
+'DECSTR(0)'    0.01068      d-1 [JWJ-new 0.001989]
+'DECSTR(1)'    0.01342      d-1 [JWJ-new 0.002500]
 'FRDAE(1)'     0.02         fraction (unitless)
 'FRDAE(2)'     0.02         fraction (unitless)
 'FRDAE(3)'     0.04         fraction (unitless)
@@ -152,7 +152,7 @@ NAME           VALUE        UNITS
 'CES23M(1,2)'   100.
 
 'CES23T(1,2)'    20.               !with conversion g/m2 to kg/ha
-                                                              
+
 'CES23X(0,2)'   400.
 'CES23X(1,2)'   400.
 
