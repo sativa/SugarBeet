@@ -26,7 +26,7 @@ C  02/06/2003 KJB/CHP Replaced KCAN with KEP
 !  Calls:     None
 C=======================================================================
       SUBROUTINE TRANS(DYNAMIC, 
-     &    CO2, CROP, EO, EOS, EVAP, KTRANS, TAVG,         !Input
+     &    CO2, CROP, EO, EVAP, KTRANS, TAVG,              !Input
      &    WINDSP, XHLAI,                                  !Input
      &    EOP)                                            !Output
 
@@ -38,7 +38,7 @@ C=======================================================================
 
       INTEGER DYNAMIC
 
-      REAL CO2, EO, EOS, EVAP, FDINT, KTRANS, TAVG, WINDSP, XHLAI
+      REAL CO2, EO, EVAP, FDINT, KTRANS, TAVG, WINDSP, XHLAI
       REAL EOP, TRAT, EOP_reduc, EOP_max
 
 !     FUNCTION SUBROUTINES:
@@ -81,7 +81,7 @@ C       01/15/03 KJB  I think the change to "Same" K for EOS and EOP
 C       may cause next function to be less driving, but below still
 C       will depend on whether actual soil evapo (EVAP) meets EOS
 
-!       IF ((EOP + ES) .GT. (EO * TRAT)) EOP = EO * TRAT - ES
+!       IF ((EOP + EVAP) .GT. (EO * TRAT)) EOP = EO * TRAT - EVAP
 
 !       Need to limit EOP to no more than EO (reduced by TRAT effect on EOP) 
 !         minus actual evaporation from soil, mulch and flood
