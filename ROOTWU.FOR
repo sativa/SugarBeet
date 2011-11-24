@@ -85,6 +85,7 @@ C-----------------------------------------------------------------------
 !           Previous denominator - could explode for large RLV - problem with RLV?
 !     &      (SWCON3-ALOG(RLV(L)))  
 !           RWU in cm3[water]/cm[root]-d
+
 C-----------------------------------------------------------------------
 C           PORMIN = MINIMUM PORE SPACE  REQUIRED FOR SUPPLYING OXYGEN
 C                TO ROOTS FOR OPTIMAL GROWTH AND FUNCTION
