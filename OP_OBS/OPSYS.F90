@@ -90,8 +90,8 @@
          IF (INV.EQ.0) CALL FATALERR ('OPSYS','no data for output file')
          CALL FOPENG (IUNIT,'OP.DAT','NEW','FS',0,'DEL')
 
-         WRITE (IUNIT,'(A,T12,255A12)') 'RUNNUM',(NAMA(I1),I1=1,INV)
-
+!         WRITE (IUNIT,'(A,T12,255A12)') 'RUNNUM',(NAMA(I1),I1=1,INV)
+         WRITE (IUNIT,'(A,T12,255(1x,A12))') 'RUNNUM',(NAMA(I1),I1=1,INV) !TAOLI, 3JUNE 2011 
 !        determine overall maximum number data
          IM = 0
          DO I1=1,INV
@@ -99,7 +99,8 @@
          END DO
 
          DO I1=1,IM
-            WRITE (IUNIT,'(I6,T12,255G12.5)') I1,(VALA(I1,I2),I2=1,INV)
+!            WRITE (IUNIT,'(I6,T12,255G12.5)') I1,(VALA(I1,I2),I2=1,INV)
+            WRITE (IUNIT,'(I6,T12,255G12.5)') I1,(VALA(I1,I2),I2=1,INV) !TAOLI, 3JUNE 2011
          END DO
 
          CLOSE (IUNIT)

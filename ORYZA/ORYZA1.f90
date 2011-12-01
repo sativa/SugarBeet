@@ -74,14 +74,15 @@
 !===================================================================*
  	  USE Public_Module		!VARIABLES
 	  use RootGrowth
+      use Module_OutDat
       IMPLICIT NONE
  
 !-----Formal parameters
-      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I, K
+      INTEGER       ITASK , IUNITD, IUNITL, CROPSTA, IDOY, I  !, K
       LOGICAL       OUTPUT, TERMNL
       CHARACTER (*) FILEI1, FILEIT, FILEI2
       CHARACTER (*) ESTAB
-      REAL          DOY , TIME, DELT  , LAT  , RDD, TRC, RBH,RT, DIF,RBW,RSWP,RSWA, TempR, KDF2
+      REAL          DOY , TIME, DELT  , LAT  , RDD, TRC, TempR, KDF2, DIF  !, RBH,RT,RBW,RSWP,RSWA
       REAL          TMMN, TMMX, TMAXC, TMINC, TKLT  , ZRTMS, LRSTRS, LDSTRS, LESTRS, NRT
       REAL          PCEW, CPEW, DAE , LAIROL, ZRT  , DVS, NSLLV, RNSTRS, WCL(10), WL0
 
@@ -110,7 +111,7 @@
       REAL    GCR   , GGR   , GLAI , GLV  , GNGR  , GNSP  , GRT   , GRT1
 	  REAL    GSO   , GST   , GST1 , GSTR , GZRT  , CTSTER
       REAL    HU    , HULV 
-      REAL    KEEP  , KDF   , KNF     , LAI
+      REAL    KEEP  , KDF   , KNF     , LAI, AMaxSLN0, MinSLN
       REAL    LAPE  , LLV   , LRSTR   , LSTR
       REAL    MAINLV, MAINRT, MAINSO  , MAINST, MNDVS , MOPP
       REAL    NCOLD , NFLV  , NGCR  , NGR   , NGRM2
@@ -128,7 +129,7 @@
       REAL    WSO   , WSOI  , WSTS    , WSTR   
       REAL    ZRTI  , ZRTM  , ZRTTR   , ZRTMCW, ZRTMCD, RGRLMX, RGRLMN
       REAL    ASLA  , BSLA  , CSLA    , DSLA  , SLAMAX
-      REAL    COLDMIN,COLDEAD, FSWTD, AMaxSLN0,  MINSLN
+      REAL    COLDMIN,COLDEAD, FSWTD 
 !-----Add five parameter here to deal with night temperature control,
 !-----VARIABLE DIFINATION SEE NIGHT.F90, TAOLI, JUNE 10, 509
 	  REAL    SHOUR,  EHOUR,  TTEMP,    TCHANG,	SDAY,	EDAY
@@ -140,24 +141,24 @@
 	  REAL SFLOWER, IFLOWER, TFLOWER
 !---------SFLOWER=STARTING TIME OF FLOWERING IN A DAY, IFLOWER=INTERVAL OF FLOWERING IN A DAY
 !---------TFLOWER=THE CRITICAL TEMPERATURE AT WHICH THE STERILITY OCCUR
-	  real TrootD  !root depth at optimal condition
+!	  real TrootD  !root depth at optimal condition
 	  CHARACTER ROOTOBS*10, xx*2			!Use for root observation outputs
       CHARACTER (10) SWISLA
-	  CHARACTER (2) TMPCH1, TMPCH2
+!	  CHARACTER (2) TMPCH1, TMPCH2
 
       REAL CHECKTB, TSTCHK, TWRT, LROOTC,LROOTN 
-	  LOGICAL ISOPEN
+!	  LOGICAL ISOPEN
 		REAL TEMPV(15), Y1, Y2
 !     Used functions
       REAL    LINT2, INSW, NOTNUL, GETOBS, INTGRL, INTGR2
-      SAVE
+      SAVE         !&#@TAOLI
  
 !===================================================================*
 !     INITIALIZATION SECTION                                        *
 !===================================================================*
       IF (ITASK.EQ.1) THEN
 
-!     WRITE (*,*) 'SUCCESS'
+      WRITE (*,*) 'SUCCESS'
 
 !--------Open experimental data input file
          CALL RDINIT (IUNITD, IUNITL, FILEIT)
@@ -173,16 +174,20 @@
 !--------Add read in parameter for temperature control, TAOLI, June 10, 509
 		 IF(RDINQR('ISTEMC')) THEN
 			CALL RDSINT('ISTEMC',ISTEMC )
-			CALL RDSREA('TTEMP ',TTEMP  )
-			CALL RDSREA('TCHANG',TCHANG )
-			CALL RDSREA('SHOUR ',SHOUR  )
-			CALL RDSREA('EHOUR ',EHOUR  )
-			CALL RDSREA('SDAY  ',SDAY   )
-			CALL RDSREA('EDAY  ',EDAY   )
-			CALL RDSINT('CONTRM',CONTRM )
-			TEMPC = .TRUE.
-		 ELSE
-			TEMPC = .FALSE.
+			IF(ISTEMC.GT.0) THEN		 
+				TEMPC = .TRUE.
+			ELSE
+				TEMPC = .FALSE.
+			ENDIF
+			IF(TEMPC) THEN
+			    CALL RDSREA('TTEMP ',TTEMP  )
+			    CALL RDSREA('TCHANG',TCHANG )
+			    CALL RDSREA('SHOUR ',SHOUR  )
+			    CALL RDSREA('EHOUR ',EHOUR  )
+			    CALL RDSREA('SDAY  ',SDAY   )
+			    CALL RDSREA('EDAY  ',EDAY   )
+			    CALL RDSINT('CONTRM',CONTRM )
+			 ENDIF
 		 ENDIF
 		 
 !        Read management parameters
@@ -204,7 +209,7 @@
 		 ENDIF
 !--------Close experimental data input file
          CLOSE (IUNITD)
-!         IUNITD = IUNITD + 5            
+
 !--------Open crop input file
          CALL RDINIT(IUNITD,IUNITL,FILEI1)
 !        Read model parameters
@@ -259,7 +264,7 @@
          CALL RDSREA ('ROPTT', ROPTT)			!optimum temperature of root growth
          CALL RDSREA ('RTBS',  RTBS)				!minimim temperature for root to survive
          CALL RDSREA('RCNL',   RCNL)				!lowest root nitrogen content (residue root N content)
-		 CALL RDSREA('MAXD  ', MAXD)				!MAXIMUM ROOTING DEPTH (CM)
+		 CALL RDSREA('MAXD', MAXD)				!MAXIMUM ROOTING DEPTH (CM)
 		 CALL RDSREA('SODT  ', SODT)             !TOLERANCE OF OXYGEN DEFICIENCY
 		IF(RDINQR('SFLOWER')) THEN
 			CALL RDSREA('SFLOWER',SFLOWER)
@@ -375,6 +380,7 @@
 				     enddo
 					    pv%pson(0)=0.0
 			     ELSE
+			        CALL RDAREA('TKL',TKL ,10, SL)
 				    do i=1, sl
 					    if(sum(tkl(1:i)).le.25.0) then
 						    pv%pson(i) = pv%psoc(i) / 16.0	!if there is not avaliable data for SON, we suppose the C:N ratio is 16 at upper 25 cm
@@ -414,17 +420,17 @@
     			 				
 		     ENDIF
              IF(RDINQR('PLOWPAN')) THEN
-			          CALL RDSREA('PLOWPAN', PV%PPLOWDEPTH)			!THE DEPTH OF PLOWPAN, NEGATIVE VALUE or very large value INDICATES NO PLOWPAN
+			          CALL RDSREA('PLOWPAN', PV%PPLOWDEPTH)			!THE DEPTH OF PLOWPAN, NEGATIVE VALUE INDICATES NO PLOWPAN
 		        ELSE
 			          PV%PPLOWDEPTH = -1.
 		        ENDIF
 		    CLOSE (IUNITD)
-		  END IF
+		 END IF
 		!---- INITIAL ROOT VARIABLES
 			RRCC=0.0;RRNC=0.0;RRDCL=0.0;RRDENSIT=0.0;RRDNL=0.0
 			MaxDep = ZRTMCD *100.0  !From m to cm
 			ROOTN=0.0;ROOTC=0.0;RDCL=0.0; RDNL=0.0;RDENSITY=0.0
-			NROOTC=0.0; NROOTN=0.0; theRootC=0.0
+			NROOTC=0.0; NROOTN=0.0
 			REFFECD=0.0; REFCD_O=0.0; ROOTNC=0.0
         
 !-------END THE SECTION, TAOLI, JUNE 17, 509
@@ -713,8 +719,8 @@
 					NROOTN=NROOTC* RCNL * 4.0 ! SUPPOSED THE N:C RATIO IS FOUR TIME OF RESIDUAL
 				ENDIF
 				LROOTC =0.0; LROOTN = 0.0
-         		CALL ROOTG(CROPSTA,DVS,DELT, LROOTC ,LROOTN)
-		   ENDIF
+         		CALL ROOTG(CROPSTA,DVS,DELT, LROOTC ,LROOTN, 1)
+			  ENDIF
 
 !----------Growth rate of number of spikelets and grains
  		   CALL SUBGRN(GCR,CROPSTA,LRSTRS,DVS,SF2,SF1,SPGF,TAV,TMAX, &
@@ -808,6 +814,8 @@
             CALL OUTDAT(2,0,'SLASIM',LAI/NOTNUL(WLVG))
             CALL OUTDAT(2,0,'LESTRS ',LESTRS)
             CALL OUTDAT(2,0,'LRSTRS ',LRSTRS)
+ !@@ WRITE LDSTRS IN RES.DAT, TRI NOV 28, 2011
+            CALL OUTDAT(2,0,'LDSTRS ',LDSTRS)           
             CALL OUTDAT(2,0,'PCEW  ',PCEW)
             CALL OUTDAT(2,0,'NSP  ',NSP)
             CALL OUTDAT(2,0,'LAI   ',LAI  )
@@ -822,11 +830,17 @@
             do i=1, sl
 				Rootobs = ' '
 				write(xx,'(I2)') I
-				rootobs = trim('ROOTM') // trim(adjustl(xx))
-				CALL OUTDAT (2, 0, trim(rootobs),ROOTC(I))
+				!IF (INQOBS (FILEIT,trim(rootobs))) THEN
+					rootobs = trim('ROOTM') // trim(adjustl(xx))
+					CALL OUTDAT (2, 0, trim(rootobs),ROOTC(I))
+					!ENDIF
+			!ENDDO
+			!DO I=1, SL
 				rootobs = ' '
-				rootobs = trim('ROOTL') // trim(adjustl(xx))				
-				CALL OUTDAT (2,0,trim(rootobs),RDENSITY(I))				
+				rootobs = trim('ROOTL') // trim(adjustl(xx))
+				!IF (INQOBS (FILEIT,trim(rootobs))) THEN
+					CALL OUTDAT (2,0,trim(rootobs),RDENSITY(I))
+					!ENDIF
 			ENDDO
 
             IF (INQOBS (FILEIT,'NFLV')) THEN
@@ -891,7 +905,7 @@
 !-----------If biomass is negative: set at 0 and abort simulation
             IF (WSO.LT.-5..OR.WLVG.LT.-5..OR.WST.LT.-5..OR.WRR.LT.-5) THEN
                WRITE (*,*) 'Negative biomass=> simulation stopped'
-!               CALL OUTCOM('Negative biomass => simulation stopped')
+               CALL OUTCOM('Negative biomass => simulation stopped')
 ! BAS: removed, Spet 2006  \Commented them back by TAOLI, May 7 2010
 				IF (WSO.LT.0.) WSO = 0.
                IF (WRR.LT.0.) WRR = 0.
@@ -904,7 +918,7 @@
 !-----------If LAI is negative: set at 0 and abort simulation
             IF (LAI.LT.-0.01) THEN
                WRITE (*,*) 'Negative LAI=> simulation stopped'
-!               CALL OUTCOM('Negative LAI => simulad:\simulation\strasa\rainfedtion stopped')
+               CALL OUTCOM('Negative LAI => simulad:\simulation\strasa\rainfedtion stopped')
 !               IF (LAI.LT.0.) LAI = 0.
                TERMNL = .TRUE.
             END IF
@@ -915,8 +929,8 @@
                IF (LDSTRS.LE.0.) THEN
                   WRITE (*,*) 'Soil dryer than lower limit dead leaves'
                   WRITE (*,*) 'LDSTRS = 0 => Simulation stopped'
-!                  CALL OUTCOM('LDSTRS = 0 => simulation stopped')
-                  TERMNL = .TRUE.
+                  CALL OUTCOM('LDSTRS = 0 => simulation stopped')
+ !                 TERMNL = .TRUE.   !COMMENTED OUT TO AVIOD THE STOP FOR MODEL ONLY STOP AT NEGATIVE OR ZERO BIOMASS, TAOLI, 30NOV,2011
                END IF
 !-----------End if only in main field
             END IF
@@ -961,7 +975,7 @@
 !-----------FRESH SOIL ORGANIC CARBON AND NITROGEN STATE VARIABLES SHOULD ALSO BE UPDATE
 					!put root residue and root density into public module for soil nutrient
 				!the deid root c and n as fresh organic matter in soil nutrient
-					 pv%prestype(i) = 1; pv%presc(i,1)=pv%presc(i,1)+RRDCL(I)*delt
+					 pv%prestype(i) = 'RICE'; pv%presc(i,1)=pv%presc(i,1)+RRDCL(I)*delt
 					 pv%presn(i, 1) = pv%presn(i, 1)+RRDNL(I) * delt;	pv%prootden(i) = rdensity(i)
 				!pv%prootd = zrt
 				 ENDDO
@@ -973,6 +987,11 @@
 				 ENDIF
 			 ENDIF
 !---------END SECTION, TAOLI, 17 JUNE 2009
+!-----------AVOIDING NEGATIVE WRR, @@TRI, NOV 16 2011
+            IF (WRR.LT.0.) THEN
+                WRR = 0.
+            ENDIF
+!-----------END OF SECTION AVOIDING NEGATIVE GRAIN GROWTH RATE
             WRR    = INTGRL(WRR,GGR,DELT)
             NGR    = INTGRL(NGR,GNGR,DELT)
             NSP    = INTGRL(NSP,GNSP,DELT)
@@ -1025,22 +1044,35 @@
 
 !========END OF SKIP WHOLE RATE CALCULATIONS BEFORE EMERGENCE
          END IF
-
+         pv%pDAE = DAE
 !===================================================================*
 !     TERMINAL SECTION                                              *
 !===================================================================*
       ELSE IF (ITASK.EQ.4) THEN
 !        Terminal calculations
-        IF(OUTPUT) THEN
-             CALL OPSTOR ('WRR14', WRR14)
-             CALL OPSTOR ('WSO', WSO)
-             CALL OPSTOR ('WAGT', WAGT)
-             CALL OPSTOR ('PARCUM', PARCUM)
-             CALL OPSTOR ('TS', TS)
-             CALL OPSTOR ('TMAXC', TMAXC)
-             CALL OPSTOR ('TMINC', TMINC)
-             CALL OPSTOR ('TAVERC', (TMAXC+TMINC)/2.)
-         END IF
+!        Terminal output
+         IF(INT(WRR14*100.0)/100.0.LT.1.0) WRR14 =0.0
+         IF(INT(WAGT*100.0)/100.0.LT.1.0) WAGT =0.0
+         IF(INT(WSO*100.0)/100.0.LT.1.0) WSO =0.0
+         
+         CALL OPSTOR ('WRR14', max(0.0,INT(WRR14*100.0)/100.0))
+         CALL OPSTOR ('WSO', max(0.0,INT(WSO*100.0)/100.0))
+         CALL OPSTOR ('WLVG', max(0.0,INT(WLVG*100.0)/100.0))
+         CALL OPSTOR ('WLVD', max(0.0,INT(WLVD*100.0)/100.0))
+         CALL OPSTOR ('WRT', max(0.0,INT(WRT*100.0)/100.0))
+         CALL OPSTOR ('WAGT', max(0.0,INT(WAGT*100.0)/100.0))
+         CALL OPSTOR ('PARCUM', INT(PARCUM*100.0)/100.0)
+         CALL OPSTOR ('TS', INT(TS*100.0)/100.0)
+         CALL OPSTOR ('TMAXC', INT(TMAXC*100.0)/100.0)
+         CALL OPSTOR ('TMINC', INT(TMINC*100.0)/100.0)
+         CALL OPSTOR ('TAVERC', INT((TMAXC+TMINC)/2.*100.0)/100.0)
+         !		update the soil fresh organic matter, living root matter will be added into organic C and N pools
+			DO I=1, SL
+				pv%prestype(i) = 'RICE'; pv%presc(i,1)=pv%presc(i,1)+rootc(i)
+				pv%presn(i, 1) = pv%presn(i, 1)+rootn(i)
+				ROOTC(I) = 0.0; ROOTN(I) = 0.0
+			ENDDO
+	
       END IF
       RETURN
       END

@@ -78,8 +78,7 @@
 *        TOLOG and UNLOG are ignored.
 
          IF (IN.EQ.0) THEN
-!           CHP changed to TT_WARNING
-            CALL TT_WARNING ('OUTPLT','Initialization not done')
+            CALL WARNING_OR ('OUTPLT','Initialization not done')
             RETURN
          END IF
 

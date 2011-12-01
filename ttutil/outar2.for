@@ -1,4 +1,5 @@
       SUBROUTINE OUTAR2 (NAME, ARRAY, LDEC, UDEC, I1, I2)
+      use Module_OutDat
       IMPLICIT NONE
 
 *     FORMAL_PARAMETERS:

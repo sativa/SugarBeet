@@ -10,9 +10,13 @@
       SAVE
 
 *     error check
-      IF (IST.LT.1.OR.IST.GT.ILDEC.OR.
-     &    IEND.LT.0.OR.IEND.GT.ILDEC) CALL FATALERR ('IFINDI',
-     &   'search outside array bounds')
+      IF (IST<1 .OR. IST>ILDEC .OR. IEND<0 .OR. IEND>ILDEC) then
+          write (*,*) 'ilis = ',ilis(1:ildec)
+          write (*,*) 'ist  = ',ist
+          write (*,*) 'iend = ',IEND
+          write (*,*) 'iinp = ',IINP
+          CALL FATALERR ('IFINDI', 'search outside array bounds')
+      end if
 
       IF (IEND.EQ.0) THEN
          IFINDI = 0

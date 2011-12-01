@@ -1,29 +1,17 @@
       SUBROUTINE RECREAD (STBUF,RECLEN,STBLEN,EOF,IWAR)
-
-*     This routine can be used to access an input file using fast
-*     buffered block I/O. Works only on Mac's and IBM's
-
-*     STBUF -  String supplied by the user to which the input record is
-*              copied
-*     RECLEN - Declared length of STBUF
-*     STBLEN - Significant length of string STBUF
-*     EOF    - End_of_file flag, on EOF, this routines closes the file
-*     IWAR   - Set to 1 if input record overflows STBUF, otherwise IWAR is
-*              zero
-
       IMPLICIT NONE
 
-*     Formal parameters
+!     Formal
       CHARACTER*(*) STBUF
       LOGICAL EOF
       INTEGER RECLEN,STBLEN,IWAR
 
-*     Local variables
+!     Local
       INCLUDE 'recread.inc'
 
-      LOGICAL FND_CR,SEC_PART
+      INTEGER ICR, ILF
+      LOGICAL FND_CR,SEC_PART,EAT_LF,EAT_CR
       INTEGER CR_POS,IOS,SLR,LR,TMPI1
-
       SAVE
 
       IF (.NOT.INIT) CALL FATALERR ('RECREAD','system not initialized')
@@ -37,17 +25,40 @@
       SLR = 0
       LR = 0
 
+      EAT_LF = .FALSE.
+      EAT_CR = .FALSE.
+
 10    IF (.NOT.FND_CR.AND..NOT.L_EOF) THEN
          F_BUF_P = F_BUF_P+1
 
          IF (F_BUF_P.LE.F_BUF_LEN) THEN
-            IF (F_BUF(F_BUF_P:F_BUF_P).EQ.LF)
-     &          F_BUF_P = F_BUF_P+1
+            IF(EAT_CR) THEN
+               IF (F_BUF(F_BUF_P:F_BUF_P).EQ.CR) F_BUF_P = F_BUF_P+1
+            ELSE IF (EAT_LF) THEN
+               IF (F_BUF(F_BUF_P:F_BUF_P).EQ.LF) F_BUF_P = F_BUF_P+1
+            END IF
          END IF
 
          IF (F_BUF_P.LE.F_BUF_LEN) THEN
-
-            CR_POS = INDEX (F_BUF(F_BUF_P:F_BUF_LEN),CR)
+            ICR = INDEX (F_BUF(F_BUF_P:F_BUF_LEN),CR)
+            ILF = INDEX (F_BUF(F_BUF_P:F_BUF_LEN),LF)
+            IF (ILF .EQ. 0) THEN
+               CR_POS = ICR
+               EAT_LF = ICR.GT.0
+               EAT_CR = .FALSE.
+            ELSE IF (ICR .EQ. 0) THEN
+               CR_POS = ILF
+               EAT_CR = ILF.GT.0
+               EAT_LF = .FALSE.
+            ELSE IF (ILF.LT.ICR) THEN
+               CR_POS = ILF
+               EAT_CR = .TRUE.
+               EAT_LF = .FALSE.
+            ELSE
+               CR_POS = ICR
+               EAT_CR = .FALSE.
+               EAT_LF = .TRUE.
+            END IF
 
             IF (CR_POS.GT.1) THEN
                LR = LR+CR_POS-1
@@ -100,8 +111,7 @@
                END IF
 
                IF (CR_POS+STBLEN.LE.RECLEN) THEN
-                  IF (CR_POS.GT.0) STBUF(STBLEN+1:STBLEN+CR_POS) =
-     &                             F_BUF(1:CR_POS)
+                  IF (CR_POS.GT.0) STBUF(STBLEN+1:STBLEN+CR_POS) = F_BUF(1:CR_POS)
                   STBLEN = STBLEN+CR_POS
                ELSE IF (STBLEN.LT.RECLEN) THEN
                      STBUF(STBLEN+1:RECLEN) = F_BUF(1:RECLEN-STBLEN)
@@ -137,7 +147,7 @@
       GOTO 10
       END IF
 
-C      write (*,*) lr,slr
+!     write (*,*) lr,slr
       IF (SLR.GT.RECLEN) THEN
          IWAR = 1
          STBLEN = RECLEN
@@ -146,4 +156,4 @@ C      write (*,*) lr,slr
       END IF
 
       RETURN
-      END
+      END SUBROUTINE RECREAD

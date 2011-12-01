@@ -61,6 +61,7 @@ END MODULE WSTRESS_MODULE
       !USE CHART
       USE ROOTGROWTH
       USE public_module
+      use Module_OutDat
       IMPLICIT NONE
 
 !-----Formal parameters
@@ -90,7 +91,7 @@ END MODULE WSTRESS_MODULE
       REAL TINY
       PARAMETER (TINY=0.0000000001)
 
-      REAL NOTNUL
+!      REAL NOTNUL
 !      CHARACTER (10) SWIRTR
       INTEGER SWIRTR        !MODIFIED BY TAOLI, 28MAY 2011
 	  CHARACTER (32) ESTABL		!The establishment methods of rice in the field
@@ -257,19 +258,25 @@ END MODULE WSTRESS_MODULE
        				!Supposed the root could absorbe all avaliable water if it need, no maximum limitation. TAOLI 26 FEB 2010
         ALLOCATE(RUPAC1(NL), RUPAC2(NL), RUPAC3(NL), RUPAC4(NL))
         
+        OSMATA1 = FSWTD/1.5; RUPAC1(:)=0.0; RUPAC2(:)=0.0; RUPAC3(:)=0.0; RUPAC4(:)=0.0
         !CALCULATE WATER FRACTION AND ROOT FRACTION
         !1) THE TOTAL WATER AND ROOT MASS 
         TROOTF =0.0; TWATERF = 0.0; ZLL = 0.0
-		!------------------------------------------------------------------------------------------------
-	    DO I=1, NL			 	
+        DO I=1, NL			 	
 			 ZRTL  = MIN(TKL(I), MAX((ZRT-ZLL),0.0))!MAX((pv%prootad-ZLL),0.0)) 
         	 TROOTF =TROOTF + ROOTC(I)
 			 IF(ZRTL.GT.0.0) THEN		!!
-        	 IF(WCLQT(I) .GT. PV%PWCWP(I)) THEN
-        		RUPAC3(I) = WCLQT(I) - PV%PWCWP(I)
-       			RUPAC3(I) =RUPAC3(I)*1000.0*ZRTL !mm WATER IN AVAILABLE, TKL IN METER !Before 27 Aug 2010
+        	 IF(WCLQT(I) .GT. PV%PWCFC(I)) THEN
+        		RUPAC3(I) = ((WCLQT(I) - PV%PWCFC(I)) + Fintegration(PV%PWCWP(I), PV%PWCFC(I), OSMATA1, PV%PWCFC(I))) 
+ !       		RUPAC3(I) = WCLQT(I) - PV%PWCWP(I)
+       			RUPAC3(I) =RUPAC3(I)	*1000.0*ZRTL !mm WATER IN AVAILABLE, TKL IN METER !Before 27 Aug 2010
 				TWATERF = TWATERF + RUPAC3(I)
-        	 ELSE
+        	 ELSEif((WCLQT(I) .LE. PV%PWCFC(I)) .and. (WCLQT(I) .GT. PV%PWCWP(I))) then
+        		RUPAC3(I) = (Fintegration(PV%PWCWP(I), PV%PWCFC(I), OSMATA1,WCLQT(I)))  !mm WATER IN AVAILABLE, TKL IN METER !Before 27 Aug 2010
+  !      		RUPAC3(I) = WCLQT(I)- PV%PWCWP(I)
+           		RUPAC3(I) =RUPAC3(I) *1000.0*ZRTL
+				TWATERF = TWATERF + RUPAC3(I)
+			 ELSE
         	 	RUPAC3(I) = 0.0
         	 ENDIF
 			 ELSE		!!
@@ -278,17 +285,17 @@ END MODULE WSTRESS_MODULE
 			 ZLL = ZLL+TKL(I)        	
          ENDDO
          TRUPAC = 0.0;XXXX=TWATERF
-         IF((TROOTF.GT.0.0).AND.(TWATERF.GT.0.0)) THEN
-             DO I = 1, NL
+         IF((TROOTF.GT.0.0).AND.(TWATERF.GT.0.0)) THEN    
+             DO I = 1, NL            
          	    RUPAC2(I) = ROOTC(I)/TROOTF	
-			    RUPAC1(I) = RUPAC3(I)/ TWATERF	
+         	    RUPAC1(I) = RUPAC3(I)/ TWATERF
 			    TRUPAC = TRUPAC + RUPAC1(I)*RUPAC2(I)  
              ENDDO
              TWATERF = TRUPAC; TRUPAC = 0.0
-          ELSE
-             TWATERF = 0.0; TRUPAC = 0.0
-          END IF
-         !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
+         ELSE
+            TWATERF = 0.0; TRUPAC = 0.0
+         END IF
+             !CALCULATE TOTAL AVALIABLE WATER CAN BE UPTAKEN
          IF(TWATERF.GT.0.0) THEN
              DO I = 1, NL
 			    RUPAC4(I)=RUPAC3(I) * RUPAC2(I)*RUPAC1(I)/TWATERF
@@ -296,7 +303,7 @@ END MODULE WSTRESS_MODULE
              ENDDO
 		     TRUPAC = TRUPAC !*TRC	!AFTER DECEMBER 2011
 		  ELSE
-		    TRUPAC = 0.0
+		     TRUPAC = 0.0; RUPAC4(:)= 0.0
 		  END IF
 		 !---------------------------------------------------------------------------------------------------
 		 !This algorithm is modified from Coelho M.B. et al., 2003. Modeling root growth and the soil-plant-atmosphere continuum 
@@ -315,14 +322,15 @@ END MODULE WSTRESS_MODULE
          		ENDDO
             ENDIF
          ELSE
-            TRW = 0.0; TRWL(:) =0.0 
+            TRW = 0.0; TRWL(:) =0.0
          ENDIF
 !--------UPDATE the soil water uptake
 		 DO I = 1, NL
 			pv%PTRWL(i) = TRWL(i)
-         ENDDO	
+         ENDDO
+	
          !Calculating the drought stress factors on transpiration, temporal function, will use GECROS function
-		 PCEW = min(1.0, max(0.0,1.0-max(0.0,1.0 - max(0.0001,TRW)/max(0.0001,TRC))**(FSWTD/1.5)))					! After 27 Aug, 2010
+		 PCEW   =min(1.0, max(0.0,1.0-max(0.0,1.0 - MAX(0.0001,TRW)/MAX(0.0001,TRC))**(FSWTD/1.5)))					! After 27 Aug, 2010
 		 DEALLOCATE(RUPAC1, RUPAC2, RUPAC3, RUPAC4)   
        endif
 !-------If crop is not in the main field, set all stres factors at 1.
@@ -363,6 +371,42 @@ END MODULE WSTRESS_MODULE
 
 END
 
+real function FIntegration(theWCWP, theWCFC, theOSMATA, theUP)
+use wstress_module
+implicit none
+
+!formal parameters
+real, intent(in) :: theWCWP, theWCFC, theOSMATA, theUP
+
+real     :: ErrRest
+integer  :: NrEvaluations, EvalStatus
+integer, parameter :: Key = 2 ! 10 Gauss points, 21 Gauss-Kronrod points
+real     :: F
+external :: F
+
+! Set error tolerances
+real, parameter :: ErrAbs = 0.0
+real, parameter :: ErrRel = 0.001
+
+FOSMATIC1 = theOSMATA; FWCWP1 = theWCWP; FWCFC1 = theWCFC
+
+call qag(F, theWCWP, theUP, ErrAbs, ErrRel, Key, &
+         FIntegration, ErrRest, NrEvaluations, EvalStatus)
+
+if (EvalStatus /= 0) then
+  !call fatalerr('FIntegration', 'qag routine could not achieve required accuracy')
+  FIntegration = max(0.0,FIntegration)
+end if
+
+end function
+!
+REAL FUNCTION F(X)
+use WSTRESS_MODULE
+REAL X
+F = (1.0-((FWCFC1-x)/(FWCFC1-FWCWP1))**FOSMATIC1)
+RETURN
+END
+
 subroutine EDROGHT(RPAR1,EP,LAI,WND,VP,TA,PCEW,KDF1,RBH,RT,RBW,RSWP,RSWA)
 !*--------------------------------------------------------------------------------*
 !* This routine is used to calculate the potential and actual stomatal resistance *
@@ -386,9 +430,10 @@ subroutine EDROGHT(RPAR1,EP,LAI,WND,VP,TA,PCEW,KDF1,RBH,RT,RBW,RSWP,RSWA)
 !* RSWP		R4      Potential stomatal resistance				s m-1		O     *
 !* RSWA		R4		Actual stomatal resistance                  s m-1       O     *
 !*--------------------------------------------------------------------------------*
+	IMPLICIT NONE
 	REAL RPAR1,EP,LAI,WND,VP,TA,PCEW,KDF1
 	REAL VPS, VPSL, LHVAP,PSYC, EA,RSWP1
-	REAL RPAR
+	REAL RPAR, vhca, rswp, rswa, vpd, rbh, RT, RBW
 
     VHCA   = 1240.            !volumetric heat capacity (J/m3/oC)
 	LHVAP  = 2.4E6            !latent heat of water vaporization(J/kg)
@@ -441,11 +486,11 @@ SUBROUTINE FSWT(LAYERS, WCST, WCFC, WCWP, TKL,WCL, THRESHE,THRESHR,THRESHD,THRES
 !							1 = Option 1, calculated from PCEW, 0 = option 0, calculated from soil water!
 !							hydraulic parameters														!
 !-------------------------------------------------------------------------------------------------------!
-
+    IMPLICIT NONE
 	REAL WCST(10), WCFC(10), WCWP(10), TKL(10),WCL(10)
 	REAL THRESHE,THRESHR,THRESHD,THRESHT
-	REAL LESTRS, LRSTRS, LDSTRS, PCEW
-	INTEGER I
+	REAL LESTRS, LRSTRS, LDSTRS, PCEW, TROOTD
+	INTEGER I, OPTION, LAYERS
 	REAL ZZL, TZL, LE, LR, LD, LT, CRITIC
 	IF(TROOTD.GT.0.0) THEN
 		IF(OPTION.EQ.0) THEN

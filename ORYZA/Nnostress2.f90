@@ -34,7 +34,7 @@
       
 !-----Formal parameters
 !     INPUT
-      INTEGER IUNITD, IUNITL, ITASK,  I, ILNMAX
+      INTEGER IUNITD, IUNITL, ITASK, ILNMAX  !,  I
       CHARACTER (*) FILEI1, FILEIT
       REAL  DVS, LAI, WLVG, NMAXL, SLA, DELT
 
@@ -53,7 +53,7 @@
 
       REAL LINT2, INTGR2
 
-      SAVE
+      SAVE         !&#@TAOLI
 
 !-----Initialization
       IF (ITASK.EQ.1) THEN

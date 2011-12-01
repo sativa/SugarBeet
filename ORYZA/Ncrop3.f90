@@ -3,6 +3,8 @@
 ! Authors:                                                             !
 !          Version august, 503                                        !
 ! Date   : December 2001, Version: 1                                   !
+! Modified: May 2009, TAOLI, present the interaction of NxW            ! 
+!           Uptake involved massflow + diffusion                       ! 
 ! Purpose: This subroutine calculates the nitrogen dynamics in a rice  !
 !          crop and the effects on growth and development              !
 !                                                                      !
@@ -31,6 +33,11 @@
 ! CROPSTA I4  Crop stage (-)                                        I  !
 ! TNSOIL  R4  Soil-N available for crop uptake (kg N ha-1 d-1)      I  !
 ! NACR    R4  Actual N uptake rate by the crop (kg ha-1 d-1)        O  !
+! ANSO    R4  Nitrogen in storage (kg N/ha)                         O  !
+! ANLV    R4  nitrogen in leaves (kg N/ha)                          O  !
+! ANST    R4  Nitrogen in stems (kg N/ha)                           O  !
+! ANLD    R4  Nitrogen in died leaves (kg N/ha)                     O  !
+! ANRT    R4  Nitrogen in root (kg N/ha)                            O  !
 ! NFLV    R4  Nitrogen fraction in the leaves (g N m-2 leaf)        O  !
 ! NSLLV   R4  Stress factor for leaf death caused by N stress  (-)  O  !
 ! RNSTRS  R4  Decrease factor for RGRL caused by N stress (-)       O  !
@@ -44,8 +51,9 @@
                        ANRT, NFLV, NSLLV,NRT, RNSTRS)
 
       !USE CHART
-	  USE public_module		!VARIABLES
-	  use	rootgrowth
+      USE public_module		!VARIABLES
+      use rootgrowth
+      use Module_OutDat
 
         IMPLICIT NONE
 
@@ -89,7 +97,7 @@
 	  REAL NUPTA, NUPTN	!The uptake amount of NH4-N and NO3-N in kg N/m2/d
 	  
 !     Functions
-      REAL LINT2, INTGRL, LIMIT, INTGR2, TMPV1, TMPV2, TMPV3, TMPV4, TMPV5, TMPV6
+      REAL LINT2, INTGRL, LIMIT, INTGR2, TMPV1, TMPV2, TMPV3, TMPV4  !, TMPV5, TMPV6
 
       SAVE         !&#@TAOLI
 
@@ -270,44 +278,41 @@
 			!---Get sum of uptook water
 			tmpv4 =sum(pv%PTrwl(1:SL))     
 			TNSOIL = 0.0;TMPV3=0.0;SDEP1=0.0;SDEP2=0.0
-			DO I=1,SL
-				tmpv1 =0.0;tmpv2=0.0;tmpv3=0.0;SDEP2=SDEP2+LAYT(I)
-				IF(REFFECD.GT.SDEP2) THEN
-					tmpv1 =MAX(0.0, SNH4X(I)-SMINNH4*BD(I)*LAYT(I)*10.0 )   !SMINNH4 AND SMINNO3 ARE MG N /KG SOIL, SNH4X IN KG/HA, LAYT IN M
-					tmpv2 =MAX(0.0,SNO3X(I)-SMINNO3*BD(I)*LAYT(I)*10.0)
-					tmpv3 = tswc(i)*layt(i)*1000.0		!The total soil water amount in mm
-					IF((TMPV3.GT.0.0).AND.(TMPV4.GT.0.0)) THEN
-						SPNH4(I) = MIN(SNH4X(I) /tmpv3* pv%PTrwl(i),TMPV1)	!so far, it only calculate the mass flow uptake,It is also needed to calculate
-						SPNO3(I)= MIN(SNO3X(I)/tmpv3* pv%PTrwl(i), tmpv2)	!the difussion flow. It supposed diffusion is VERY small amount, can be ignored
-					ELSE
-						SPNH4(I) = 0.0
-						SPNO3(I)=0.0
-					ENDIF
-					TNSOIL =TNSOIL + SPNH4(I)
-					TNSOIL =TNSOIL + SPNO3(I)
-				ELSEIF((REFFECD.GT.SDEP1).AND.(REFFECD.LE.SDEP2)) THEN
-					tmpv1 =MAX(0.0, SNH4X(I)-SMINNH4*BD(I)*LAYT(I)*10.0)   
-					tmpv2 =MAX(0.0,SNO3X(I)-SMINNO3*BD(I)*LAYT(I)*10.0)   
-					tmpv3 = tswc(i)*1000.0*layt(i)
-					IF((TMPV3.GT.0.0).AND.(TMPV4.GT.0.0)) THEN
-						SPNH4(I) = MIN(SNH4X(I) /tmpv3* pv%PTrwl(i),TMPV1)*(REFFECD-SDEP1)/LAYT(I)
-						SPNO3(I)= MIN(SNO3X(I)/tmpv3* pv%PTrwl(i), tmpv2)*(REFFECD-SDEP1)/LAYT(I)
-					ELSE
-						SPNH4(I) = 0.0
-						SPNO3(I)=0.0
-					ENDIF	
-					TNSOIL =TNSOIL + SPNH4(I)
-					TNSOIL =TNSOIL + SPNO3(I)
-				ELSE
-					SPNH4(I) = 0.0
-					SPNO3(I) = 0.0
-				ENDIF
-				SDEP1=SDEP2	
-			ENDDO
-			!---Nitrogen supplyment is limited by water uptake
-			
-
-!--------------END THIS SECTION, TAOLI 27 JULY 2009
+		    DO I=1,SL
+			    tmpv1 =0.0;tmpv2=0.0;tmpv3=0.0;SDEP2=SDEP2+LAYT(I)
+			    IF(REFFECD.GT.SDEP2) THEN
+				    tmpv1 =MAX(0.0, SNH4X(I)-SMINNH4*BD(I)*LAYT(I)*10.0 )   !SMINNH4 AND SMINNO3 ARE MG N /KG SOIL, SNH4X IN KG/HA, LAYT IN M
+				    tmpv2 =MAX(0.0,SNO3X(I)-SMINNO3*BD(I)*LAYT(I)*10.0)
+				    tmpv3 = tswc(i)*layt(i)*1000.0		!The total soil water amount in mm
+				    IF((TMPV3.GT.0.0).AND.(TMPV4.GT.0.0)) THEN
+					    SPNH4(I) = MIN(SNH4X(I) /tmpv3* pv%PTrwl(i),TMPV1)	!so far, it only calculate the mass flow uptake,It is also needed to calculate
+					    SPNO3(I)= MIN(SNO3X(I)/tmpv3* pv%PTrwl(i), tmpv2)	!the difussion flow. It supposed diffusion is VERY small amount, can be ignored
+				    ELSE
+					    SPNH4(I) = 0.0
+					    SPNO3(I)=0.0
+				    ENDIF
+				    TNSOIL =TNSOIL + SPNH4(I)
+				    TNSOIL =TNSOIL + SPNO3(I)
+			    ELSEIF((REFFECD.GT.SDEP1).AND.(REFFECD.LE.SDEP2)) THEN
+				    tmpv1 =MAX(0.0, SNH4X(I)-SMINNH4*BD(I)*LAYT(I)*10.0)   
+				    tmpv2 =MAX(0.0,SNO3X(I)-SMINNO3*BD(I)*LAYT(I)*10.0)   
+				    tmpv3 = tswc(i)*1000.0*layt(i)
+				    IF((TMPV3.GT.0.0).AND.(TMPV4.GT.0.0)) THEN
+					    SPNH4(I) = MIN(SNH4X(I) /tmpv3* pv%PTrwl(i),TMPV1)*(REFFECD-SDEP1)/LAYT(I)
+					    SPNO3(I)= MIN(SNO3X(I)/tmpv3* pv%PTrwl(i), tmpv2)*(REFFECD-SDEP1)/LAYT(I)
+				    ELSE
+					    SPNH4(I) = 0.0
+					    SPNO3(I)=0.0
+				    ENDIF	
+				    TNSOIL =TNSOIL + SPNH4(I)
+				    TNSOIL =TNSOIL + SPNO3(I)
+			    ELSE
+				    SPNH4(I) = 0.0
+				    SPNO3(I) = 0.0
+			    ENDIF
+			    SDEP1=SDEP2	
+		    ENDDO
+			!--------------END THIS SECTION, TAOLI 27 JULY 2009
 !           Available N uptake is mimimum of soil supply and maximum crop uptake
             IF (CROPSTA .LT. 4) THEN
 				NUPP=MAX(0.0,NDEMC)		!SUPPOSED THAT THERE IS NO NITROGEN STRESS IN SEED BED 
@@ -498,7 +503,7 @@
 !---------- Set N stress factor for RGRL
             RNSTRS = (FNLV-0.9*NMAXL)/(NMAXL-0.9*NMAXL)
             IF (RNSTRS .GT. 1.) RNSTRS = 1.
-            IF (RNSTRS .LT. 0.) RNSTRS = 0.1		!LIMITED RNSTRS TO BE LARGER THAN 0.1 FOR RESIDUE EFFECTS
+            IF (RNSTRS .LT. 0.1) RNSTRS = 0.1		!LIMITED RNSTRS TO BE LARGER THAN 0.1 FOR RESIDUE EFFECTS
             
 !======= End IF statement for main field
          END IF

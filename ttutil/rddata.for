@@ -727,7 +727,9 @@ C                      write (*,*) rx(i)
 *                          double precision real or date_time
                            DO 404 I=IEL+1,IEL+IREP
                               DX(I) = RDBUF(IWN)
+C                              write (*,*) DX(i)
 404                        CONTINUE
+C                           read (*,*)
                            FOUND   = ON
                         ELSE IF (VARTYP.EQ.'L') THEN
 *                          logical
@@ -1075,7 +1077,6 @@ C                      write (*,*) rx(i)
             ILA = LEN_TRIM (ASKED(IVT))
             ILW = LEN_TRIM (WHAT)
             ILT = LEN_TRIM (TARGET) + 1
-            ILX=MIN(31,MAX(1,LEN_TRIM(LXNM31)))  !Added by Dr.TaoLi,March2,2011
 
 *           error message
             RECORD(ISTREC) =

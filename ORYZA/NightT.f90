@@ -37,10 +37,10 @@
       REAL    TMAX,TMIN,TBD,TOD,TMD,HU2, xHU
 	  REAL DAYL, SHOUR, EHOUR, TTEMP, TCHANG, xTAV, xTMIN, xTMAX, xTAVD
 !-----Local parameters
-      REAL    TD, TM, TT, DAVERT, DST, DET, TMPV
-	  REAL  MYTEM, MYT(24)
+      REAL    TD, TM, TT, DST, DET, TMPV !, DAVERT
+	  REAL   MYT(24)  !,MYTEM
       INTEGER I, ISTEMPC, CONTRM
-      SAVE
+      SAVE         !&#@TAOLI
 !Calculate hourly temperature
 	  TM = (TMAX+TMIN)/2.
       DO I = 1,24

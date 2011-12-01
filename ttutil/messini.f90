@@ -36,7 +36,7 @@ SUBROUTINE MESSINI (xTOSCR, xTOLOG, xUNLOG)
            TOLOG = .FALSE.
            call FOPENS (UNLOG, 'TTUTIL.LOG', 'NEW', 'DEL')
            TOLOG = .TRUE.
-           call TT_WARNING ('MESSINI','logfile unit not open')     !CHP changed to TT_WARNING
+           call WARNING_OR ('MESSINI','logfile unit not open')
            call MESSWRT ('MESSINI','logfile TTUTIL.LOG created')
         end if
      end if

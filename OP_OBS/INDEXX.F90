@@ -1,5 +1,8 @@
       SUBROUTINE INDEXX(N,ARRIN,INDX)
-      DIMENSION ARRIN(N),INDX(N)
+      Integer, intent(in):: N   !added by TAOLI, 25Oct 2011
+      Integer J, L, IR, INDXT, I, Q   !added by TAOLI, 25Oct 2011
+      INTEGER, DIMENSION(N):: ARRIN,INDX  !modified by TAOLI, 25OCT 2011 from DIMENSION ARRIN(N), INDX(N)
+      
       DO J=1,N
         INDX(J)=J
       END DO

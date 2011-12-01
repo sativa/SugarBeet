@@ -180,17 +180,19 @@
 !5. CONTROL AND MODEL RUNNING PARAMETERS
 !--------------------------------------------------------------------------------------------------------------------
 	
-		 INTEGER CRUN
-		 LOGICAL PROOT_NUTRIENT
+		 INTEGER CRUN,  STARTRUN
+		 LOGICAL PROOT_NUTRIENT, KILLSOIL
 		 character*10 pond_active
 	!	public control parameters
-		 integer PYear			!count current year
-		 integer Pdoy			!count the days in a year
+		 integer PYear			!count current year at the end of last run
+		 integer Pdoy			!count the days in a year at the end of last run
 		 integer Pdae			!count the days afetr emergence
 		 integer Pdat			!count the days after transplanting
 	!	public soil chemical properties
 		 real Pno3(0:15)		!soil NO3 content (kg/ha)
 		 real Pnh4(0:15)		!soil NH4 content (kg/ha)
+		 REAL PNO3UPT           !TOTAL NO3 UPTAKE KG N/HA/D
+		 REAL PNH4UPT           !TOTAL NH4 UPTAKE KG N/HA/D
 		 real Purea(0:15)		!soil urea content (kg/ha)
 		 real    pond_no3        ! mineral N as nitrate in pond (kg/ha)
 		 real    pond_nh4        ! mineral N as ammonium in pond (kg/ha)
@@ -213,9 +215,9 @@
 		 real Pwcwp(15)		!soil wilting point (cm3/cm3)
 		 real Pwcad(15)		!soil air drying water content (cm3/cm3)
 		 real PplowDepth		!plow pan depth (m)
+		 real Psoiltx(0:15)	!soil temperature (oC)
 		 real Pwl0			!surface water level (mm)
 		 real Pswc(0:15)		!soil water content (cm3/cm3)
-		 real Psoiltx(0:15)     !soil temperature
 		 real Pwflux(0:15)	!soil water flux (cm/day), it quantify the net changes in a given layer
 		 REAL PTRWL(15)	!soil water uptake for quantify the interaction of water and nitrogen in nutrient uptake
 		 real Prunoff			!soil surface runoff (mm/day)
@@ -225,7 +227,7 @@
 		 real Plai			!daily green leaf area index
 		 integer PResNum			!number of residue, maximum for 10
 		 character(16) PResName(15)	!Residue name
-		 Integer PResType(15)	!Residue type associate with each residue
+		 character PResType(15)*32	!Residue type associate with each residue
 		 real PResC(0:15,15)	!daily plant little fall carbon (kg C/ha), '0' use for above ground, 1 to 15 used for root
 		 						!second deminsion is corresponding residues
 		 real PResN(0:15,15)	!daily plant little fall nitrogen (kg N/ha), '0' use for above ground, 1 to 15 used for root
@@ -256,16 +258,57 @@
 		 REAL PRdn			!The daily net radiation (MJ/day)
 
 	 end type public_variables
+	 
+	 !following TYPE will be used in the rotation in a given soil
+	 type temporary_soil_information
+	!	public soil chemical properties
+		 real Xsno3(0:15)		!soil NO3 content (kg/ha)
+		 real Xsnh4(0:15)		!soil NH4 content (kg/ha)
+		 real Xurea(0:15)		!soil urea content (kg/ha)
+		 real Xpond_no3        ! mineral N as nitrate in pond (kg/ha)
+		 real Xpond_nh4        ! mineral N as ammonium in pond (kg/ha)
+		 real Xpond_urea       ! urea in pond (kg/ha)
+		 real Xsoc(0:15)		!soil organic carbon content (kg C/ha)
+		 real Xson(0:15)		!soil organic nitrogen content (kg N/ha)
+		 real Xph(0:15)		!soil and surface(pond) pH
+		 real XFOM_type(0:15)	!soil fresh organic residue types in a given day
+		 real XFOM_C(0:15)	!soil fresh organic carbon (kg C/ha) in a given day
+		 real XFOM_N(0:15)	!soil fresh organic nitrogen (kg N/ha) in a given day, 0 for surface residue
+	!	 public soil physical properties
+		 integer Xnl				!soil layers
+		 real Xdlayer(15)		!Soil layer thickness (mm)
+		 real Xbd(15)			!Soil bulk density (g/cm3)
+		 real Xsand(15)		!soil sand content (fraction) 
+		 real Xclay(15)		!soil clay content (fraction)
+		 real Xkst(15)		!soil saturated water conductivity (cm/h)
+		 real Xwcst(15)		!soil saturate water content (cm3/cm3)
+		 real Xwcfc(15)		!soil field capacity (cm3/cm3)
+		 real Xwcwp(15)		!soil wilting point (cm3/cm3)
+		 real Xwcad(15)		!soil air drying water content (cm3/cm3)
+		 real XplowDepth		!plow pan depth (m)
+		 real Xsoilt(0:15)	!soil temperature (oC)
+		 real Xwl0			!surface water level (mm)
+		 real Xswc(0:15)		!soil water content (cm3/cm3)
+		 integer XResNum			!number of residue, maximum for 10
+		 character(16) XResName(15)	!Residue name
+		 character(32) XResType(15)	!Residue type associate with each residue
+		 real XResC(0:15,15)	!daily plant little fall carbon (kg C/ha), '0' use for above ground, 1 to 15 used for root
+		 						!second deminsion is corresponding residues
+		 real XResN(0:15,15)	!daily plant little fall nitrogen (kg N/ha), '0' use for above ground, 1 to 15 used for root
+		 real Xdlt_res_c_biom(15)    ! carbon from residues to biomass
+		 real Xdlt_res_c_hum(15)     ! carbon from residues to humic    
+
+	 end type temporary_soil_information
 !	common /InstancePointers/ pv
 !	save InstancePointers
 	 type(public_variables),pointer::pv
-	 SAVE
+	 type(temporary_soil_information), pointer::tsi
+!	 SAVE         !&#@TAOLI
 end module public_module
 
 module GP
 !      common block for communication with input routine
-   real cCO2, cKNF, cNFLV, cREDFT, cAMaxSLN, cMinSLN  
-   SAVE    
+   real cCO2, cKNF, cNFLV, cREDFT, cAMaxSLN, cMinSLN     
 end module GP
 
 module GWT

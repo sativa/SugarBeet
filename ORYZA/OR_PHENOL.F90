@@ -53,7 +53,11 @@
       IF (DVS.GE.0.65.AND.DVS.LT.1.00) DVR = DVRP*HU 
       IF (DVS.GE.1.00)                 DVR = DVRR*HU
  
-      IF (CROPSTA .EQ. 3) TSTR = TS
+      IF (CROPSTA .EQ. 3) THEN
+        TSTR = TS
+      ELSEIF(CROPSTA .LT. 3) THEN
+        TSTR = 0.0
+      END IF            
       TSHCKD = SHCKD*TSTR
       IF (CROPSTA .GT. 3 .AND.TS.LT.(TSTR+TSHCKD)) DVR = 0.
 

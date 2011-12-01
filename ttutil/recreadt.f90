@@ -1,9 +1,9 @@
       SUBROUTINE RECREAD_TERM
       IMPLICIT NONE
 
-*     FORMAL_PARAMETERS:
+!     formal
 
-**    common block
+!     common block
       INCLUDE 'recread.inc'
 
       SAVE

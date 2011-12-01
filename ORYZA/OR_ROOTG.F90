@@ -62,7 +62,7 @@ MODULE RootGrowth
 !	type rootGlobal
 		 REAL RRCC(10),RRNC(10), RRDCL(10), RRDNL(10),RRDENSIT(10)
 		 REAL ROOTC(10),RDCL(10),RDNL(10),ROOTN(10),RDENSITY(10)
-		 REAL NROOTC, NROOTN, theRootC
+		 REAL NROOTC, NROOTN
 		 REAL IROOTD, ROPTT, RMINT, RTBS, MAXDEP, SODT
 		 REAL REFFECD, REFCD_O, ROOTNC
 !	end type rootGlobal
@@ -75,34 +75,32 @@ MODULE RootGrowth
 
 END MODULE RootGrowth
 
-SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)				
+SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN, PLANTMOD)				
 
 
-!	 USE numerical_libraries
-	 !USE CHART
 	 USE public_module	!VARIABLES
 	 USE rootgrowth
-
+     implicit none
 	 REAL LROOTC, LROOTN   !LROOTC & LROOTN will have input from BioRice but not ORYZA, The senescence of root C & N in kg/ha
 	!ROOT GROWTH 
-      REAL basicR(15), LWF(15)
-      REAL SSL(15), SAL(15), STL(15), NEFF(15)
+     REAL basicR(15), LWF(15)
+     REAL SSL(15), SAL(15), STL(15), NEFF(15)
 	
-	 INTEGER SL,OLDNO
-	 REAL CLAYX(0:10), SANDX(0:10),  BD(0:10), LAYT(0:10), SDEP(0:10)
-	 REAL SPH(0:10), SCEC(0:10), SNH4X(0:10), SNO3X(0:10), SNH3X(0:10), UREA(0:10)
-	 REAL PLOWL1, SOC(0:10), SON(0:10)
+	 INTEGER SL,OLDNO,PLANTMOD
+	 REAL CLAYX(0:10), SANDX(0:10), BD(0:10), LAYT(0:10), SDEP(0:10)
+	 REAL SPH(0:10), SNH4X(0:10), SNO3X(0:10), UREA(0:10) !, SCEC(0:10), SNH3X(0:10)
+	 REAL PLOWL1 !, SOC(0:10), SON(0:10)
 !SOIL VARIABLES CONCERN WITH ROOT GROWTH       
-     REAL SOILTX(15),THETAW(15), THETAF(15), THETAS(15), THETAA(15) !, LAYT(15)
+      REAL SOILTX(0:10), THETAW(15), THETAF(15), THETAS(15), THETAA(15) !, LAYT(15)
 	! Soil stength, areation, temperature factor of soil layers
 	 REAL  CWP, totalSN, ASF1, ASF2,  tmpValue, TIME, DELT
 	 INTEGER i, j, L, MDL,CROPSTA
     PARAMETER (L=10)
-	 real TrootD  !root depth under optimal conditions
+!	 real TrootD  !root depth under optimal conditions
 	 REAL TPFmx, TWFmx, TTFmx, LWFmx !THE MINIMUM OF THE FACTOR IS SET TO 0 
 	 REAL KB1, KB2,TOTALRC, TOTALRN, TotalDRC, TotalDRN, MaxNo
-	 REAL SOILN(L),WCL(L),WL0, DVS 
-	 REAL TMPV2, tmpV3, TMPV1,TMPV4,TMPN1,TMPN2,TMPN3
+	 REAL SOILN(L),WCL(L),WL0, DVS, TotalLittleFall, LiveRootC
+	 REAL TMPV2, TEMPV2, tmpV3, TMPV1,TMPV4,TMPN1,TMPN2,TMPN3
 	 real, allocatable::tmpF2(:)
 	 REAL BDx, BDo, SBD  !Variables DO bulk density at no rooting, max rootin and soil BD.
 	 REAL WFP		 !soil water factor, surface water level
@@ -112,23 +110,23 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 !	----FOR CALCULATING TOTAL SENESCENCE ROOT C&N
 	REAL NSR, CSRTN, CSRT, RDRC(15), RDRN(15)
 	!Structural root N, N determined root C, Structural root C, Root died C rate, Root died N rate
-	 real xxx1, xxx2,xxx3
+
 !+	get daily data from public module
 	 sl = pv%pnl;  WL0 = PV%PWL0
 	 do i = 1, sl
 		clayx(i) = pv%pclay(i)*100.0;	sandx(i) = pv%psand(i)*100.0
-		soiltx(i) = pv%psoiltx(i);		bd(i) = pv%pbd(i)
+		soiltx(i) = pv%psoiltx(i);;		bd(i) = pv%pbd(i)
 		layt(i) = pv%pdlayer(i)/10.0;	sdep(i) = sum(layt(1:i))  !pdalayer in mm, layt in cm, sdep in cm
 		sph(i) = pv%pph(i);				snh4x(i) = pv%pnh4(i)
 		sno3x(i) = pv%pno3(i);			urea(i) = pv%purea(i)
 		thetaw(i)= pv%pwcwp(i);			thetaf(i) = pv%pwcfc(i)
 		thetas(i) = pv%pwcst(i);		thetaa(i) = pv%pwcad(i)
-		WCL(I) = PV%PSWC(i)
+		WCL(I) = PV%PSWC(I)
 	 enddo
 	 IF(PV%PPLOWDEPTH.GT.0.0) THEN
 		plowl1 = pv%pplowdepth *100.0	!Pplowdepth in m, convert into cm
 	 ELSE
-		PLOW1 = SUM(PV%PDLaYER)/10.0		!from mm into cm
+		plowl1 = SUM(PV%PDLaYER)/10.0		!from mm into cm
 	 endif
 	 if(IROOTD.lt.0.001) then
 		IROOTD = 0.05     !The default initial root depth is 5 cm
@@ -136,7 +134,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 !	''''Read data in and calculating basic data
 	SoilN=0.0; SSL=0.0; SAL=0.0; STL=0.0;  LWF=0.0	
 	RRDCL=0.0; basicR=0.0;RRCC=0.0;MaxNo=0.0; NEFF=0.0
-	SEEDINGLAYER=0; TOTALRC=0.0; TOTALRN=0.0; TotalDRC=0.0; TOTALDRN=0.0
+	TOTALRC=0.0; TOTALRN=0.0; TotalDRC=0.0; TOTALDRN=0.0
 !Root downward development function: Borg and Grimes (1986) derived a sinusoidal
 !function to describe root growth with time, which has the form:
 !zj =RZmax{0.5 . 0.5sin[3.03(DAP/DTM) . 1.47]}, where zj is the root depth on jth day,and DAP and
@@ -159,9 +157,10 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 		 ENDDO
 		 NROOTC = TOTALRC + (NROOTC+totaldrc)
 		 NROOTN = NROOTC*TOTALRN /TOTALRC    
-		 REFFECD = 0.05 !IROOTD			!SETTING THE MAXIMUM DEPTH IS 5 CM AT TRANSPLANT, unit in cm
-		 IROOTD = 0.05					!IROOTD in m
+		 REFFECD = IROOTD			!SETTING THE REFERENCE DEPTH BE TRANSPLANT DEPTH AT TRANSPLANT, unit in m
+		! IROOTD = 0.05					!IROOTD in m
 		 REFCD_O=REFFECD      !Change it into m
+		 OLDNO=INT(IROOTD*100.0)			!SETTING THE OPTIMAL AT TRANSPLANT DEPTH AT TRANSPLANTING DAY, TAOLI, 30NOV,2011		 
 		 DO I=1, SL
 			 IF(i.eq.1) THEN
 				 IF(IROOTD*100.0.LE.LAYT(1)) THEN       !IROOTD in m
@@ -186,9 +185,9 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 	DO I = 1, SL
 		TOTALDRC = TOTALDRC + ROOTC(I); TOTALDRN = TOTALDRN + ROOTN(I)	
 	END DO
-	IF((LROOTC.LE.0.0).AND.(LROOTN.LE.0.0)) then
+	IF(PLANTMOD.EQ.1) then      !PLANTMOD =1 FOR ORYZA1, PLANTMOD = 2 FOR BIORICE
 		if((TOTALDRC.GT.0.0).and.(TOTALDRN.GT.0.0)) THEN
-			CSRT = TOTALDRC *0.85; NSR = TOTALDRN*0.85
+			CSRT = TOTALDRC *0.85; NSR = TOTALDRN*0.85   !assummed the structure C and N is 85% of total value
 			CSRTN = NSR/(2.0*RCNL)		!assumed that the optimal nitrogen content is double of minimal one.
 			LROOTC = MAX(MIN(CSRT-0.00001, CSRT -MIN(CSRT, CSRTN)),0.0)
 			LROOTN = LROOTC * RCNL
@@ -215,7 +214,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 				 EXIT 
 			 ENDIF
 		 ENDDO
-		REFFECD=MIN(LAYT(SL)/100.0,REFFECD)       !Layt in cm, change into m
+		REFFECD=MIN(LAYT(1)/100.0,REFFECD)       !Layt in cm, change into m
 		RRCC(1)=(RRCC(1)-RootC(1)-LROOTC)/DELT
 		RRNC(1)=(RRNC(1)-ROOTN(1)-LROOTN)/DELT		!RCNL IS IN kg N kg-1 ROOT DM
 		RRDCL(1)=LROOTC/DELT	
@@ -223,7 +222,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 	ELSE  !TWO COMBINED EXPONENTIAL FUNCTIONS IS USED FOR ROOT DISTRIBUTION AND ROOTING DEPTH IN MULTIPLE LAYERS
 
 !-------Get the POSSIBLE maximum rooting depth
-		 allocate (tmpf2(nint(SDEP(sl))+1))				!SDEP in cm
+		 allocate (tmpf2(INT(SDEP(sl))+1))				!SDEP in cm
 		!suppose the root reach its maximum depth while DVS=1.0 (i.e. the vegetation stage), and 
 		!linearly relates each other
 		IF(DVS.LT.1.0) THEN
@@ -231,25 +230,20 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 		ELSEIF((DVS.GE.1.0).AND.(.NOT.SWITCHR)) THEN
 			MAXDDVS1 = REFCD_O
 			SWITCHR =.TRUE.
-!       CHP 10/04/2011 Prevent underflow
-        ELSEIF (MAXDDVS1 < 1.E-6) THEN  !CHP 10/04/2011
-            MAXDDVS1 = REFCD_O          !CHP 10/04/2011
 		ENDIF
 		if(dvs.GT.1.0) then
-		!	MAXDEP=MAXDEP
 			MAXDEP=MAXDDVS1*MAX(0.0, SIN(1.57+1.57/1.5*(DVS-1.0)))*100.0
-		!EDNIF
 		ELSE
-		!	MAXDEP = MAXD*MIN(1.0,DVS)
-			 maxDep =  maxd *MAX(0.0, SIN(1.57*DVS)) !(0.5-0.5*sin(3.03*dvs/(2.0-dvs)+1.147)) !maxd in cm
+		    maxDep =  maxd *MAX(0.0, SIN(1.57*DVS)) !(0.5-0.5*sin(3.03*dvs/(2.0-dvs)+1.147)) !maxd in cm
 		endif
 		 IF(REFFECD.GT.0.0) THEN		
 			 maxDep = MIN(MAXD,maxdep) !REFFECD*100.0)				!REFFECD in m, changed into cm
 		 ELSE
 			 MAXDEP=SDEP(1)																		!SDEP in cm
 		 ENDIF 
-		 If(maxDep.LE.IROOTD*100.0) Then		!IROOTD	in m		
-			 maxDep = 2.0 * IROOTD*100.0		!IROOTD IS IN m, maxdep in cm
+		 If(maxDep.LE.2.0 *IROOTD*100.0) Then		!IROOTD	in m		
+			 maxDep = 2.0 * IROOTD*100.0		!IROOTD IS IN m, maxdep in cm. 
+			 !!make sure the MaxDep was not less than 2 time of sowing or transplanting depth, TAOLI, 30NOV, 2011
 		 ENDIF
 			
 		 If(maxDep.GT.SDEP(SL)) Then 
@@ -273,24 +267,21 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 		
 			 If(SNO3X(i).LE.0.0) SNO3X(i) = 0
 			 If(SNH4X(i).LE.0.0) SNH4X(i) = 0
-			 SoilN(i) = SNO3X(i) + SNH4X(i)                      !in g N/m2
+			 SoilN(i) = MAX(0.0, SNO3X(i) + SNH4X(i))                      !in g N/m2, 
+			 !!USE MAX TO AVIOD THE NEGATIVE VALUE, DO SAME THING FOR SSL SAL, STL AND LWF, TAOLI, 30NOV, 2011
 			 IF((SDEP(I).GT.PLOWL1).and.(plowl1.gt.0.0)) SOILN(I)=SOILN(I)/50.0
 			   IF(SOILN(I).GE.TOTALSN) THEN
 				 	  totalSN=SoilN(i)    !Get the highest value
 			   ENDIF
 
 !!---------DETERMINE PENETRATION RESISTANCE, from A. Canarache, 1990. bY TAOLI,APRIL 10, 2009
-				!BDx=exp((-1.26+0.02*clayx(i)*100.0+7.53*log(bd(i))/log(10.0))*log(10.0))			!THE RPs,
 			      BDx=exp((-1.26+0.02*clayx(i)+7.53*log(bd(i))/log(10.0))*log(10.0))			!THE RPs,
-			    !  BDo=44.9+0.163*CLAYX(I)*100.0					!THE TPm
 				  BDo=44.9+0.163*CLAYX(I)					!THE TPm
 			      SBD=100.0*(1.0-BD(I)/2.65)						!THE TP
 			      SBD=0.875+0.32*(BDO-SBD)/BDO			!THE f
 			      BDO=100.0*(1.0-0.38*BD(I))/BD(I)					!THE S
 			      SBD=SBD*BDO								!THE Sf
-			   !   BDO=-EXP((-0.44+0.00114*CLAYX(I)*100+1.27*LOG(BD(I))/LOG(10.0)+ &
-			!	        0.0267*CLAYX(I)*100*LOG(BD(I))/LOG(10.0))*LOG(10.0))			!THE M
-				BDO=-EXP((-0.44+0.00114*CLAYX(I)+1.27*LOG(BD(I))/LOG(10.0)+ &
+                  BDO=-EXP((-0.44+0.00114*CLAYX(I)+1.27*LOG(BD(I))/LOG(10.0)+ &
 				        0.0267*CLAYX(I)*LOG(BD(I))/LOG(10.0))*LOG(10.0))			!THE M
 			      SSL(I)=EXP((LOG(BDX)/LOG(10.0)+BDO*(LOG(10000.0*WCL(I)/BD(I)/SBD)- &   !WCL IS IN CM3/CM3
 				        LOG(50.0))/LOG(10.0))*LOG(10.0))	!THE PENETRATION RESISTANCE INCREASE WITH LARGER SSL
@@ -299,6 +290,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 				  ELSE
 						SSL(I)=1/(SSL(I)+0.000001)							!CONVERTING RESISTANCE INTO PENETRATION,LARGE VALUE MEANS EASIER PENETRATING 
 				  ENDIF
+				  SSL(I) = MAX(0.0, SSL(I))
 				  IF(SSL(I).GE.TPFmx) THEN 
 					 TPFmx=SSL(I)							
 				  ENDIF
@@ -310,13 +302,13 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 					 SAL(I)=1.0
 				 ELSE
 					 !SAL(I)= exp(-0.06931*(sdep(i-1)+0.5*layt(i))) !(SDEP(1)/(SDEP(I)+SDEP(I-1)))**2.0
-					 SAL(I)= exp(-0.02378*(sdep(i-1)+0.5*layt(i)))
+					 SAL(I)= MAX(0.0,exp(-0.02378*(sdep(i-1)+0.5*layt(i))))
 				 ENDIF
 			 ELSE 
 				 CWP = 0.4 + 0.004 * ClayX(i)
 				 WFP = WCL(i) / ThetaS(i)
 				 If(WFP.GT.CWP) Then
-					 SAL(i) = SODT + (1.0 - WFP) * (1.0 - SODT) / (1.0 - CWP) !SODT: the tolerance of air deficiency, subemerngency, bigger is better tolerance
+					 SAL(i) = MAX(0.0,SODT + (1.0 - WFP) * (1.0 - SODT) / (1.0 - CWP)) !SODT: the tolerance of air deficiency, subemerngency, bigger is better tolerance
 				 Else
 					 SAL(i) = 1.0
 				 EndIf
@@ -328,17 +320,17 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 !-------Determine the direct effects of soil water on root growth
 			 IF(WL0.GT.0.0) THEN
 			 	   LWF(I) = 1.0  !exp(-0.06931*(sdep(i-1)+0.5*layt(i)))		!Under saturated condition, the oxygen availability decrease 30% every 15 cm
-				   LWFMX = LWF(1)
+				   LWFMX = 1.0
 			 Else
-			 		 LWF(I) = 1.0 - ((PV%PWCST(I)-WCL(I))/(PV%PWCST(I)-PV%PWCWP(I)))**2.0  !** OSMATIC/1.5
+			 		 LWF(I) = MAX(0.0,1.0 - ((PV%PWCST(I)-WCL(I))/(PV%PWCST(I)-PV%PWCWP(I)))**2.0)  !** OSMATIC/1.5
 			 		 IF(LWF(I).GT.LWFMX) THEN
 			 		    LWFMX =LWF(I)
 			 		 ENDIF
 			 ENDIF
 
 !-------DETERMINE SOIL TEMPERATURE EFFECTS ON ROOT GROWTH	    
-			 If(SOILTX(i).GE.RMINT) Then
-				 STL(i) =Sin(1.57 * (SOILTX(i) - RMINT) / (ROPTT - RTBS))
+			 If(soiltx(i).GE.RMINT) Then
+				 STL(i) =Sin(1.57 * (soiltx(i) - RMINT) / (ROPTT - RTBS))
 				 STL(i)=max(STL(i),0.0)
 			 Else
 				 STL(i) = 0
@@ -390,21 +382,14 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 					 ASF1 = ASF2; MaxNo = real(i)
 				 EndIf
 			 ENDDO
-			 MaxNo=max(1.0,MaxNo)
-			 OLDNO=INT(MAXNO)	
+			 MaxNo=max(1.0,MaxNo)			 	
 			 MaxNo = SDEP(int(MaxNo) - 1)+0.5*LAYT(int(MAXNO))
 			 MAXNO=MIN(MAXDEP,MIN(MAXD,MAXNO))
 			 IF(MAXNO.GE.MAXDEP) THEN
-				!IF((MAXNO.GT.SDEP(OLDNO-1)).AND.(MAXNO.LE.SDEP(OLDNO))) THEN
-				!	MAXNO=SDEP(OLDNO-1)*0.8+0.2*MAXNO
-				!ELSEIF(MAXNO.LE.SDEP(OLDNO-1)) THEN
-				!	MAXNO=SDEP(OLDNO-2)*0.5+0.5*MAXNO
-				!	OLDNO=OLDNO-1
-				!ENDIF
-				MAXNO=MAXDEP-5.0
+				MAXNO=OLDNO + (MAXDEP-OLDNO)*0.5
 			 ENDIF
+			 OLDNO=INT(MAXNO)
 		 EndIf
-		 IF(CROPSTA.EQ.3) MAXNO=3.0			!SETTING THE TRANSPLANT DEPTH IS 3 CM
 	
 !-----Calculating distribution by BY UNSTREMETRICAL BI-EXPONENTIAL DISTRIBUTION function	
 		 ASF1 = 0.0; ASF2 = 0.0; j = 1
@@ -463,17 +448,8 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN)
 					RRDCL(I)=0.0	
 					RRDNL(I)=0.0
 				ENDIF
-				 If(i.EQ.IROOTD*100.0) Then
-					theRootC = RootC(i) - SeedingC
-					If(theRootC.LE.0.0) SeedingC = 0
-				 Else
-					theRootC = RootC(i)
-				 EndIf
-				! If((theRootC.GT.0.0).And.(RRCC(i).GT.0.0)) Then
-				!basicR(i) = RRCC(i) / theRootC
 				 If((ROOTC(I).GT.0.0).And.(RRCC(i).GT.0.0)) Then
 					basicR(i) = RRCC(i) /ROOTC(I)
-				! ElseIf((RRCC(i).EQ.0.0).And.(theRootC.GT.0.0)) Then
 				 ElseIf((RRCC(i).EQ.0.0).And.(ROOTC(I).GT.0.0)) Then
 					basicR(i) = 0.001
 				 Else

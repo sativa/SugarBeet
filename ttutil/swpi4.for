@@ -92,9 +92,7 @@ C      write (*,*) itask,name,decl,ip
                READ (AUNIT(IN),REC=RECN) VAL
             ELSE IF (RECN.GT.NREC(IN)) THEN
 *              read is beyond last record
-
-!              CHP changed to TT_WARNING
-               CALL TT_WARNING(MODNAM,'returning uninitialized element')
+               CALL WARNING_OR(MODNAM,'returning uninitialized element')
                VAL = ZERO
             ELSE IF (RECN.LT.1) THEN
 *              error in calling swap routine
