@@ -9,7 +9,7 @@
 @SITE        COUNTRY          LAT     LONG SCS FAMILY
  LosBanos    Phillipines   29.551  -82.517 Generic
 @ SCOM  SALB  SLU1  SLDR  SLRO  SLNF  SLPF  SMHB  SMPX  SMKE
-   -99  0.13   -99  3.00    61  1.00  1.00   -99   -99   -99
+   -99  0.13   -99   0.2    61  1.00  1.00   -99   -99   -99
 @  SLB  SLMH  SLLL  SDUL  SSAT  SRGF  SSKS  SBDM  SLOC  SLCL  SLSI  SLCF  SLNI  SLHW  SLHB  SCEC  SADC
      5   -99  0.21  0.48  0.52  1.00   5.3  1.18  5.40    55    37   -99  0.48   -99   -99   -99   -99
     10   -99  0.21  0.48  0.52  1.00   5.3  1.18  5.40    55    37   -99  0.48   -99   -99   -99   -99
@@ -54,7 +54,7 @@
 @SITE        COUNTRY          LAT     LONG SCS FAMILY
  LosBanos    Phillipines    39.93   116.47 Generic
 @ SCOM  SALB  SLU1  SLDR  SLRO  SLNF  SLPF  SMHB  SMPX  SMKE
-   -99  0.13   -99  3.00    61  1.00  1.00   -99   -99   -99
+   -99  0.13   -99   0.3    61  1.00  1.00   -99   -99   -99
 @  SLB  SLMH  SLLL  SDUL  SSAT  SRGF  SSKS  SBDM  SLOC  SLCL  SLSI  SLCF  SLNI  SLHW  SLHB  SCEC  SADC
     10   -99  .102  .372  .564  1.00  .158  1.44  1.30    30    20   -99  0.08   -99   -99   -99   -99
     20   -99  .109  .366  .574  1.00  .158  1.44  1.30    30    20   -99  0.08   -99   -99   -99   -99
