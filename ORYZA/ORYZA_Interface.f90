@@ -643,6 +643,7 @@
 
       SELECT CASE(VARTY)
       CASE ('IB0118'); FILEI1 = 'IR72.CRP'
+      CASE ('IB0300'); FILEI1 = 'HD297.CRP'
       CASE DEFAULT
         MSG(1) = 'Invalid ORYZA cultivar found.'
         MSG(2) = 'Program will stop.'

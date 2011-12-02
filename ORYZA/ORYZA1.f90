@@ -158,7 +158,7 @@
 !===================================================================*
       IF (ITASK.EQ.1) THEN
 
-      WRITE (*,*) 'SUCCESS'
+!     WRITE (*,*) 'SUCCESS'
 
 !--------Open experimental data input file
          CALL RDINIT (IUNITD, IUNITL, FILEIT)
