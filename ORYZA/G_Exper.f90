@@ -77,7 +77,7 @@ OPEN(UNIT=LUN, FILE = OUTPUTFILE, STATUS='REPLACE',ACTION='WRITE')
     IF(INDEX(ESTAB, "T").GT.0) THEN
         WRITE(LUN, '(A)') "ESTAB='TRANSPLANT'    !TRANSPLANT or DIRECT SEEDING"
     ELSE
-        WRITE(LUN, '(A)') "ESTAB='DIRECT SEEDING'    !TRANSPLANT or DIRECT SEEDING"    
+        WRITE(LUN, '(A)') "ESTAB='DIRECT-SEED'    !TRANSPLANT or DIRECT SEEDING"    
     END IF
     WRITE(LUN, '(A)') "* Transplanting date May 25 (145), 2001; sowing date April 15; 50% emergence April 29 (119)"
     WRITE(LUN, 6000) "EMD", EMD, "     ! Day of emergence (either direct, or in seed-bed)"

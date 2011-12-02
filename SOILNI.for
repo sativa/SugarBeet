@@ -79,7 +79,7 @@ C=======================================================================
 
       REAL AD, AK, ALGFIX, CW
       REAL NFAC, NITRIF, NNOM
-      REAL SNH4_AVAIL, SNO3_AVAIL, SUMFERT
+      REAL SNH4_AVAIL, SNO3_AVAIL(NL), UREA_AVAIL(NL), SUMFERT
       REAL SWEF, TFDENIT, TFUREA
       REAL TMINERN, TIMMOBN, TLCH, TLCHD
       REAL TNH4, TNH4NO3, TNO3, TNOX, UHYDR, TNOXD
@@ -453,12 +453,12 @@ C=======================================================================
             !TIMMOBILIZE(N) = TIMMOBILIZE(N) + (SNH4(L) - XMIN)
             NNOM = NNOM_b
 
-            SNO3_AVAIL = SNO3(L) + DLTSNO3(L)
-            IF (ABS(NNOM) .GT. (SNO3_AVAIL - XMIN)) THEN
+            SNO3_AVAIL(L) = SNO3(L) + DLTSNO3(L)
+            IF (ABS(NNOM) .GT. (SNO3_AVAIL(L) - XMIN)) THEN
               !Not enough SNO3 to fill remaining NNOM, leave residual
-              DLTSNO3(L) = DLTSNO3(L) + XMIN - SNO3_AVAIL
+              DLTSNO3(L) = DLTSNO3(L) + XMIN - SNO3_AVAIL(L)
               !TIMMOBILIZE(N) = TIMMOBILIZE(N) + (SNO3_AVAIL - XMIN)
-              NNOM = NNOM + SNO3_AVAIL - XMIN
+              NNOM = NNOM + SNO3_AVAIL(L) - XMIN
             ELSE
 !             Get the remainder of the immobilization from nitrate (NNOM
 !             is negative!)
@@ -639,11 +639,11 @@ C-UPS     Corrected per e-mail 03/29/00
 !         into account what has already been removed by other
 !         processes (thus use only negative DLTSNO3 values). This is a
 !         protection against negative values at the integration step.
-          SNO3_AVAIL = SNO3(L) + AMIN1 (DLTSNO3(L), 0.) - XMIN
+          SNO3_AVAIL(L) = SNO3(L) + AMIN1 (DLTSNO3(L), 0.) - XMIN
 
 !         Take the minimum of the calculated denitrification and the
 !         amount of NO3 available for denitrification. 
-          DENITRIF(L)  = AMIN1 (DENITRIF(L), SNO3_AVAIL)
+          DENITRIF(L)  = AMIN1 (DENITRIF(L), SNO3_AVAIL(L))
 
 C         If flooded, lose all nitrate --------REVISED-US
 !          IF (FLOOD .GT. 0.0) THEN
@@ -658,7 +658,7 @@ C         If flooded, lose all nitrate --------REVISED-US
 !            DENITRIF(L) = SNO3_AVAIL
 !           chp 9/6/2011 remove 50% NO3/d = 97% removed in 5 days
 !           previously removed 100% NO3/d
-            DENITRIF(L) = SNO3_AVAIL * 0.5
+            DENITRIF(L) = SNO3_AVAIL(L) * 0.5
           ENDIF
 
 !chp 4/20/2004   DENITRIF = AMAX1 (DENITRIF, DNFRATE)
@@ -685,18 +685,24 @@ C         If flooded, lose all nitrate --------REVISED-US
 !     ------------------------------------------------------------------
       TLCHD = 0.0
 
+      DO L = 1, NLAYR
+        UREA_AVAIL(L) = UREA(L) + DLTUREA(L)
+        SNO3_AVAIL(L) = SNO3(L) + DLTSNO3(L)
+      ENDDO
+
       IF (IUON) THEN
         NSOURCE = 1    !Urea.
         CALL NFLUX ( 
      &    ADCOEF, BD, DLAYR, DRN, DUL, UPFLOW, NLAYR,     !Input
-     &    UREA, NSOURCE, SW, TDFC, TDLNO,                 !Input
+     &    UREA_AVAIL, NSOURCE, SW, TDFC, TDLNO,           !Input
      &    DLTUREA, TLCH, TLCHD)                           !Output
       ENDIF
 
       NSOURCE = 2   !NO3.
+      
       CALL NFLUX ( 
      &  ADCOEF, BD, DLAYR, DRN, DUL, UPFLOW, NLAYR,       !Input
-     &  SNO3, NSOURCE, SW, TDFC, TDLNO,                   !Input
+     &  SNO3_AVAIL, NSOURCE, SW, TDFC, TDLNO,             !Input
      &  DLTSNO3, TLCH, TLCHD)                             !Output
 
       CALL PUT('NITR','TNOXD',ARNTRF)
