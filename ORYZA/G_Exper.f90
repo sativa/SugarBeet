@@ -53,9 +53,9 @@ OPEN(UNIT=LUN, FILE = OUTPUTFILE, STATUS='REPLACE',ACTION='WRITE')
     WRITE(LUN, '(A)') "*--  NITROENV is Nitrogen production situation setting"
     CALL UPPERC(NITROENV)
     IF(INDEX(NITROENV, "Y").GT.0) THEN
-        WRITE(LUN, '(A)') "NITROENV = 'POTENTIAL'       ! for potential production OF NITROGEN"
-    ELSE
         WRITE(LUN, '(A)') "NITROENV = 'NITROGEN BALANCE'       ! Production may be nitrogen-limited"
+    ELSE
+        WRITE(LUN, '(A)') "NITROENV = 'POTENTIAL'       ! for potential production OF NITROGEN"
     ENDIF
     WRITE(LUN, '(A)') "*--------------------------------------------------------------------*"
     WRITE(LUN, '(A)') "* 2. Timer data for simulation                                       *"

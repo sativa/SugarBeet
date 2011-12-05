@@ -324,7 +324,7 @@ C
 !            Depth of puddling input in cm, convert to m
              PLOWPAN = AMT(I) / 100.   
              IF (PLOWPAN < 1.) THEN
-               PLOWPAN = 0.15   
+               PLOWPAN = -1.   
              ENDIF
 
           !------------------------------

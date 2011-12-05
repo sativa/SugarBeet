@@ -34,7 +34,7 @@
          WAGT, WLVD, WLVG, WRR, WRT, WSO, WST, ZRT 
       REAL, DIMENSION(10) :: RDCL
 
-      REAL NGR, HIAD, HWUD, SLAD, SEEDNO
+      REAL NGR, HIAD, HWUD, SLAD, SEEDNO, LeafNPct
       REAL CUMSENSURF, CUMSENSOIL 
       REAL NACR, ANRT, ANLV, ANSO, ANST, ANLD, VNAD, CNAD, SNN1C
       Real RNpctD, VNpctD, SNpctD, LNpctD
@@ -201,11 +201,13 @@
         IF (DAP > DAS) DAP = 0
         CALL YR_DOY(YRDOY, YEAR, DOY)
 
+        LeafNPct = NFLV * LAI  / WLVG * 1000.
+
         WRITE (NOUTDG,400) YEAR, DOY, DAS, DAP,                    &
           DVS, LAI, NINT(WLVG), NINT(WLVD), NINT(WST), NINT(WRR),  &
           NINT(WRT), NINT(WSO), NINT(WAGT), NINT(SEEDNO), HWUD, HIAD, &
           1.0 - PCEW, 1.0 - LESTRS, 1.0 - CPEW, 1.0 - LRSTRS, 1.0 - LDSTRS, 1.0 - RNSTRS,               &
-          NFLV, SLAD, ZRT, NINT(WLVD), NINT(CUMSENSOIL), HU                        
+          LeafNPct, SLAD, ZRT, NINT(WLVD), NINT(CUMSENSOIL), HU                        
  400    FORMAT (1X,I4, 1X,I3.3, 2(1X,I5), &
              1X,F5.3, 1X,F5.2, 4(1X,I5),  &
              4(1X,I5), 1X,F5.1, F6.3,     &

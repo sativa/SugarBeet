@@ -231,7 +231,7 @@
         PLOWPAN = FLOODWAT % PLOWPAN
         IF (PLOWPAN < .01) THEN
 !         No plowpan specified - check for WR values close to zero
-          PLOWPAN = (DS(NLAYR) + 10.)/100.0   !converted into m
+!         PLOWPAN = (DS(NLAYR) + 10.)/100.0   !converted into m
           DO L = 2, NLAYR
             IF (SOILPROP % WR(L) < 0.001) THEN
               PLOWPAN = DS(L-1) /100.0    !converted into m

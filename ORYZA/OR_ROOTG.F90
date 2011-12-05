@@ -110,7 +110,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN, PLANTMOD)
 !	----FOR CALCULATING TOTAL SENESCENCE ROOT C&N
 	REAL NSR, CSRTN, CSRT, RDRC(15), RDRN(15)
 	!Structural root N, N determined root C, Structural root C, Root died C rate, Root died N rate
-
+    SAVE
 !+	get daily data from public module
 	 sl = pv%pnl;  WL0 = PV%PWL0
 	 do i = 1, sl
@@ -234,7 +234,7 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN, PLANTMOD)
 		if(dvs.GT.1.0) then
 			MAXDEP=MAXDDVS1*MAX(0.0, SIN(1.57+1.57/1.5*(DVS-1.0)))*100.0
 		ELSE
-		    maxDep =  maxd *MAX(0.0, SIN(1.57*DVS)) !(0.5-0.5*sin(3.03*dvs/(2.0-dvs)+1.147)) !maxd in cm
+		    maxDep =  maxd *MAX(0.0, SIN(1.57*DVS))  !maxd in cm
 		endif
 		 IF(REFFECD.GT.0.0) THEN		
 			 maxDep = MIN(MAXD,maxdep) !REFFECD*100.0)				!REFFECD in m, changed into cm
