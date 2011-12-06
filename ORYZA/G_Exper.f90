@@ -5,7 +5,8 @@
 SUBROUTINE ExperimentFileEdit(OUTPUTFILE, YRSIM, EDATE, & 
                 PRODENV, NITROENV, ESTAB,  SBDUR, NPLH, PLTPOP, NPLSB, NPLDS, ZRTTR, &  !PLANT ESTABLISHMENT AND DENSITY
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, &  !FOR IRRIGATION
-                TMCTB)  !Other parameters 
+                TMCTB, &  !Other parameters 
+                LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI)  !initial biomass
 
 IMPLICIT NONE
 
@@ -19,6 +20,7 @@ INTEGER LUN
 REAL NPLH, NH, PLYPOP,NPLSB, NPLDS, ZRTTR, WL0MIN, KPAMIN, WCMIN, IRRI, SLMIN
 REAL IRMTAB(300), RIRRIT(750),ISTAGET(900), TMCTB(750)
 REAL DELT, PLTPOP, WLOMIN, WLODAY
+REAL LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI  !initial biomass
 
 !Get assigned unit number  CHP
 CALL GETLUN('OUTPUTFILE',LUN)
@@ -91,17 +93,19 @@ OPEN(UNIT=LUN, FILE = OUTPUTFILE, STATUS='REPLACE',ACTION='WRITE')
     WRITE(LUN, 7000) "NH", PLTPOP/NPLH       ! Number of hills/m2 (13 x 27 cm)"
     WRITE(LUN, 7000) "NPLSB", NPLSB, "      ! Number of plants in seed-bed (???)"    
     WRITE(LUN, 7000) "NPLDS", NPLDS, "      ! Number of plants/m2 direct-seeded"
-    
+ 
+    WRITE(LUN, '  ')   
     WRITE(LUN, '(A)') "*-- Initial data at emergence, for either direct-seeding or seed-bed"
     WRITE(LUN, '(A)') "*   Standard data used."
-    WRITE(LUN, '(A)') "LAPE   = 0.0001     ! Initial leaf area per plant"
-    WRITE(LUN, '(A)') "DVSI   = 0.0        ! Initial development stage"
-    WRITE(LUN, '(A)') "WLVGI  = 0.0        ! Initial leaf weight"
-    WRITE(LUN, '(A)') "WSTI   = 0.0        ! Initial stem weight"
-    WRITE(LUN, '(A)') "WRTI   = 0.0        ! Initial stem weight"
-    WRITE(LUN, '(A)') "WSOI   = 0.0        ! Initial weight storage organs"
-    WRITE(LUN, '(A)') "ZRTI   = 0.0001     ! Initial root depth (m)"
+    WRITE(LUN, '(A,F8.5,A)') "LAPE   = ", LAPE, "      ! Initial leaf area per plant"
+    WRITE(LUN, '(A,F8.3,A)') "DVSI   = ", DVSI, "      ! Initial development stage"
+    WRITE(LUN, '(A,F8.3,A)') "WLVGI  = ", WLVGI,"      ! Initial leaf weight"
+    WRITE(LUN, '(A,F8.3,A)') "WSTI   = ", WSTI, "      ! Initial stem weight"
+    WRITE(LUN, '(A,F8.3,A)') "WRTI   = ", WRTI, "      ! Initial stem weight"
+    WRITE(LUN, '(A,F8.3,A)') "WSOI   = ", WSOI, "      ! Initial weight storage organs"
+    WRITE(LUN, '(A,F8.5,A)') "ZRTI   = ", ZRTI, "      ! Initial root depth (m)"
     
+    WRITE(LUN, '  ')   
     WRITE(LUN, '(A)') "*-- Re-initialization at transplanting (standard data used)"
     WRITE(LUN, 7000) "ZRTTR", ZRTTR/100.0, "       ! Root depth at transplanting (m)"
     

@@ -68,6 +68,7 @@
       REAL    TRW, TRWL(10), TKL(10), WRT, WRR14
       REAL    HU, WAGT, WLVD, WRR, NGR, PLOWPAN, TNSOIL, NACR
       REAL    ANSO, ANLV, ANST, ANLD, ANRT
+      REAL    LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI
 
 !     FOR EXPERIMENT FILE 
       INTEGER YRSIM, EDATE, iPAGE, IRRCOD 
@@ -246,7 +247,8 @@
         CALL OR_IPRICE (CONTROL,                       &
           FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
           ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH, &
-          STGDOY, STNAME)
+          LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI, &
+          STGDOY, STNAME) 
  
         STGDOY(14) = YRDOY !start of simulation
         ISTAGE = 14
@@ -295,7 +297,8 @@
         CALL UPPERC(ISWNIT)
         CALL ExperimentFileEdit(FILEIT, YRSIM, EDATE,& 
                 ISWWAT, ISWNIT, PLME, iPAGE, PLPH, PLTPOP, PLANTS, PLANTS, PLDP, &
-                IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB)
+                IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB, &
+                LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI)
 
         OR_OUTPUT = .FALSE.;TERMNL = .FALSE.
         IF ((ISWNIT == 'Y').OR.(ISWWAT == 'Y')) THEN
@@ -587,14 +590,18 @@
 !=======================================================================
 !  RI_IPGROSUB, Subroutine
 !
-!  Reads FILEIO for GROSUB routine
+!  Reads FILEIO for ORYZA_Interface routine
+!  Reads new biomass initialization file for initial biomass
+!   Name: aabbyyxx.crI, where aabbyyxx.cr = same as FILEX name.
 !  05/07/2002 CHP Written
 !  08/12/2003 CHP Added I/O error checking
+!  12/05/2011 CHP added biomass initialization file
 !=======================================================================
       SUBROUTINE OR_IPRICE (CONTROL,               &
           FILEI1, PLANTS, PLTPOP, PLME, PLDS,      &
           ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH, &
-          STGDOY, STNAME)
+          LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI, &
+          STGDOY, STNAME) 
 
       USE ModuleDefs     !Definitions of constructed variable types, 
                          ! which contain control information, soil
@@ -604,23 +611,30 @@
       CHARACTER*1   PLME, PLDS
       CHARACTER*2   CROP
       CHARACTER*6   VARTY
-      CHARACTER*10  STNAME(20)     
+      CHARACTER*10  STNAME(20) 
+      CHARACTER*12  FILEIB, FILEX   
       CHARACTER*20  VARNAME
       CHARACTER*30  FILEIO
       CHARACTER*78  MSG(2)
-      CHARACTER*128 FILEI1
+      CHARACTER*80  PATHEX
+      CHARACTER*92  PATHIB
+      CHARACTER*128 FILEI1, CHAR
 
       CHARACTER*6  ERRKEY, SECTION
       PARAMETER (ERRKEY = 'IPRICE')
 
-      INTEGER LINC, LNUM, LUNIO, ERR, FOUND, STGDOY(20)
+      INTEGER ISECT, LINC, LNUM, LUNIO, ERR, FOUND, STGDOY(20), TRT
       REAL PLANTS, PLTPOP, ROWSPC, PLDP, SDWTPL, PAGE, ATEMP, PLPH
+      REAL LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI 
+
+      LOGICAL GoodFile
 
 !     The variable "CONTROL" is of type "ControlType".
       TYPE (ControlType) CONTROL
       FILEIO = CONTROL % FILEIO
       LUNIO  = CONTROL % LUNIO
 
+      GoodFile = .TRUE.
       LNUM = 0
 
 !-----------------------------------------------------------------------
@@ -630,26 +644,11 @@
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,0)
 
 !-----------------------------------------------------------------------
-!    Read Cultivars Section
+!    Read name of FILEX - to get name of intial biomass file (if present)
 !-----------------------------------------------------------------------
-!C CR INGENO CNAME
-!  RI IB0118 IR 72   
-        
-      SECTION = '*CULTI'
-      CALL FIND(LUNIO, SECTION, LINC, FOUND) ; LNUM = LNUM + LINC
-      IF (FOUND .EQ. 0) CALL ERROR(SECTION, 42, FILEIO, LNUM)
-      READ(LUNIO,'(3X,A2,1X,A6,1X,A20)', IOSTAT=ERR) CROP, VARTY, VARNAME ; LNUM = LNUM + 1
+      READ (LUNIO,'(3(/),15X,A12,1X,A80)',IOSTAT=ERR) FILEX, PATHEX
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
-
-      SELECT CASE(VARTY)
-      CASE ('IB0118'); FILEI1 = 'IR72.CRP'
-      CASE ('IB0300'); FILEI1 = 'HD297.CRP'
-      CASE DEFAULT
-        MSG(1) = 'Invalid ORYZA cultivar found.'
-        MSG(2) = 'Program will stop.'
-        CALL WARNING(2, ERRKEY, MSG)
-        CALL ERROR(ERRKEY,36,FILEIO,LNUM)
-      END SELECT
+      LNUM = LNUM + 4
 
 !-----------------------------------------------------------------------
 !    Read Planting Details Section
@@ -665,8 +664,73 @@
       LNUM = LNUM + 1
       IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
 
+!-----------------------------------------------------------------------
+!    Read Cultivar parameter section
+!-----------------------------------------------------------------------
+!     Look for 2nd cultivar section in FILEIO
+      SECTION = '*CULTI'
+      CALL FIND(LUNIO, SECTION, LINC, FOUND) ; LNUM = LNUM + LINC
+      IF (FOUND .EQ. 0) CALL ERROR(SECTION, 42, FILEIO, LNUM)
+      READ(LUNIO,'(A6,1X,A16,1X,A128)', IOSTAT=ERR) VARTY, VARNAME, FILEI1
+      LNUM = LNUM + 1
+      IF (ERR .NE. 0) CALL ERROR(ERRKEY,ERR,FILEIO,LNUM)
+
       CLOSE (LUNIO)
 
+!-----------------------------------------------------------------------
+!   Find and read initial biomass file
+    FILEIB = FILEX(1:11) // "I"
+    PathIB = TRIM(PATHEX) // FILEIB
+    INQUIRE (FILE = PATHIB, EXIST = GoodFile)
+
+    OPEN (LUNIO, FILE = PathIB, STATUS = 'OLD', IOSTAT=ERR)
+    IF (ERR .NE. 0) GoodFile = .FALSE.
+
+    IF (GoodFile) THEN
+      SECTION = '*EXP. DATA (I)'
+      CALL FIND(LUNIO, SECTION, LINC, FOUND) ; LNUM = LNUM + LINC
+      IF (FOUND .EQ. 0) GoodFile = .FALSE.
+    ENDIF
+
+    DO WHILE (GoodFile)
+      CALL IGNORE (LUNIO,LNUM,ISECT,CHAR)
+      IF (ISECT .NE. 1) THEN
+        GoodFile = .FALSE.; EXIT
+      ENDIF
+
+      READ(CHAR,'(I2,7F8.0)', IOSTAT=ERR) &
+        TRT, LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI 
+      IF (ERR .NE. 0) THEN
+        GoodFile = .FALSE.; EXIT
+      ENDIF
+
+      IF (TRT == CONTROL % TRTNUM) EXIT
+    ENDDO
+
+!   No valid initial biomass file - use default values depending
+!       on planting method
+    IF (.NOT. GoodFile) THEN
+      SELECT CASE (PLME)
+      CASE ('S')
+        LAPE   = 0.00005    ! Initial leaf area per plant"
+        DVSI   = 0.0        ! Initial development stage"
+        WLVGI  = 0.0        ! Initial leaf weight"
+        WSTI   = 0.0        ! Initial stem weight"
+        WRTI   = 0.0        ! Initial stem weight"
+        WSOI   = 0.0        ! Initial weight storage organs"
+        ZRTI   = 0.0001     ! Initial root depth (m)"
+      CASE DEFAULT
+        LAPE   = 0.0001     ! Initial leaf area per plant"
+        DVSI   = 0.0        ! Initial development stage"
+        WLVGI  = 0.0        ! Initial leaf weight"
+        WSTI   = 0.0        ! Initial stem weight"
+        WRTI   = 0.0        ! Initial stem weight"
+        WSOI   = 0.0        ! Initial weight storage organs"
+        ZRTI   = 0.0001     ! Initial root depth (m)"
+      END SELECT
+    ENDIF
+
+!-----------------------------------------------------------------------
       ROWSPC = ROWSPC / 100.0
 
 !     ORYZA life cycle:
