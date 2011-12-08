@@ -151,7 +151,18 @@
          IF (INP(IV).EQ.0) CALL FATALERR ('OPSYS','no data for name')
 
 !        create sorted index array based on values for variable
-         CALL INDEXX (INP(IV),VALA(1,IV),INDX)
+! chp 08 Dec 2011. I get this error - for now comment out this line
+!   because DSSAT-ORYZA never gets here.  I can't compile this version.
+! error #6633: The type of the actual argument differs from the type 
+!  of the dummy argument.   [VALA]
+
+!   This is the offending statement:
+!         CALL INDEXX (INP(IV),VALA(1,IV),INDX)
+
+!   It seems that VALA(1,IV) is a scalar - one element of array VALA.
+!      SUBROUTINE INDEXX(N,ARRIN,INDX)
+!      Integer, intent(in):: N   !added by TAOLI, 25Oct 2011
+!      INTEGER, DIMENSION(N):: ARRIN,INDX  !modified by TAOLI, 25OCT 2011 from DIMENSION ARRIN(N), INDX(N)
 
          I1 = LEN_TRIM (VARNAM)
          FILENM = 'CF'//VARNAM(1:I1)//'.TTP'

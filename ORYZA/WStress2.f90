@@ -61,7 +61,7 @@ END MODULE WSTRESS_MODULE
       !USE CHART
       USE ROOTGROWTH
       USE public_module
-      use Module_OutDat
+      use Module_OUTDAT
       IMPLICIT NONE
 
 !-----Formal parameters

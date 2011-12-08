@@ -26,6 +26,7 @@ logical :: OutDat_UseMemory = .FALSE.
 !make only public what is needed
 public :: OutDat_UseMemory
 public :: OUTDAT
+public :: OUTARR
 
 contains
 
@@ -1303,11 +1304,11 @@ SUBROUTINE OUTDAT (ITASK, IUNIT, RN, R)
 
   END SUBROUTINE OUTDAT
 
-!      SUBROUTINE OUTARR (ITASK, IUNIT, RN, R, N)
-!      IMPLICIT NONE
-!      INTEGER, intent(in) :: ITASK, IUNIT, N
-!      CHARACTER*(*), intent(in)      :: RN
-!      REAL, intent(in),dimension(10) :: R
-!      end subroutine
+      SUBROUTINE OUTARR (ITASK, IUNIT, RN, R, N)
+      IMPLICIT NONE
+      INTEGER, intent(in) :: ITASK, IUNIT, N
+      CHARACTER*(*), intent(in)      :: RN
+      REAL, intent(in),dimension(10) :: R
+      end subroutine
 
 end Module Module_OUTDAT
