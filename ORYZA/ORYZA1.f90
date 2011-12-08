@@ -129,7 +129,7 @@
       REAL    WSO   , WSOI  , WSTS    , WSTR   
       REAL    ZRTI  , ZRTM  , ZRTTR   , ZRTMCW, ZRTMCD, RGRLMX, RGRLMN
       REAL    ASLA  , BSLA  , CSLA    , DSLA  , SLAMAX
-      REAL    COLDMIN,COLDEAD, FSWTD 
+      REAL    COLDMIN,COLDEAD, FSWTD , SLASIM
 !-----Add five parameter here to deal with night temperature control,
 !-----VARIABLE DIFINATION SEE NIGHT.F90, TAOLI, JUNE 10, 509
 	  REAL    SHOUR,  EHOUR,  TTEMP,    TCHANG,	SDAY,	EDAY
@@ -478,8 +478,8 @@
          DLEAF    = .FALSE.
          DROUT    = .FALSE.
          GRAINS   = .FALSE.
+         SLASIM = 0.0
 !		Intital root state variables		!TAOLI, April 2, 509
-
 
 !===================================================================*
 !     RATE CALCULATION SECTION                                      *
@@ -807,11 +807,17 @@
             CALL OUTDAT(2,0,'DTR   ',DTR)
             CALL OUTDAT(2,0,'RAPCDT   ',RAPCDT)
             CALL OUTDAT(2,0,'PARCUM   ',PARCUM)
-    !            CALL OUTDAT(2,0,'PAR1M   ',PAR1M)
+!            CALL OUTDAT(2,0,'PAR1M   ',PAR1M)
 ! END NEW
             CALL OUTDAT(2,0,'NFLV  ',NFLV)
             CALL OUTDAT(2,0,'SLA   ',SLA)
-            CALL OUTDAT(2,0,'SLASIM',LAI/NOTNUL(WLVG))
+            if (WLVG .gt. 0.0) then
+                SLASIM = LAI/WLVG
+            else
+                SLASIM = 0.0
+            endif
+                  
+            CALL OUTDAT(2,0,'SLASIM',SLASIM)
             CALL OUTDAT(2,0,'LESTRS ',LESTRS)
             CALL OUTDAT(2,0,'LRSTRS ',LRSTRS)
  !@@ WRITE LDSTRS IN RES.DAT, TRI NOV 28, 2011
@@ -827,6 +833,29 @@
             CALL OUTDAT(2,0,'WSO   ',WSO)
             CALL OUTDAT (2,0,'WRR14 ',WRR14 )
             CALL OUTDAT(2,0,'ZRT',ZRT)
+            CALL OUTDAT(2,0,'wrt',wrt)
+            CALL OUTDAT(2,0,'wrr',wrr)
+            CALL OUTDAT(2,0,'rnstrs',rnstrs)
+            CALL OUTDAT(2,0,'ssga',ssga)
+            CALL OUTDAT(2,0,'dvr',dvr)
+            CALL OUTDAT(2,0,'hu',hu)
+            CALL OUTDAT(2,0,'trc',trc)
+            CALL OUTDAT(2,0,'gcr',gcr)
+            CALL OUTDAT(2,0,'gnsp',gnsp)
+            CALL OUTDAT(2,0,'spgf',spgf)
+            CALL OUTDAT(2,0,'sf1',sf1)
+            CALL OUTDAT(2,0,'sf2',sf2)
+            CALL OUTDAT(2,0,'spfert',spfert)
+            CALL OUTDAT(2,0,'fso',fso)
+            CALL OUTDAT(2,0,'gso',gso)
+            CALL OUTDAT(2,0,'nsp',nsp)
+            CALL OUTDAT(2,0,'gngr',gngr)
+            CALL OUTDAT(2,0,'ggr',ggr)
+            CALL OUTDAT(2,0,'ngr',ngr)
+            CALL OUTDAT(2,0,'wgrmx',wgrmx)
+            CALL OUTDAT(2,0,'TRC',trc)
+            CALL OUTARR(2,0,'rlv',rdensity, SL)
+
             do i=1, sl
 				Rootobs = ' '
 				write(xx,'(I2)') I
@@ -876,7 +905,6 @@
             IF (INQOBS (FILEIT,'WAGT')) THEN
                     CALL OUTDAT (2, 0, 'WAGT_OBS',GETOBS(FILEIT,'WAGT'))
             END IF
-
 			  DO I=1, SL
 				 rootobs = ' '
 				 write(xx,'(I2)') I
@@ -918,7 +946,7 @@
 !-----------If LAI is negative: set at 0 and abort simulation
             IF (LAI.LT.-0.01) THEN
                WRITE (*,*) 'Negative LAI=> simulation stopped'
-               CALL OUTCOM('Negative LAI => simulad:\simulation\strasa\rainfedtion stopped')
+               CALL OUTCOM('Negative LAI => simulation stopped')
 !               IF (LAI.LT.0.) LAI = 0.
                TERMNL = .TRUE.
             END IF
@@ -934,12 +962,10 @@
                END IF
 !-----------End if only in main field
             END IF
- 
 !===================================================================*
 !     INTEGRATION SECTION                                           *
 !===================================================================*
       ELSE IF (ITASK.EQ.3) THEN
-
 !=======SKIP WHOLE STATE UPDATE BEFORE EMERGENCE
          IF (CROPSTA .GE. 1) THEN
 
@@ -987,6 +1013,7 @@
 				 ENDIF
 			 ENDIF
 !---------END SECTION, TAOLI, 17 JUNE 2009
+
 !-----------AVOIDING NEGATIVE WRR, @@TRI, NOV 16 2011
             IF (WRR.LT.0.) THEN
                 WRR = 0.

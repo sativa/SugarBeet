@@ -1303,4 +1303,11 @@ SUBROUTINE OUTDAT (ITASK, IUNIT, RN, R)
 
   END SUBROUTINE OUTDAT
 
+!      SUBROUTINE OUTARR (ITASK, IUNIT, RN, R, N)
+!      IMPLICIT NONE
+!      INTEGER, intent(in) :: ITASK, IUNIT, N
+!      CHARACTER*(*), intent(in)      :: RN
+!      REAL, intent(in),dimension(10) :: R
+!      end subroutine
+
 end Module Module_OUTDAT

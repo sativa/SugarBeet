@@ -388,19 +388,20 @@
 
 !        Output writing
          IF (OUTPUT) THEN
+           CALL OUTDAT(2,0,'nacr',nacr)
          !  CALL OUTDAT (2, 0, 'NDEML', NDEML)
          !  CALL OUTDAT (2, 0, 'NDEMC', NDEMC)
-            CALL OUTDAT (2, 0, 'NSLLV', NSLLV)
-            CALL OUTDAT (2, 0, 'RNSTRS', RNSTRS)
-            CALL OUTDAT (2, 0, 'NUPP', NUPP)
+           CALL OUTDAT (2, 0, 'NSLLV', NSLLV)
+           CALL OUTDAT (2, 0, 'RNSTRS', RNSTRS)
+           CALL OUTDAT (2, 0, 'NUPP', NUPP)
            CALL OUTDAT (2, 0, 'ANCR', ANCR)
-            CALL OUTDAT (2, 0, 'ANLV', ANLV)
-          CALL OUTDAT (2, 0, 'ANLD', ANLD)
-          CALL OUTDAT (2, 0, 'ANST', ANST)
+           CALL OUTDAT (2, 0, 'ANLV', ANLV)
+           CALL OUTDAT (2, 0, 'ANLD', ANLD)
+           CALL OUTDAT (2, 0, 'ANST', ANST)
            CALL OUTDAT (2, 0, 'ANSO', ANSO)
            CALL OUTDAT (2, 0, 'NMAXL', NMAXL)
          !  CALL OUTDAT (2, 0, 'NMINL', NMINL)
-         !  CALL OUTDAT (2, 0, 'FNLV', FNLV)
+           CALL OUTDAT (2, 0, 'FNLV', FNLV)
            CALL OUTDAT (2, 0, 'SNH4', SNH4X(1))
            CALL OUTDAT (2, 0, 'SNO3', SNO3X(1))
          END IF

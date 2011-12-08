@@ -8,7 +8,7 @@
       SUBROUTINE ORYZA_Interface (CONTROL, ISWITCH,               &    !Input
           EOP, FLOODWAT, HARVFRAC, NH4, NO3, SOILPROP,            &    !Input
           SomLitC, SomLitE,                                       &    !Input
-          ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             &    !Input
+          ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND, OR_OUTPUT,  &    !Input
           CANHT, HARVRES, KTRANS, KSEVAP, MDATE, NSTRES, PORMIN,  &    !Output
           RLV, RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)         !Output
 
@@ -16,7 +16,7 @@
       USE FloodModule
       USE ModuleData
       USE Public_Module		!VARIABLES
-	  USE RootGrowth
+      USE RootGrowth
       USE Interface_IpSoil
 
       IMPLICIT NONE
@@ -259,9 +259,10 @@
 
 !       Cumulative senesced N to surface and soil
         SNN0C = 0.0  ; SNN1C = 0.0
-        pv%PResC(L,1) = 0.0
-        PV%PResN(L,1) = 0.0
-
+        DO L=1, NLAYR
+         pv%PResC(L,1) = 0.0
+         PV%PResN(L,1) = 0.0
+        enddo
 !----------------------------------------------------------------
 !       ORYZA initialization section - moved up to initialization section
         !initialize OBSSYS routine
@@ -300,7 +301,7 @@
                 IIRRI, IRRCOD, IRMTAB, RIRRIT, IRRI, WL0MIN, KPAMIN, SLMIN, WLODAY, ISTAGET, TMCTB, &
                 LAPE, DVSI, WLVGI, WSTI, WRTI, WSOI, ZRTI)
 
-        OR_OUTPUT = .FALSE.;TERMNL = .FALSE.
+        TERMNL = .FALSE.
         IF ((ISWNIT == 'Y').OR.(ISWWAT == 'Y')) THEN
             PV%PROOT_NUTRIENT = .TRUE.
             CALL SOILFILEEDIT(FILEI2, NLAYR, TKL, SANDX, CLAYX, BD, SOC, SON, SNH4X, SNO3X, SUREA, PLOWPAN)

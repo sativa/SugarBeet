@@ -133,6 +133,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     ORYZA Rice model
       REAL, DIMENSION(0:NL) :: SomLitC
       REAL, DIMENSION(0:NL,NELEM) :: SomLitE
+      LOGICAL, PARAMETER :: OR_OUTPUT = .FALSE.
 
 !-----------------------------------------------------------------------
 !     Constructed variables are defined in ModuleDefs.
@@ -406,7 +407,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
         CALL ORYZA_Interface (CONTROL, ISWITCH,                  !Input
      &   EOP, FLOODWAT, HARVFRAC, NH4, NO3, SOILPROP,            !Input
      &   SomLitC, SomLitE,                                       !Input
-     &   ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND,             !Input
+     &   ST, SW, TRWUP, UPPM, WEATHER, YRPLT, YREND, OR_OUTPUT,  !Input
      &   CANHT, HARVRES, KTRANS, KSEVAP, MDATE, NSTRES, PORMIN,  !Output
      &   RLV, RWUMX, SENESCE, STGDOY, UNH4, UNO3, UH2O, XLAI)    !Output
 

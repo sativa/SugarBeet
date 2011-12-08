@@ -361,6 +361,7 @@ END MODULE WSTRESS_MODULE
       IF (OUTPUT) THEN
          IF (CROPSTA .GE.1) THEN
             CALL OUTDAT (2, 0, 'TRW' , TRW)
+            CALL OUTARR (2, 0, 'TRWL' , TRWL, NL)
          END IF
       END IF
   elseif(ITASK.eq.4) then
