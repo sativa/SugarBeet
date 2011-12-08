@@ -1,6 +1,6 @@
 *EXP. DATA (T): IRMA9203RI IRRI wet season IR72
 
-@TRNO   DATE  LAID  LWAD  LDAD  SWAD  PWAD  CWAD  LN%D
+@TRNO   DATE  LAID  LWAD  LDAD  SWAD  EWAD  CWAD  LN%D
      1 92183    0.     0     0     0     0     0   2.9
      1 92195 0.016     6     0     5     0    11   2.9
      1 92217 0.324   119     0    87     0   206   4.4
@@ -28,7 +28,7 @@
      3 92276 3.072  1646   959  3182  3858  9645   1.9
      3 92289 1.815  1057  1729  3318  5142 11246   1.5
 
-!TRNO   DATE  LAID  LWAD  LDAD  SWAD  PWAD  CWAD  LN%D
+!TRNO   DATE  LAID  LWAD  LDAD  SWAD  EWAD  CWAD  LN%D
      4 92183    0.     0     0     0     0     0   2.9
      4 92195 0.016     6     0     5     0    11   2.9
      4 92217 0.535   207     0   168     0   375   4.7

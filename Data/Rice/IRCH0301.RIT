@@ -1,6 +1,6 @@
 *EXP. DATA (T): IRCH0301RI China
 
-@TRNO   DATE  LAID  LWAD  LDAD  SWAD  PWAD  CWAD
+@TRNO   DATE  LAID  LWAD  LDAD  SWAD  EWAD  CWAD
      1 03141     0     0     0     0     0     0
      1 03183  1.83   646    11   646     0  1303
      1 03209  5.02  2503   151  2302    49  5005

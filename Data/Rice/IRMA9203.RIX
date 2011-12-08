@@ -79,7 +79,7 @@ IRRI farm, Field K3, 14.22N, 121.25E, 23m       *
  1   -99   -99   -99   -99   -99   -99     1 UNKNOWN
 @I IDATE  IROP IRVAL
  1 92183 IR009    20      !bund height (mm)
- 1 92183 IR010    15      !puddled
+ 1 92183 IR010            !puddled
 !1 92183 IR008   0.5      !percolation rate (mm/d)
 !1 92183 IR006    20      !initial flood depth (mm)
  1 92183 IR011     5      !constant flood depth (mm)
@@ -144,7 +144,7 @@ IRRI farm, Field K3, 14.22N, 121.25E, 23m       *
 @N MANAGEMENT  PLANT IRRIG FERTI RESID HARVS
  1 MA              R     F     R     R     M
 @N OUTPUTS     FNAME OVVEW SUMRY FROPT GROUT CAOUT WAOUT NIOUT MIOUT DIOUT VBOSE CHOUT OPOUT
- 1 OU              N     Y     Y     1     Y     N     Y     Y     N     N     D     N     Y
+ 1 OU              N     Y     Y     1     Y     Y     Y     Y     N     N     D     N     Y
 
 @  AUTOMATIC MANAGEMENT
 @N PLANTING    PFRST PLAST PH2OL PH2OU PH2OD PSTMX PSTMN
@@ -167,7 +167,7 @@ IRRI farm, Field K3, 14.22N, 121.25E, 23m       *
 @N MANAGEMENT  PLANT IRRIG FERTI RESID HARVS
  2 MA              R     R     R     R     M
 @N OUTPUTS     FNAME OVVEW SUMRY FROPT GROUT CAOUT WAOUT NIOUT MIOUT DIOUT VBOSE CHOUT OPOUT
- 2 OU              N     Y     Y     1     Y     N     Y     Y     N     N     D     N     Y
+ 2 OU              N     Y     Y     1     Y     Y     Y     Y     N     N     D     N     Y
 
 @  AUTOMATIC MANAGEMENT
 @N PLANTING    PFRST PLAST PH2OL PH2OU PH2OD PSTMX PSTMN
@@ -190,7 +190,7 @@ IRRI farm, Field K3, 14.22N, 121.25E, 23m       *
 @N MANAGEMENT  PLANT IRRIG FERTI RESID HARVS
  3 MA              R     R     R     R     M
 @N OUTPUTS     FNAME OVVEW SUMRY FROPT GROUT CAOUT WAOUT NIOUT MIOUT DIOUT VBOSE CHOUT OPOUT
- 3 OU              N     Y     Y     1     Y     N     Y     Y     N     N     D     N     Y
+ 3 OU              N     Y     Y     1     Y     Y     Y     Y     N     N     D     N     Y
 
 @  AUTOMATIC MANAGEMENT
 @N PLANTING    PFRST PLAST PH2OL PH2OU PH2OD PSTMX PSTMN
