@@ -61,13 +61,14 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 4
         INTEGER :: Model = 1
-        INTEGER :: Build = 22
+        INTEGER :: Build = 23
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-GFF v4.4 '
 
 !     Version history:  
-!       4.5.1.22 chp 11/17/2011 Version for GFF
+!       4.5.1.23 chp 12/09/2011 Remove Ksat estimation in SOILDYN - Version for GFF
+!       4.5.1.22 chp 11/17/2011 Version for India workshop
 !       4.5.1.21 chp 11/05/2011 Go back to older drainage routines - no Ritchie mod
 !       4.5.1.20 chp 11/05/2011 Denitrification rate for flooded field = 50% NO3/d
 !       4.5.1.19 chp 10/31/2011 Deployment version for testing
