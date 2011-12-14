@@ -1,15 +1,15 @@
 *EXP. DATA (I): IRCH0301RI China
 
-@I    LAPE    DVSI   WLVGI    WSTI    WRTI    WSOI    ZRTI
+@I    LAII    GSTI    LWAI    WSTI    RWAI    PWAI    RDPI
  1 0.00005     0.0     0.0     0.0     0.0     0.0  0.0001
  2 0.00005     0.0     0.0     0.0     0.0     0.0  0.0001
  3 0.00005     0.0     0.0     0.0     0.0     0.0  0.0001
 
 
-! LAPE = Initial leaf area per plant (m2 plant-1) (according to wheat)
-! DVSI = Initial development stage (kg/ha)
-! WLVGI= Initial leaf weight (kg/ha)
-! WSTI = Initial stem weight (kg/ha)
-! WRTI = Initial root weight (kg/ha)
-! WSOI = Initial weight storage organs (kg/ha)
-! ZRTI = Initial root depth (m)
+! LAII = Initial leaf area per plant (m2 plant-1) (LAPE)
+! GSTI = Initial development stage (kg/ha) (DVSI)
+! LWAI = Initial leaf weight (kg/ha)(WLVGI)
+! SWAI = Initial stem weight (kg/ha) (WSTI)
+! RWAI = Initial root weight (kg/ha) (WRTI)
+! PWAI = Initial weight storage organs (kg/ha) (WSOI)
+! RDPI = Initial root depth (m) (ZRTI)
