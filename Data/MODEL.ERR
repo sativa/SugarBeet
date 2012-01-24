@@ -1,110 +1,110 @@
-!AUTOM   42
+!AUTOM   42    
 AUTOMATIC MANAGEMENT section missing.
 
-*CHEMI   42
-CHEMICALS section missing.
+*CHEMI   42    
+CHEMICALS section missing.          
 
-*CULTI   42
-CULTIVARS section missing.
+*CULTI   42    
+CULTIVARS section missing.         
+ 
+*ENVIR   42    
+ENVIRONMENT section missing.        
 
-*ENVIR   42
-ENVIRONMENT section missing.
+*EXP.D   42    
+EXP.DETAILS section missing.   
+    
+*FERTI   42    
+FERTILIZERS section missing.        
 
-*EXP.D   42
-EXP.DETAILS section missing.
+*FIELD   42    
+FIELDS section missing.             
 
-*FERTI   42
-FERTILIZERS section missing.
+*HARVE   42    
+HARVEST section missing.            
 
-*FIELD   42
-FIELDS section missing.
+*INITI   42    
+INITIAL CONDITIONS section missing.   
+      
+*IRRIG   42    
+IRRIGATION section missing. 
 
-*HARVE   42
-HARVEST section missing.
+*PLANT   42    
+PLANTING DETAILS section missing.   
 
-*INITI   42
-INITIAL CONDITIONS section missing.
-
-*IRRIG   42
-IRRIGATION section missing.
-
-*PLANT   42
-PLANTING DETAILS section missing.
-
-*RESID   42
-RESIDUES section missing.
+*RESID   42    
+RESIDUES section missing.           
 
 *SIMUL   42
 SIMULATION CONTROL section missing.
 
-*SOIL    42
-SOIL section missing.
+*SOIL    42    
+SOIL section missing.               
 
-*TILLA   42
-FILEX 'TILLAGE' section missing.
+*TILLA   42    
+FILEX 'TILLAGE' section missing.            
 
-*TREAT   42
-TREATMENTS section missing.
+*TREAT   42    
+TREATMENTS section missing.   
+      
+!*CANO   42  
+CANOPY HEIGHT AND WIDTH GROWTH PARAMETERS section missing.    
 
-!*CANO   42
-CANOPY HEIGHT AND WIDTH GROWTH PARAMETERS section missing.
+!*CARB   42  
+CARBON AND NITROGEN MINING PARAMETERS section missing.                
 
-!*CARB   42
-CARBON AND NITROGEN MINING PARAMETERS section missing.
+*EMERG   42  
+EMERGENCE INITIAL CONDITIONS section missing.    
 
-*EMERG   42
-EMERGENCE INITIAL CONDITIONS section missing.
+!*EVAP   42  
+EVAPOTRANSPIRATION section missing.                           
 
-!*EVAP   42
-EVAPOTRANSPIRATION section missing.
+!*LEAF   42  
+LEAF PARAMETERS section missing.                      
 
-!*LEAF   42
-LEAF PARAMETERS section missing.
+!*NITR   42  
+NITROGEN FIXATION PARAMETERS section missing.                
 
-!*NITR   42
-NITROGEN FIXATION PARAMETERS section missing.
+*NITRO   42  
+NITROGEN PARAMETERS section missing.             
 
-*NITRO   42
-NITROGEN PARAMETERS section missing.
+!*PHEN   42  
+PHENOLOGY PARAMETERS section missing.                         
 
-!*PHEN   42
-PHENOLOGY PARAMETERS section missing.
+!*PHOT   42  
+PHOTOSYNTHESIS PARAMETERS section missing.                  
 
-!*PHOT   42
-PHOTOSYNTHESIS PARAMETERS section missing.
+*PHOTO   42  
+PHOTOSYNTHESIS PARAMETERS section missing.       
 
-*PHOTO   42
-PHOTOSYNTHESIS PARAMETERS section missing.
+!*PLAN   42  
+PLANT COMPOSITION VALUES section missing.                         
 
-!*PLAN   42
-PLANT COMPOSITION VALUES section missing.
+!*POD    42  
+POD LOSS PARAMETERS section missing.                          
 
-!*POD    42
-POD LOSS PARAMETERS section missing.
+!*ROOT   42  
+ROOT PARAMETERS section missing.                              
 
-!*ROOT   42
-ROOT PARAMETERS section missing.
+!*SEED   42  
+SEED parameters section missing.                            
 
-!*SEED   42
-SEED parameters section missing.
+*SEED    42  
+SEED GROWTH PARAMETERS section missing.          
 
-*SEED    42
-SEED GROWTH PARAMETERS section missing.
-
-*STRES   42
-STRESS RESPONSE section missing.
+*STRES   42  
+STRESS RESPONSE section missing.                 
 
 *TEMPE   42
-TEMPERATURE EFFECTS section missing.
+TEMPERATURE EFFECTS section missing.             
 
-!*VEGE   42
-VEGETATIVE PARTITIONING PARAMETERS section missing.
+!*VEGE   42  
+VEGETATIVE PARTITIONING PARAMETERS section missing.          
 
 AUTFER    1
 Error in Fertilizer Sensitivity Analysis Selection.  Fix entry or batch file.
 
 AUTHAR   10
-Invalid harvest code specified.
+Invalid harvest code specified.  
 
 AUTIRR    1
 Error in Irrigation Sensitivity Analysis Selection.  Fix entry or batch file.
@@ -119,7 +119,7 @@ CSM       1
 Error in the format of the input file.  Please fix the file.
 
 CSM       2
-Input file does not exist.
+Input file does not exist.  
 
 CSM       3
 Error in DSSAT Configuration file. Please fix the file.
@@ -171,10 +171,10 @@ Chemical input level not found. Please correct input file.
 
 IPCHEM    3
 First chemical application date is defined prior to the start of simulation.
-
+   
 IPCHEM   11
 No input amount defined for chemical applications.
-
+   
 IPCUL     2
 Cultivar input level not found. Please correct input file.
 
@@ -233,7 +233,7 @@ IPEXP    29
 File not found.  Please check file name or create file.
 
 IPEXP    80
-No valid soil file found.
+No valid soil file found. 
 
 IPEXP    64
 Treatment not found.  Please check inputs or input file.
@@ -593,7 +593,7 @@ IPWTH     9
 Unlikely value of WINDSP in weather data file.
 
 IPWTH    10
-Missing required data in weather data file.
+Missing required data in weather data file.  
 
 IPWTH    29
 File not found.  Please check file name or create file.
@@ -629,7 +629,7 @@ MODELN    6
 Your configuration file is incompatible with the current version. Please update the file.
 
 MODELN    7
-Crop code incompatible with model specified.
+Crop code incompatible with model specified.  
 
 PATH      1
 Code not found in profile file DSSATPRO.FLE.  Please correct file.
@@ -638,7 +638,7 @@ PATH      2
 DSSATPRO file not found.
 
 PPLANT   10
-Review P parameters in species file.
+Review P parameters in species file.  
 
 READA     1
 Error in experimental data (averages) file.  Could not find @TRNO header line.
@@ -710,7 +710,7 @@ SOMINI    1
 File does not exist. Please copy file from the appropriate directory.
 
 SPINIT    1
-Insufficient soil P data provided.  Program will stop.
+Insufficient soil P data provided.  Program will stop. 
 
 SWCROP    1
 Error in Crop entry.  Fix entry or batch file.
@@ -746,7 +746,7 @@ WGENIN    4
 Missing WGEN data in climate file. Program will stop.
 
 SIMMIN    4
-Missing MONTHLY AVERAGES data in climate file. Program will stop.
+Missing MONTHLY AVERAGES data in climate file. Program will stop.    
 
 MISC     -1
 End-of-file encountered in input file.
@@ -797,7 +797,7 @@ GENERI   59
 Syntax error.
 
 GENERI   64
-Invalid format in file.
+Invalid format in file. 
 
 GENERI   75
 Array size exceeded.
