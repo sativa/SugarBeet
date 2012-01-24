@@ -61,12 +61,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 24
+        INTEGER :: Build = 25
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
+!       4.5.1.25 chp 01/24/2012 CHP / TL Add ORYZA rice model
 !       4.5.1.24 chp 12/15/2011 JIL remove P4 from potato 
 !       4.5.1.23 chp 12/09/2011 Remove ksat estimation in SOILDYN - GFF version
 !       4.5.1.22 chp 11/17/2011 Version for India workshop
@@ -212,11 +213,20 @@ C             CHP Added TRTNUM to CONTROL variable.
         CHARACTER (len=12) TEXTURE(NL)
         CHARACTER (len=17) SOILLAYERTYPE(NL)
         CHARACTER*50 SLDESC, TAXON
+        
+        LOGICAL COARSE(NL)
+        
         REAL ALES, DMOD, SLPF         !DMOD was SLNF
         REAL CMSALB, MSALB, SWALB, SALB      !Albedo 
         REAL, DIMENSION(NL) :: BD, CEC, CLAY, DLAYR, DS, DUL
         REAL, DIMENSION(NL) :: KG2PPM, LL, OC, PH, PHKCL
         REAL, DIMENSION(NL) :: SAND, SAT, SILT, STONES, SWCN
+        
+      !Residual water content
+        REAL, DIMENSION(NL) :: WCR
+
+      !vanGenuchten parameters
+        REAL, DIMENSION(NL) :: alphaVG, mVG, nVG
 
       !Second tier soils data:
         REAL, DIMENSION(NL) :: CACO3, EXTP, ORGP, PTERMA, PTERMB
@@ -405,7 +415,8 @@ C             CHP Added TRTNUM to CONTROL variable.
         LOGICAL BUNDED        
         INTEGER NBUND         
         REAL ABUND            
-        REAL PUDPERC, PERC    
+        REAL PUDPERC, PERC
+        REAL PLOWPAN    !Depth of puddling (m) (ORYZA)
 
         !From Paddy_Mgmt
         INTEGER YRDRY, YRWET  

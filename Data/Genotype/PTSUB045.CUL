@@ -9,7 +9,6 @@
 !             ECO file (currently not used).
 ! G2          Leaf area expansion rate after tuber initiation (cm2/m2 d)
 ! G3          Potential tuber growth rate (g/m2 d)
-! G4          Currently not used in the model
 ! PD          Index that supresses tuber growth during the period
 !             that immediately follows tuber induction
 ! P2          Tuber initiation sensitivity to long photoperiods

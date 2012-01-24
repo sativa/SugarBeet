@@ -1,0 +1,49 @@
+strun=1
+*;endrun=5
+*----------------------------------------------------------------------*
+*                          CONTROL.DAT                                 *
+* Run control file for ORYZA2000 model (version 4.0)                   *
+* Date: November 2000                                                  *
+*                                                                      *
+* The input files (except FILEIR) may may used in reruns.              *
+*----------------------------------------------------------------------*
+ 
+   FILEON = 'RES.DAT'                               ! Output file
+   FILEOL = 'MODEL.LOG'                             ! Log file
+   FILEIR = 'c:\oryza\data\ir72ds92\RERUNS.DAT'     ! Rerun file
+   FILEIT = 'c:\oryza\data\ir72ds92\IR72DS2.T92'    ! Eperimental data
+   FILEI1 = 'c:\oryza\data\ir72ds92\IR72.D92'       ! Crop data
+
+*----------------------------------------------------------------------*
+* Set output/print options                                             *
+*----------------------------------------------------------------------*
+PRDEL  = 1.    ! Output time step (day)
+IPFORM = 5     ! Code for output table format:
+               ! 4 = spaces between columns
+               ! 5 = TAB's between columns (spreadsheet output)
+               ! 6 = two column output
+
+COPINF = 'N'   ! Switch variable whether to copy the input files
+               ! to the output file ('N' = do not copy,
+               ! 'Y' = copy)
+
+DELTMP = 'N'   ! Switch variable what should be done with the
+               ! temporary output file ('N' = do not delete,
+               ! 'Y' = delete)
+
+IFLAG  = 1100  ! Indicates where weather error and warnings
+               ! go (1101 means errors and warnings to log
+               ! file, errors to screen, see FSE manual)
+
+*PRSEL =   'WAGT','WLVG','WSO','WAGT_OBS','WLVG_OBS','WSO_OBS'
+    ! The string array PRSEL contains the output variables for which
+    ! formatted tables have to be made. One or more times there is a
+    ! series of variable names terminated by the word <TABLE>.
+    ! The translator writes the variables in each PRINT statement to
+    ! a separate table
+
+*IOBSD = 1991,182            
+               ! List of observation data for which output is
+               ! required. The list should consist of pairs
+               ! <year>,<day> combination
+
