@@ -243,7 +243,7 @@
 !           done above, because this is relatively stable. Then give
 !           soil SOM1E a fraction of the remaining SSOME in accordance
 !           with its carbon share, and limit its C/E ratio to the
-!           maximum and minimum ratios specified in SOMFX045.SDA. The
+!           maximum and minimum ratios specified in SOMFX???.SDA. The
 !           rest of the E goes to SOM2E.
           
 !           Total SOM N available based on TotOrgN:
@@ -817,7 +817,7 @@
 
         INQUIRE(FILE = SOMPF, EXIST = FEXIST)
         IF (FEXIST) THEN
-!         Open the SOMFR045.SDA file to read the fractions of SOM3C
+!         Open the SOMFR???.SDA file to read the fractions of SOM3C
           CALL GETLUN('FINPUT', LUN)
           LNUM = 0
           OPEN (UNIT = LUN, FILE = SOMPF, STATUS = 'OLD', IOSTAT=ERRNUM)
