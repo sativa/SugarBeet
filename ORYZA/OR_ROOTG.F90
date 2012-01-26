@@ -142,6 +142,11 @@ SUBROUTINE ROOTG(CROPSTA,DVS, DELT, LROOTC, LROOTN, PLANTMOD)
 !Borg, H., and D.W. Grimes. 1986. Depth development of roots with time: an empirical description.
 !Trans.ASAE. 29:194-197.
 
+!---DIRECT SEED - CHP added 1/26/2012
+    IF(CROPSTA.EQ.1) THEN
+      OLDNO = 0
+    ENDIF
+
 !----FOR TRANSPLANT DAY, ROOT REDISTRIBUTING AGAIN
 	 IF(CROPSTA.EQ.3) THEN
 		 DO I=1, SL

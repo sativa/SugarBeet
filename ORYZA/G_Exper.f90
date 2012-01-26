@@ -241,7 +241,7 @@ OPEN(UNIT=LUN, FILE = OUTPUTFILE, STATUS='REPLACE',ACTION='WRITE')
         END DO
         J=J1 
         IF(J.LT.2) THEN
-            PRINT *, "Data is not the multiple of 3. please chekc it"
+!            PRINT *, "Data is not the multiple of 3. please check it"
         elseif (j.eq.2) then
             WRITE(LUN, 1000) "ISTAGET", ISTAGET(1), ISTAGET(2), ISTAGET(3)  
             WRITE(LUN, 1100) ISTAGET(4), ISTAGET(5), ISTAGET(6)
