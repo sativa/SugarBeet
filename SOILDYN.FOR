@@ -140,7 +140,7 @@ C-----------------------------------------------------------------------
 
 !     Izaurralde method
       INTEGER, PARAMETER :: METHOD = 2
-      REAL, DIMENSION(NL) :: BD_mineral
+      REAL, DIMENSION(NL) :: BD_calc, BD_calc_init  !, BD_mineral
 
       REAL CN_BASE
       REAL, DIMENSION(NL) :: DS_BASE, SC_BASE    !, RG_BASE
@@ -930,12 +930,19 @@ C  tillage and rainfall kinetic energy
 !         (See conversion explanation below)
           SOM_PCT(L) = SomLit(L) * 1.E-5 / (BD(L) * DLAYR(L)) *100.
 
-!         For Izaurralde method, calculate initial mineral BD
-          BD_Mineral(L) =(100.-SOM_PCT(L))/(100./BD(L)-SOM_PCT(L)/0.224)
+!         This can result in negative BD_mineral for very high organic
+!           matter content.  
+!!         For Izaurralde method, calculate initial mineral BD
+!          BD_Mineral(L) =(100.-SOM_PCT(L))/(100./BD(L)-SOM_PCT(L)/0.224)
+
+!         Instead, calculate a BD_calc. Use the 
+!           change to BD_calc to scale BD, which was input by user.
+          BD_calc(L) = 100./(SOM_PCT(L)/0.224 + (100.-SOM_PCT(L))/2.65)
         ENDDO
 
 !       Set initial array
         SOM_PCT_init = SOM_PCT
+        BD_calc_init = BD_calc
 
 !       Print initial values
         Print_today = .TRUE.
@@ -993,50 +1000,24 @@ C  tillage and rainfall kinetic energy
 !           New base layer thickness and depths
             DLAYR_SOM(L) = DLAYR_INIT(L) + dDLAYR_SOM
 
-!            SELECT CASE(METHOD)
-!            CASE (1)
-!!           --------------------------------------------------------------
-!!           METHOD #1
-!!           --------------------------------------------------------------
-!!           -------------------------------------------------------
-!!           Changes to bulk density
-!            dBD_SOM = BD_INIT(L) * (DLAYR_INIT(L) / DLAYR_SOM(L) - 1.) +
-!     &               dSOM * 1.E-5 / DLAYR_SOM(L)
-!
-!            BD_SOM(L) = BD_INIT(L) + dBD_SOM
-!
-!!           -------------------------------------------------------
-!!           METHOD #2
-!!           -------------------------------------------------------
-!            CASE (2)
-!!           Based on Izaurralde, 2006
-
+!           -------------------------------------------------------
 !           Change SOM from kg/ha to percent
             SOM_PCT(L) = SomLit(L) * 1.E-5/(BD_SOM(L)*DLAYR_SOM(L))*100.
 
-            BD_SOM(L) = 100.0 / 
-     &        (SOM_PCT(L) / 0.224 + (100. - SOM_PCT(L)) / BD_mineral(L))
+!            BD_SOM(L) = 100.0 / 
+!     &        (SOM_PCT(L) / 0.224 + (100. - SOM_PCT(L)) / BD_mineral(L))
+!
+            BD_calc(L) = 100.0 / 
+     &        (SOM_PCT(L) / 0.224 + (100. - SOM_PCT(L)) / 2.65)
+
+            BD_SOM(L) = BD_calc(L) / BD_calc_init(L) * BD_init(L)
+
+!           Limit BD to realistic values
+            BD_SOM(L) = MIN(BD_SOM(L), 1.8)
+            BD_SOM(L) = MAX(BD_SOM(L), 0.25)
 
             dBD_SOM = BD_SOM(L) - BD_INIT(L)
 
-!!           -------------------------------------------------------
-!!           METHOD #3
-!!           -------------------------------------------------------
-!            CASE (3)
-!!           Iterative Based on Izaurralde, 2006
-!
-!            DO I = 1, 5
-!!             Change SOM from kg/ha to percent
-!              SOM_PCT(L) = SomLit(L)*1.E-5/(BD_SOM(L)*DLAYR_SOM(L))*100.
-!
-!              BD_SOM(L) = 100.0 / 
-!     &          (SOM_PCT(L) / 0.224 + (100. - SOM_PCT(L))/BD_mineral(L))
-!
-!              dBD_SOM = BD_SOM(L) - BD_INIT(L)
-!            ENDDO
-!
-!            END SELECT
-!!           -------------------------------------------------------
 !           -------------------------------------------------------
 !           Update DS
             IF (L == 1) THEN
