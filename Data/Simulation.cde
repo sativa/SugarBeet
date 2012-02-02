@@ -96,19 +96,19 @@ D        Days after planting                                                  IB
 *Simulation/Management/Fertilization
 @CDE     DESCRIPTION                                                          SO
 !A       Automatic when required                                              IB
-N        Not fertilized                                                       IB 
+N        Not fertilized                                                       IB
 !F        Fixed amount automatic                                              IB
-R        On reported dates                                                    IB 
-D        Days after planting                                                  IB 
+R        On reported dates                                                    IB
+D        Days after planting                                                  IB
 
 *Simulation/Management/Residue
 @CDE     DESCRIPTION                                                          SO
 !A        Automatic when required                                             IB
-N        No applications                                                      IB 
+N        No applications                                                      IB
 !F        Fixed amount automatic                                              IB
-R        On reported dates                                                    IB 
-D        Days after planting                                                  IB 
-        
+R        On reported dates                                                    IB
+D        Days after planting                                                  IB
+
 *Simulation/Management/Harvest
 @CDE     DESCRIPTION                                                          SO
 A        Automatic                                                            IB
