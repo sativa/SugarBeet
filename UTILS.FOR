@@ -562,11 +562,12 @@ C========================================================================
 
       CASE ('FILEW');   LUN = 11  !*.wth - weather files
       CASE ('FILEP');   LUN = 12  !*.pst - pest files
-      CASE ('FILESS');  LUN = 13  !RESCH045.SDA (was SOILN980.SOL)
+      CASE ('FILESS');  LUN = 13  !RESCH???.SDA (was SOILN980.SOL)
       CASE ('BATCH');   LUN = 14  !Batch run input file
       CASE ('ERRORX');  LUN = 15  !Model.err
-      CASE ('FILETL');  LUN = 16  !TILOP045.SDA
+      CASE ('FILETL');  LUN = 16  !TILOP???.SDA
       CASE ('PFILE');   LUN = 17  !Phosphorus input files
+!                       LUN = 20 - RESERVE FOR ORYZA
       CASE ('FILEIO');  LUN = 21  !temp. input file; dssat45.inp
       CASE ('DTACDE');  LUN = 22  !DATA.CDE
       CASE ('FILETMP'); LUN = 23  !Tony Hunt temp file

@@ -1,7 +1,7 @@
 !***********************************************************************
 !  SOMFIX_C, subroutine for CENTURY-based SOM/residue module of DSSAT.
 !
-!  Purpose: This subroutine reads the input data from the SOMFX045.SDA
+!  Purpose: This subroutine reads the input data from the SOMFX???.SDA
 !           file.
 !
 !  Revision history:
