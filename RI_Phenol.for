@@ -220,8 +220,8 @@ C=======================================================================
          TOPT = 33.0/G4                     ! MAKE 33 -- CROP SPECIFIC
          IF (TMAX .LT. TBASE) THEN
            DTT = 0.0
-         ELSEIF (TMIN .GT. TOPT) THEN
-           DTT = TOPT - TBASE
+         !ELSEIF (TMIN .GT. TOPT) THEN
+         !  DTT = TOPT - TBASE
            !
            ! Now, modify TMIN, TMAX based on soil conditions
            !
@@ -233,13 +233,17 @@ C=======================================================================
            IF (TDSOIL .LT. TBASE) THEN
              DTT = 0.0
            ELSE
-             IF (TNSOIL .LT. TBASE) THEN
-                 TNSOIL = TBASE
+             IF (TNSOIL .GT. TOPT) THEN
+                 TNSOIL = TOPT - (TNSOIL - TOPT)
              ENDIF
-             IF (TDSOIL .GT. TOPT) THEN
+             IF (TDSOIL .LE. 40.0) THEN
+               IF (TDSOIL .GT. TOPT) THEN
                  TDSOIL = TOPT
+               ENDIF
+             ELSE
+                 TDSOIL = TOPT - (TDSOIL - 40.0)  
+                 ! Delay in development (Snyder & Gesch) 
              ENDIF
-
              TMSOIL = TDSOIL*(DAYL/24.)+TNSOIL*((24.-DAYL)/24.)
              IF (TMSOIL .LT. TBASE) THEN
                  DTT = (TBASE+TDSOIL)/2.0 - TBASE
@@ -261,14 +265,13 @@ C=======================================================================
                 TH = TBASE
              ENDIF
              IF (TH .GT. TOPT) THEN
-                TH = TOPT
+                TH = TOPT - (TH - TOPT)  !Development delay
              ENDIF
              DTT = DTT + (TH-TBASE)/24.0
            END DO
          ELSE
            DTT = (TMAX+TMIN)/2.0 - TBASE
          ENDIF
-
          ! DROUGHT STRESS
          IF (PHEFAC .LT. 1.0) THEN
                 TMPDTT = DTT
@@ -345,9 +348,11 @@ C=======================================================================
            !   is moist  - US Feb04
                 RETURN
              ENDIF
-             IF (TEMPM .LT. 15.0 .OR. TEMPM .GT. 42.0) THEN
-                RETURN
-             ENDIF
+      !   
+      !     Temperature extremes removed
+      !        IF (TEMPM .LT. 15.0 .OR. TEMPM .GT. 42.0) THEN
+      !           RETURN
+      !        ENDIF
              IF (SUMDTT .LT. P8) THEN
                 RETURN
              ENDIF
