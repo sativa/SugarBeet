@@ -61,12 +61,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 26
+        INTEGER :: Build = 27
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
+!       4.5.1.27 chp 03/13/2012 Synch with v4.6.0.13
 !       4.5.1.26 chp 02/01/2012 Revise BD, DUL, LL estimates due to OC changes
 !       4.5.1.25 chp 01/24/2012 CHP / TL Add ORYZA rice model
 !       4.5.1.24 chp 12/15/2011 JIL remove P4 from potato 
