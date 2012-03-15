@@ -67,7 +67,7 @@ IRRI
 
 *PLANTING DETAILS
 @P PDATE EDATE  PPOP  PPOE  PLME  PLDS  PLRS  PLRD  PLDP  PLWT  PAGE  PENV  PLPH  SPRL                        PLNAME
- 1 92016   -99  999.   125     T     H    20     0     5     0    12    25     5     0                        UNKNOWN
+ 1 03141 03149  360.   360     S     H    27     0     5     0    12    25     5     0                        UNKNOWN
 
 *IRRIGATION AND WATER MANAGEMENT
 @I  EFIR  IDEP  ITHR  IEPT  IOFF  IAME  IAMT IRNAME
@@ -90,7 +90,7 @@ IRRI
 
 *SIMULATION CONTROLS
 @N GENERAL     NYERS NREPS START SDATE RSEED SNAME.................... SMODEL
- 1 GE              1     1     S 92004  2150 ORYZA W & N simulated     RIORZ045
+ 1 GE              1     1     S 03136  2150 ORYZA W & N simulated     RIORZ045
 @N OPTIONS     WATER NITRO SYMBI PHOSP POTAS DISES  CHEM  TILL   CO2
  1 OP              Y     Y     N     N     N     N     N     N     M
 @N METHODS     WTHER INCON LIGHT EVAPO INFIL PHOTO HYDRO NSWIT MESOM MESEV MESOL
