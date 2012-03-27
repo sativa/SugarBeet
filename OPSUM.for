@@ -526,6 +526,7 @@ C-------------------------------------------------------------------
         ELSEIF (HWUM < 10.)   THEN; FMT = '(1X,F7.3)'
         ELSEIF (HWUM < 100.)  THEN; FMT = '(1X,F7.2)'
         ELSEIF (HWUM < 1000.) THEN; FMT = '(1X,F7.1)'
+        ELSE                      ; FMT = '(1X,F7.0)'
         ENDIF
         WRITE (NOUTDS,FMT,ADVANCE="NO") HWUM
 
