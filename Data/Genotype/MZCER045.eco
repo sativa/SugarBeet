@@ -23,9 +23,7 @@ IB0001 GENERIC MIDWEST1    8.0 34.0  34.0  12.5   4.0   6.0   170.  4.2   0.85
 IB0002 GENERIC MIDWEST2    8.0 34.0  34.0  12.5   4.0   6.0   170.  4.5   0.85
 IB0003 GENERIC MIDWEST3    8.0 34.0  34.0  12.5   4.0   6.0   170.  2.0   0.85
 IB0004 +5% RUE MIDWEST1    8.0 34.0  34.0  12.5   4.0   6.0   170.  4.4   0.85
+IB0004 +5% RUE MIDWEST1    8.0 34.0  34.0  12.5   4.0   6.0   170.  4.4   0.85
 DFAULT DEFAULT             8.0 34.0  34.0  12.5   4.0   6.0   170.  4.2   0.85
 
-!chp added this for test of optional temperature input for cold damage
-IB0099 Cold Hardy (test)   8.0 34.0  34.0  12.5   4.0   6.0   170.  4.2   0.85   0.5    20
-IB0098 Cold Sens. (test)   8.0 34.0  34.0  12.5   4.0   6.0   170.  4.2   0.85   10.     5
 
