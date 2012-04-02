@@ -61,12 +61,13 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
         INTEGER :: Model = 1
-        INTEGER :: Build = 29
+        INTEGER :: Build = 30
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-Stub     '
 
 !     Version history:  
+!       4.5.1.30 chp 04/02/2012 CSCER, CSCRP changes. Potato ecotype file.
 !       4.5.1.29 chp 03/26/2012 New version number after merge and before additional changes.
 !       4.5.1.28 chp 03/13/2012 Synch with v4.6.0.13
 !       4.5.1.27 chp 02/20/2012 Ceres-rice temperature response changes, PHINT in cul file
