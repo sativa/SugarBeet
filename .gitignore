@@ -1,5 +1,6 @@
 #ignore thumbnails created by windows
 Thumbs.db
+*.onetoc?
 #Ignore files build by Visual Studio
 *.obj
 *.exe
