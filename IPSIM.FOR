@@ -437,7 +437,7 @@ C    Select Model Name and Path -- order of priority:
 !         over all other values if valid. (Done in Default_SimControls)
 !     CRMODEL is read from FILEX.  Use this if no control file.  
 !     MODELARG is from command line argument list. Third priority. 
-!     Last, use value from DSSATPRO.v45.
+!     Last, use value from DSSATPRO.v??.
 C-----------------------------------------------------------------------
 !     First check model name from FILEX
       TRY_MODEL = CRMODEL
