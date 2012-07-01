@@ -68,6 +68,7 @@ C             CHP Added TRTNUM to CONTROL variable.
 
 !     Version history:  
 !       4.5.2.1  chp 07/01/2012 
+!                chp Fix problem with high organic matter effects on BD
 !                chp Format changes for rice cultivar input
 !                US  rice temperature responses, PHINT moved from SPE to CUL
 !                GH  ecotype file for potato, RUE1 & RUE2
