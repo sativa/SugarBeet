@@ -60,13 +60,15 @@ C             CHP Added TRTNUM to CONTROL variable.
       TYPE VersionType
         INTEGER :: Major = 4
         INTEGER :: Minor = 5
-        INTEGER :: Model = 1
-        INTEGER :: Build = 23
+        INTEGER :: Model = 2
+        INTEGER :: Build = 0
       END TYPE VersionType
       TYPE (VersionType) Version
-      CHARACTER(len=10) :: VBranch = '-Stub     '
+      CHARACTER(len=10) :: VBranch = '-Release  '
 
 !     Version history:  
+!       4.5.2.0  chp 07/01/2012 Update for release
+!                               Potato ecotype file added
 !       4.5.1.23 chp 12/09/2011 Remove ksat estimation in SOILDYN - GFF version
 !       4.5.1.22 chp 11/17/2011 Version for India workshop
 !       4.5.1.21 chp 11/05/2011 Go back to older drainage routines - no Ritchie mod
