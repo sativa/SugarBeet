@@ -204,7 +204,7 @@
 !       Find and Read Residue Lignin and Root C:N ratio and
 !       integration depth.
 !       ----------------------------------------------------------------
-!       Get residue characteristics from RESCH045.SDA. 
+!       Get residue characteristics from RESCH???.SDA. 
         CALL IPSOIL (CONTROL, CROP=PREV_CROP,             !Input
      &    AM=AM, DSNC=DSNC, PRLIG = PRLIG, RCN = RCN,     !Output
      &    RCP = RCP, SCN = SCN, SCP = SCP, WATFAC=WATFAC, !Output
@@ -239,11 +239,11 @@
             ICREN_file = ICREN
             IF (ICREN > 1.E-6) THEN
 !             Check C:N ratios, limit to within 20% of expected values 
-!             from RESCH045.SDA
+!             from RESCH???.SDA
               ICREN = MAX(ICREN, 0.8 * SCN)
               ICREN = MIN(ICREN, 1.2 * SCN)
             ELSE
-!             If no value specified, use ratio from RESCH045.SDA
+!             If no value specified, use ratio from RESCH???.SDA
               ICREN = SCN
             ENDIF
             IF (ABS(ICREN - ICREN_file) > 1.E-3 .AND. MULTI < 2) THEN
@@ -271,11 +271,11 @@
             ICREP_file = ICREP
             IF (ICREP > 1.E-6) THEN
 !             Check C:P ratios, limit to within 20% of expected values 
-!             from RESCH045.SDA
+!             from RESCH???.SDA
               ICREP = MAX(ICREP, 0.8 * SCP)
               ICREP = MIN(ICREP, 1.2 * SCP)
             ELSE
-!             If no value specified, use ratio from RESCH045.SDA
+!             If no value specified, use ratio from RESCH???.SDA
               ICREP = SCP
             ENDIF
             IF (ABS(ICREP - ICREP_file) > 1.E-3 .AND. MULTI < 2) THEN
