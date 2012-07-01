@@ -2,9 +2,9 @@
 !  CO2VAL, Subroutine, CHPorter
 !  Determines daily CO2 value
 !     Switch ICO2:
-!     ICO2 = 'D'  use static value (CO2BAS from CO2045.WDA)
+!     ICO2 = 'D'  use static value (CO2BAS from CO2???.WDA)
 !     ICO2 = 'W'  use values read from weather file
-!     ICO2 = 'M'  use monthly values read from CO2045.WDA file 
+!     ICO2 = 'M'  use monthly values read from CO2???.WDA file 
 !                  (default)
 
 !-----------------------------------------------------------------------
@@ -71,7 +71,7 @@
       ENDIF
 
 !-----------------------------------------------------------------------
-!     Read from CO2045.WDA file
+!     Read from CO2???.WDA file
       FILECO2 = 'CO2045.WDA'
       LNUM = 0
       INQUIRE (FILE = FILECO2, EXIST = FEXIST)

@@ -233,7 +233,8 @@ C-GH &            P1,P2O,P2R,P5,G1,G2,PHINT,P3,P4
 !     Substor Potato **
       CASE ('PTSUB')
         READ (C360, 800,IOSTAT=ERRNUM) VARTY,VRNAME,ECONO,
-     &            G2,G3,G4,PD,P2,TC
+     &            G2,G3,PD,P2,TC
+!     &            G2,G3,G4,PD,P2,TC
 
 !     Ceres Rice **
       CASE ('RICER')
@@ -319,7 +320,7 @@ C-----------------------------------------------------------------------
   510 FORMAT (6X,'ERROR! Variety Selection must be an INTEGER value',/)
 
 ! 800 FORMAT (A6,1X,A16,1X,A6,15(F6.0))
-  800 FORMAT (A6,1X,A16,7X,A6,18F6.0)                     !11/8/07
+  800 FORMAT (A6,1X,A16,7X,A6,19F6.0)                     !11/8/07
 
 ! 820 FORMAT (A6,1X,A16,1X,A6,1X,A)
 ! 820 FORMAT (A6,1X,A16,7X,A6,18F6.0,A)                       !11/8/07

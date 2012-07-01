@@ -97,9 +97,9 @@ C=======================================================================
          ISWTIL  = 'Y'
 
          IF (INDEX('FNQS',RNMODE) > 0) THEN
-           ICO2 = 'D' !Default CO2 from CO2045.WDA file
+           ICO2 = 'D' !Default CO2 from CO2???.WDA file
          ELSE
-           ICO2 = 'M' !Measured CO2 from CO2045.WDA file
+           ICO2 = 'M' !Measured CO2 from CO2???.WDA file
          ENDIF
 
          MEWTH   = 'M'
@@ -772,7 +772,6 @@ C-----------------------------------------------------------------------
       DATA FIRST /.TRUE./
 
       PARAMETER (ERRKEY = 'SIMCTR')
-!      PARAMETER (DSSATS = 'DSCSM045.CTR')
 
 !-----------------------------------------------------------------------
       IF (FIRST) THEN
