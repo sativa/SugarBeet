@@ -1,7 +1,7 @@
 C=======================================================================
 C  PATH, Subroutine
 C
-C  Program to read the PATH from DSSATPRO.V45
+C  Program to read the PATH from DSSATPRO file
 C-----------------------------------------------------------------------
 C  Revision history
 C
@@ -99,9 +99,9 @@ C-SUN       PATHC  = LINE(8:80)
 C=======================================================================
 C  PATHD, Subroutine
 C
-C  Program to read the PATH of DSSATPRO.V45
+C  Program to read the PATH of DSSATPRO file
 C    Assume in current directory first.
-C    If not in current directory, DSSATPRO.V45 is stored with the EXEs
+C    If not in current directory, DSSATPRO file is stored with the EXEs
 C-----------------------------------------------------------------------
 C  Revision history
 C
@@ -138,8 +138,6 @@ C=======================================================================
 
       LOGICAL      FEXIST
 
-!     PARAMETER (DSSATF = 'DSSATPRO.V45')
-
 !     DSSATP(1:12) = DSSATF
       DSSATP(1:12) = DSSATPRO
       INQUIRE (FILE = DSSATP,EXIST = FEXIST)
@@ -154,7 +152,6 @@ C=======================================================================
 
       INQUIRE (FILE = DSSATP,EXIST = FEXIST)
       IF (.NOT. FEXIST) THEN
-   !     DSSATP = "C:\DSSAT45\" // DSSATF
         DSSATP = STDPATH // TRIM(DSSATPRO)
       ENDIF
 
@@ -169,7 +166,7 @@ C=======================================================================
 C=======================================================================
 C  MODEL_NAME, Subroutine
 C
-C  Program to read the Module name from DSSATPRO.V45
+C  Program to read the Module name from DSSATPRO file
 C-----------------------------------------------------------------------
 C  Revision history
 C
@@ -191,6 +188,7 @@ C=======================================================================
 
       SUBROUTINE MODEL_NAME (CROP, DSSATP, CRMODEL, MODEL)
 
+      USE ModuleDefs
       IMPLICIT     NONE
 
       CHARACTER*1   UPCASE
@@ -221,15 +219,8 @@ C=======================================================================
         DO I = 6,8
           J = ICHAR(CRMODEL(I:I))
           IF (J < 48 .OR. J > 57) THEN
-!!           Fill in model version from executable name
-!            CALL GETARG(0,PATHX,IPX)
-!            IF (PATHX(IPX-3:IPX-3) .EQ. '.') THEN
-!              MODELVER = PATHX((IPX-6):(IPX-4))
-!            ELSE
-!              MODELVER = PATHX((IPX-2):IPX)
-!            ENDIF
-!            CRMODEL(6:8) = MODELVER
-             CRMODEL(6:8) = '045'
+!            Fill in model version from executable name
+             CRMODEL(6:8) = ModelVerTxt
             EXIT
           ENDIF
         ENDDO
@@ -280,9 +271,6 @@ C=======================================================================
 !     Check MODEL for validity.
       ERRNUM = ValidModel(CROP, MODEL)
       IF (ERRNUM /= 0) CALL ERROR (ERRKEY,ERRNUM,DSSATP,0)
-
-!     CHP 5/13/2008
-!     MODEL(6:8) = '045'
 
       RETURN
       END SUBROUTINE MODEL_NAME
@@ -342,7 +330,7 @@ C=======================================================================
      &    (INDEX(MODEL(1:5),'MZIXM') .EQ. 0) .AND.    !Maize IXIM
      &    (INDEX(MODEL(1:5),'MLCER') .EQ. 0) .AND.    !Millet
      &    (INDEX(MODEL(1:5),'PTSUB') .EQ. 0) .AND.    !Potato
-     &    (INDEX(MODEL(1:5),'RICER') .EQ. 0) .AND.    !Rice
+     &    (INDEX(MODEL(1:5),'RICER') .EQ. 0) .AND.    !CERES-Rice
      &    (INDEX(MODEL(1:5),'SGCER') .EQ. 0) .AND.    !Sorghum
      &    (INDEX(MODEL(1:5),'SCCSP') .EQ. 0) .AND.    !Sugarcane CASUPRO
      &    (INDEX(MODEL(1:5),'SCCAN') .EQ. 0) .AND.    !Sugarcane CaneGro

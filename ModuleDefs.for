@@ -67,10 +67,12 @@ C             CHP Added TRTNUM to CONTROL variable.
       CHARACTER(len=10) :: VBranch = '-Release  '
 
 !     Version history:  
-!       4.5.2.0  chp 07/01/2012 Update for release
+!       4.5.2.0  chp 07/01/2012 
+!                chp Format changes for rice cultivar input
+!                US  rice temperature responses, PHINT moved from SPE to CUL
 !                GH  ecotype file for potato, RUE1 & RUE2
-!                chp 01/03/2012 JIL fix potato read stmts 
-!                chp 12/15/2011 JIL remove P4 from potato 
+!                chp  JIL fix potato read stmts 
+!                chp  JIL remove P4 from potato 
 !       4.5.1.23 chp 12/09/2011 Remove ksat estimation in SOILDYN - GFF version
 !       4.5.1.22 chp 11/17/2011 Version for India workshop
 !       4.5.1.21 chp 11/05/2011 Go back to older drainage routines - no Ritchie mod
