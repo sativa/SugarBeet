@@ -1,5 +1,5 @@
 *Codes for Field and Simulated Data
-! DSSAT Version 4.5; 05/05/2011
+! DSSAT Version 4.5; 07/01/2012
 
 ! Codes currently used for both simulated and field data are listed in sections
 ! relating to specific model output files. Codes currently only used for field
@@ -88,6 +88,7 @@ L#SX   Leaf number #   Leaf number per stem, maximum                            
 LAIH   LAI harvest     Leaf area index, at harvest                              .
 LAIX   LAI maximum     Leaf area index, maximum                                 .
 LIWAM  Lint Yld kg/ha  Lint Yield at maturity (kg [dm]/ha)                      .
+LWAH   Leaf wt kg/ha   Leaf weight at harvest (kg/ha)                           .
 MDAP   Maturity day    Physiological maturity day (dap)                         .
 MDAT   Maturity date   Physiological maturity date (YrDoy)                      .
 NDCH   Days to harvest Number of days from planting to harvest (d)              .
