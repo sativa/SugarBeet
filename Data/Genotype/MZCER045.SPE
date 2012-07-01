@@ -3,7 +3,8 @@
 *TEMPERATURE EFFECTS
 !       TBASE TOP1  TOP2  TMAX
   PRFTC  6.2  16.5  33.0  44.0     !Effect of temperature on photosynthesis
-  RGFIL  5.5  16.0  39.0  48.5     !Effect of temperature on relative grain filling rate
+!  RGFIL  5.5  16.0  29.0  37.0     !Effect of temperature on relative grain filling rate (tolerant)
+  RGFIL  5.5  16.0  27.0  35.0     !Effect of temperature on relative grain filling rate (suscept)
 
 *PHOTOSYNTHESIS PARAMETERS 
   PARSR   0.50      !Conversion of solar radiation to PAR 
@@ -46,12 +47,10 @@
   PLAE    1.0       !Leaf area at emergence, cm2/plant
 
 *NITROGEN PARAMETERS
-  TMNC    0.00450   !Plant top minimum N concentration g N/g dry matter
+  TMNC    0.00450   !Plant top minimum N concentration g N/g dry matter (orig)
   TANCE   0.0440    !Nitrogen content in above ground biomass at emergence, g N/g dry matter
   RCNP    0.01060   !Root critical nitrogen concentration, g N/g root dry weight
   RANCE   0.0220    !Root N content at emergence   g N/g root
-!04/19/2007 US/CHP added optional coefficients, CTCNP1 and CTCNP2
-! TCNP = EXP (CTCNP1 - CTCNP2 * XSTAGE) / 100.0 in MZ_GROSUB
   CTCNP1  1.52      !Maximum value for critical tissue N concentration (in developing seed embryo)
   CTCNP2  0.160     !Coefficent for change in conc. with growth stage
 
@@ -88,8 +87,6 @@
 
     0.80    1.00  SRATPHOTO, SRATPART
     0.10          FracPMobil - max fraction of P which can be mobilized from leaf & stem / day
-! 4/10/2008 CHP removed FracPUptake, which was not being used. Added new variable ROOTRAD.
-!   0.80          FracPUptake - Maximum fraction of available P which can be taken up / day
   0.0028          ROOTRAD - radius of cylinder around roots from which soil P can be extracted (m)
 
 !At emergence and end of leaf growth: 
