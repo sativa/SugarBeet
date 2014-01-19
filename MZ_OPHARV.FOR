@@ -204,12 +204,17 @@ C  02/09/2007 GH  Add path for FileA
       PlantStres % ACTIVE = .FALSE.
       PlantStres % NSTAGES = 5
 
+!     Stages 0 through 5 are for Overview.OUT file. 
       PlantStres % StageName(0) = 'Planting to Harvest    '
       PlantStres % StageName(1) = 'Emergence-End Juvenile '
       PlantStres % StageName(2) = 'End Juvenil-Floral Init'
       PlantStres % StageName(3) = 'Floral Init-End Lf Grow'
       PlantStres % StageName(4) = 'End Lf Grth-Beg Grn Fil'
       PlantStres % StageName(5) = 'Grain Filling Phase    '
+
+!     Stages -1 and -2 are for AbioticStress.OUT file, a seasonal summary file. 
+      PlantStres % StageName(-2) = 'Planting to Anthesis   '
+      PlantStres % StageName(-1) = 'Anthesis to Maturity   '
 
       CALL OPVIEW(CONTROL, 
      &    PBIOMS, ACOUNT, DESCRIP, IDETO, XN, 
@@ -235,22 +240,37 @@ C  02/09/2007 GH  Add path for FileA
       PlantStres % P_phot = PSTRES1
       PlantStres % ACTIVE = .FALSE.
 
+!     PlantStres stages 1-5 align with ISTAGE
       IF (ISTAGE > 0 .AND. ISTAGE < 6) THEN
         PlantStres % ACTIVE(ISTAGE) = .TRUE.
       ENDIF
 
+!     PlantStres stage 0 = planting to harvest
       YRDOY = CONTROL % YRDOY
       IF (YRDOY >= YRPLT) THEN
-!        IF (MDATE < 0 .OR.
-!     &     (MDATE > 0 .AND. YRDOY < MDATE)) THEN
+        SELECT CASE(ISTAGE)
+        CASE (7:9, 1:3)
+          PlantStres % ACTIVE(0)  = .TRUE.  !Planting to harvest
+          PlantStres % ACTIVE(-1) = .FALSE. !Anthesis to maturity
+          PlantStres % ACTIVE(-2) = .TRUE.  !Planting to anthesis
+
+        CASE (4:6)
+          PlantStres % ACTIVE(0)  = .TRUE.  !Planting to harvest
+          PlantStres % ACTIVE(-1) = .TRUE.  !Anthesis to maturity
+          PlantStres % ACTIVE(-2) = .FALSE. !Planting to anthesis
+
+        CASE (16,20)
+          PlantStres % ACTIVE(0)  = .TRUE.  !Planting to harvest
+          PlantStres % ACTIVE(-1) = .FALSE. !Anthesis to maturity
+          PlantStres % ACTIVE(-2) = .FALSE. !Planting to anthesis
+        END SELECT
+
+!        IF (STGDOY(16) < 0 .OR.
+!     &     (STGDOY(16) > 0 .AND. YRDOY < STGDOY(16))) THEN
 !          PlantStres % ACTIVE(0) = .TRUE.
+!        ELSE
+!          PlantStres % Active(0) = .FALSE.
 !        ENDIF
-        IF (STGDOY(16) < 0 .OR.
-     &     (STGDOY(16) > 0 .AND. YRDOY < STGDOY(16))) THEN
-          PlantStres % ACTIVE(0) = .TRUE.
-        ELSE
-          PlantStres % Active(0) = .FALSE.
-        ENDIF
       ENDIF
 
 !     Send data to Overview.out data on days where stages occur
