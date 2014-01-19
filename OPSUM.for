@@ -24,6 +24,7 @@ C                   HIAM, EPCM, ESCM
 !  02/10/2010 CHP Added EDAT.
 !  02/23/2011 CHP Added seasonal average environmental values
 !  03/27/2012 CHP Fixed format bug for very large HWUM
+!  01/19/2014 CHP Added 14 abiotic stress variables to Summary.OUT
 C=======================================================================
 
       MODULE SumModule
@@ -59,6 +60,11 @@ C=======================================================================
 !       Added 02/23/2011 Seasonal average environmental data
         INTEGER NDCH
         REAL TMINA, TMAXA, SRADA, DAYLA, CO2A, PRCP, ETCP
+
+!       Abiotic stresses
+        INTEGER S2AND, S2AT0, S2AT2, S2AT30, S2AT32, S2AT34, S2AnumRN
+        INTEGER A2MND, A2MT30, A2MT32, A2MT34, A2MnumRN
+        REAL S2ATME, S2ACRN, A2MTME, A2MCRN
 
       End Type SummaryType
 
@@ -128,6 +134,10 @@ C-----------------------------------------------------------------------
 !     Added 02/23/2011 Seasonal average environmental data
       INTEGER NDCH
       REAL TMINA, TMAXA, SRADA, DAYLA, CO2A, PRCP, ETCP
+!     Added 1/19/2014 Abiotic stress variables
+      INTEGER S2AND, S2AT0, S2AT2, S2AT30, S2AT32, S2AT34, S2AnumRN
+      INTEGER A2MND, A2MT30, A2MT32, A2MT34, A2MnumRN
+      REAL S2ATME, S2ACRN, A2MTME, A2MCRN
 
       LOGICAL FEXIST
 
@@ -339,6 +349,25 @@ C     Initialize OPSUM variables.
       SUMDAT % PRCP   = -99.9 !Cumulative rainfall (mm) 
       SUMDAT % ETCP   = -99.9 !Cumulative ET (mm) 
 
+!     Abiotic stress variables
+      SUMDAT % S2AND    = -99
+      SUMDAT % S2AT0    = -99
+      SUMDAT % S2AT2    = -99
+      SUMDAT % S2AT30   = -99
+      SUMDAT % S2AT32   = -99
+      SUMDAT % S2AT34   = -99
+      SUMDAT % S2ATME   = -99.
+      SUMDAT % S2ACRN   = -99.
+      SUMDAT % S2AnumRN = -99
+
+      SUMDAT % A2MND    = -99
+      SUMDAT % A2MT30   = -99
+      SUMDAT % A2MT32   = -99
+      SUMDAT % A2MT34   = -99
+      SUMDAT % A2MTME   = -99.
+      SUMDAT % A2MCRN   = -99.
+      SUMDAT % A2MnumRN = -99
+
       CALL GET('WEATHER','WSTA',WSTAT)
 !      IF (LenString(WSTAT) < 1) THEN
 !        WSTAT = WSTATION
@@ -426,6 +455,26 @@ C     Initialize OPSUM variables.
       PRCP   = SUMDAT % PRCP  !Cumulative rainfall (mm) 
       ETCP   = SUMDAT % ETCP  !Cumulative ET (mm) 
 
+!     Abiotic stress variables
+      S2AND    = SUMDAT % S2AND    !# days, sowing to anthesis
+      S2AT0    = SUMDAT % S2AT0    !# days TMIN < 0oC, sowing to anth
+      S2AT2    = SUMDAT % S2AT2    !# days TMIN < 2oC, sowing to anth
+      S2AT30   = SUMDAT % S2AT30   !# days TMAX > 30oC, sowing to anth
+      S2AT32   = SUMDAT % S2AT32   !# days TMAX > 32oC, sowing to anth
+      S2AT34   = SUMDAT % S2AT34   !# days TMAX > 34oC, sowing to anth
+      S2ATME   = SUMDAT % S2ATME   !Avg TMEAN, sowing to anthesis
+      S2ACRN   = SUMDAT % S2ACRN   !Cum RAIN, sowing to anthesis
+      S2AnumRN = SUMDAT % S2AnumRN !# days RAIN > 0, sowing to anthesis
+
+      A2MND    = SUMDAT % A2MND    !# days, anth to mat
+      A2MT30   = SUMDAT % A2MT30   !# days TMAX > 30oC, anth to mat
+      A2MT32   = SUMDAT % A2MT32   !# days TMAX > 32oC, anth to mat
+      A2MT34   = SUMDAT % A2MT34   !# days TMAX > 34oC, anth to mat
+      A2MTME   = SUMDAT % A2MTME   !Avg TMEAN, anthesis to maturity
+      A2MCRN   = SUMDAT % A2MCRN   !Cum RAIN, anthesis to maturity
+      A2MnumRN = SUMDAT % A2MnumRN !# days RAIN > 0, anth to maturity
+
+      CALL GET('WEATHER','WSTA',WSTAT)
 C-------------------------------------------------------------------
 C
 C  Simulation Summary File
@@ -467,37 +516,41 @@ C-------------------------------------------------------------------
           ENDIF
 
           WRITE(NOUTDS,310)
-  310     FORMAT(/,
-     &    '!IDENTIFIERS......................... ',
-     &    'TREATMENT................ SITE INFORMATION............ ',
-     &    'DATES..........................................  ',
-     &    'DRY WEIGHT, YIELD AND YIELD COMPONENTS....................',
-     &    '..................  ',
-     &    'WATER...............................................  ',
-     &    'NITROGEN......................................  ',
-     &    'PHOSPHORUS............  ',
-     &    'POTASSIUM.............  ',
-     &    'ORGANIC MATTER..................................    ',
-     &    'WATER PRODUCTIVITY..................................',
-     &    '................    ',
-     &    'NITROGEN PRODUCTIVITY...........  ',
-     &    'SEASONAL ENVIRONMENTAL DATA (Planting to harvest)')
+  310 FORMAT(/,
+     &'!IDENTIFIERS......................... ',
+     &'TREATMENT................ SITE INFORMATION............ ',
+     &'DATES..........................................  ',
+     &'DRY WEIGHT, YIELD AND YIELD COMPONENTS....................',
+     &'..................  ',
+     &'WATER...............................................  ',
+     &'NITROGEN......................................  ',
+     &'PHOSPHORUS............  ',
+     &'POTASSIUM.............  ',
+     &'ORGANIC MATTER..................................    ',
+     &'WATER PRODUCTIVITY..................................',
+     &'................    ',
+     &'NITROGEN PRODUCTIVITY...........  ',
+     &'SEASONAL ENVIRONMENTAL DATA (Planting to harvest)  ',
+     &'ABIOTIC STRESSES - Sowing to anthesis........................  ',
+     &'ABIOTIC STRESSES - Anthesis to maturity........')
 
           WRITE (NOUTDS,400)
-  400     FORMAT ('@   RUNNO   TRNO R# O# C# CR MODEL    ',
-     &    'TNAM                      FNAM     WSTA.... SOIL_ID...  ',
-     &    '  SDAT    PDAT    EDAT    ADAT    MDAT    HDAT',
-     &    '  DWAP    CWAM    HWAM    HWAH    BWAH  PWAM',
-     &    '    HWUM  H#AM    H#UM  HIAM  LAIX',
-     &    '  IR#M  IRCM  PRCM  ETCM  EPCM  ESCM  ROCM  DRCM  SWXM',
-     &    '  NI#M  NICM  NFXM  NUCM  NLCM  NIAM  CNAM  GNAM',
-     &    '  PI#M  PICM  PUPC  SPAM',
-     &    '  KI#M  KICM  KUPC  SKAM',
-     &    '  RECM  ONTAM   ONAM  OPTAM   OPAM   OCTAM    OCAM',
-     &    '    DMPPM    DMPEM    DMPTM    DMPIM     YPPM     YPEM',
-     &    '     YPTM     YPIM',
-     &    '    DPNAM    DPNUM    YPNAM    YPNUM',
-     &    '  NDCH TMAXA TMINA SRADA DAYLA   CO2A   PRCP   ETCP')
+  400 FORMAT ('@   RUNNO   TRNO R# O# C# CR MODEL    ',
+     &'TNAM                      FNAM     WSTA.... SOIL_ID...  ',
+     &'  SDAT    PDAT    EDAT    ADAT    MDAT    HDAT',
+     &'  DWAP    CWAM    HWAM    HWAH    BWAH  PWAM',
+     &'    HWUM  H#AM    H#UM  HIAM  LAIX',
+     &'  IR#M  IRCM  PRCM  ETCM  EPCM  ESCM  ROCM  DRCM  SWXM',
+     &'  NI#M  NICM  NFXM  NUCM  NLCM  NIAM  CNAM  GNAM',
+     &'  PI#M  PICM  PUPC  SPAM',
+     &'  KI#M  KICM  KUPC  SKAM',
+     &'  RECM  ONTAM   ONAM  OPTAM   OPAM   OCTAM    OCAM',
+     &'    DMPPM    DMPEM    DMPTM    DMPIM     YPPM     YPEM',
+     &'     YPTM     YPIM',
+     &'    DPNAM    DPNUM    YPNAM    YPNUM',
+     &'  NDCH TMAXA TMINA SRADA DAYLA   CO2A   PRCP   ETCP',
+     &'  S2AND  S2AT0  S2AT2 S2AT30 S2AT32 S2AT34 S2ATME S2ACRN S2A#RN',
+     &'  A2MND A2MT30 A2MT32 A2MT34 A2MTME A2MCRN A2M#RN')
         ENDIF
 
         IF (BWAH < -1) BWAH = -9.9
@@ -547,7 +600,11 @@ C-------------------------------------------------------------------
 !         Water productivity
      &    DMPPM, DMPEM, DMPTM, DMPIM, YPPM, YPEM, YPTM, YPIM,
      &    DPNAM, DPNUM, YPNAM, YPNUM,
-     &    NDCH, TMAXA, TMINA, SRADA, DAYLA, CO2A, PRCP, ETCP
+     &    NDCH, TMAXA, TMINA, SRADA, DAYLA, CO2A, PRCP, ETCP,
+!         Abiotic stresses - sowing to anthesis
+     &    S2AND,S2AT0,S2AT2,S2AT30,S2AT32,S2AT34,S2ATME,S2ACRN,S2AnumRN,
+!         Abiotic stresses - anthesis to maturity
+     &    A2MND, A2MT30, A2MT32, A2MT34, A2MTME, A2MCRN, A2MnumRN
 
   503   FORMAT(     
                                               
@@ -572,7 +629,13 @@ C-------------------------------------------------------------------
      &  4F9.1,
 
 !       NDCH, TMINA, TMAXA, SRADA, DAYLA, CO2A, PRCP, ETCP
-     &  I6,3F6.1,F6.2,3F7.1)
+     &  I6,3F6.1,F6.2,3F7.1,
+
+!       S2AT0, S2AT2, S2AT30, S2AT32, S2AT34, S2ATME, S2ACRN, S2A#RN,
+     &  6I7, 2F7.1, I7,
+
+!       A2MT30, A2MT32, A2MT34, A2MTME, A2MCRN, A2M#RN
+     &  4I7, 2F7.1, I7)
 
         CLOSE (NOUTDS)
       ENDIF
@@ -831,6 +894,27 @@ C=======================================================================
         CASE ('CO2A'); SUMDAT % CO2A   = VALUE(I)
         CASE ('PRCP'); SUMDAT % PRCP   = VALUE(I)
         CASE ('ETCP'); SUMDAT % ETCP   = VALUE(I)
+
+!       Abiotic stress variables
+        CASE ('S2AND')
+          SUMDAT % S2AND    = NINT(VALUE(I))
+        CASE ('S2AT0');  SUMDAT % S2AT0    = NINT(VALUE(I))
+        CASE ('S2AT2');  SUMDAT % S2AT2    = NINT(VALUE(I))
+        CASE ('S2AT30'); SUMDAT % S2AT30   = NINT(VALUE(I))
+        CASE ('S2AT32'); SUMDAT % S2AT32   = NINT(VALUE(I))
+        CASE ('S2AT34'); SUMDAT % S2AT34   = NINT(VALUE(I))
+        CASE ('S2ATME'); SUMDAT % S2ATME   = VALUE(I)
+        CASE ('S2ACRN'); SUMDAT % S2ACRN   = VALUE(I)
+        CASE ('S2A#RN'); SUMDAT % S2AnumRN = NINT(VALUE(I))
+
+        CASE ('A2MND')
+          SUMDAT % A2MND    = NINT(VALUE(I))
+        CASE ('A2MT30'); SUMDAT % A2MT30   = NINT(VALUE(I))
+        CASE ('A2MT32'); SUMDAT % A2MT32   = NINT(VALUE(I))
+        CASE ('A2MT34'); SUMDAT % A2MT34   = NINT(VALUE(I))
+        CASE ('A2MTME'); SUMDAT % A2MTME   = VALUE(I)
+        CASE ('A2MCRN'); SUMDAT % A2MCRN   = VALUE(I)
+        CASE ('A2M#RN'); SUMDAT % A2MnumRN = NINT(VALUE(I))
 
         END SELECT
       ENDDO

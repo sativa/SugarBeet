@@ -38,9 +38,10 @@
       CHARACTER*1 IDETO_SAVE, RNMODE
       CHARACTER*2 CROP
       CHARACTER*12, PARAMETER :: OUTO = 'OVERVIEW.OUT'
-      CHARACTER*23 STAG(0:MaxStag)
+      CHARACTER*23 STAG(-2:MaxStag)
 
       INTEGER DYNAMIC, I, NOUTDO, NYRS, STTOT, NDCH
+      INTEGER S2AND, A2MND
 
       REAL TMAX, TMIN, RAIN, DAYL, SRAD, CO2
       REAL N_phot, N_grow, W_phot, W_grow
@@ -52,17 +53,17 @@
       REAL CumNit
       REAL TMINA, TMAXA, SRADA, DAYLA, CO2A, PRCP, ETCP
 
-      REAL, DIMENSION(0:MaxStag) :: N_photR, CETR, CEPR, DAYLR, N_growR
-      REAL, DIMENSION(0:MaxStag) :: P_growR, P_photR, RAINR, RADR, CO2R
-      REAL, DIMENSION(0:MaxStag) :: W_photR, TMAXR, TMINR, W_growR
-      REAL, DIMENSION(0:MaxStag) :: TMEANR, CEOR
-      INTEGER, DIMENSION(0:MaxStag) :: NNR, Ndays_RAIN
-      INTEGER, DIMENSION(0:MaxStag) :: Ndays_LT0, Ndays_LT2, Ndays_GT30
-      INTEGER, DIMENSION(0:MaxStag) :: Ndays_GT32, Ndays_GT34
+      REAL, DIMENSION(-2:MaxStag) :: N_photR, CETR, CEPR, DAYLR, N_growR
+      REAL, DIMENSION(-2:MaxStag) :: P_growR, P_photR, RAINR, RADR, CO2R
+      REAL, DIMENSION(-2:MaxStag) :: W_photR, TMAXR, TMINR, W_growR
+      REAL, DIMENSION(-2:MaxStag) :: TMEANR, CEOR
+      INTEGER, DIMENSION(-2:MaxStag) :: NNR, Ndays_RAIN
+      INTEGER, DIMENSION(-2:MaxStag) :: Ndays_LT0, Ndays_LT2, Ndays_GT30
+      INTEGER, DIMENSION(-2:MaxStag) :: Ndays_GT32, Ndays_GT34
 
 !     Arrays which contain data for printing in SUMMARY.OUT file
-      INTEGER, PARAMETER :: SUMNUM = 20
-      CHARACTER*5, DIMENSION(SUMNUM) :: LABEL
+      INTEGER, PARAMETER :: SUMNUM = 36
+      CHARACTER*6, DIMENSION(SUMNUM) :: LABEL
       REAL, DIMENSION(SUMNUM) :: VALUE
 
 !     Need switch settings for water productivity section
@@ -197,7 +198,7 @@
 
         CALL GET('MGMT', 'DEPIR', DEPIR)
 
-        DO I = 0, PlantStres % NSTAGES
+        DO I = -2, PlantStres % NSTAGES
           IF (PlantStres % ACTIVE(I)) THEN
             NNR(I) = NNR(I) + 1
 
@@ -227,13 +228,8 @@
             IF (TMAX > 30.) Ndays_GT30(I) = Ndays_GT30(I) + 1
             IF (TMAX > 32.) Ndays_GT32(I) = Ndays_GT32(I) + 1
             IF (TMAX > 34.) Ndays_GT34(I) = Ndays_GT34(I) + 1
-
           ENDIF
         ENDDO
-
-            !temp chp
-            write(3000,'(i7,6i5,6f6.1)') control.yrdoy, nnr, tmaxr
-
       ENDIF
 
 !***********************************************************************
@@ -266,7 +262,7 @@
         WRITE (*,500)
       ENDIF
 
-      DO I = 0, STTOT
+      DO I = -2, STTOT
         IF (NNR(I) > 0) THEN
           TMAXR(I) = TMAXR(I)/ NNR(I)
           TMINR(I) = TMINR(I)/ NNR(I)
@@ -284,7 +280,7 @@
           P_photR(I) = 1. - (P_photR(I) / NNR(I))
         ENDIF
 
-        IF (I == 0 .OR. NNR(I) == 0) CYCLE
+        IF (I < 1 .OR. NNR(I) == 0) CYCLE
 
         IF (IDETO_SAVE .EQ. 'Y' .AND. STTOT > 0 .AND.
      &      CONTROL % ErrCode == 0) THEN
@@ -383,6 +379,9 @@
             CO2A  = CO2R(0)
             PRCP  = RAINR(0)
             ETCP  = CETR(0)
+
+            S2AND = NNR(-2)
+            A2MND = NNR(-1)
           ENDIF
           
           CALL GET(ISWITCH)
@@ -494,6 +493,26 @@
       LABEL(18) = 'CO2A' ; VALUE(18) = CO2A
       LABEL(19) = 'PRCP' ; VALUE(19) = PRCP
       LABEL(20) = 'ETCP' ; VALUE(20) = ETCP
+
+!     Abiotic stress variables
+      LABEL(21) = 'S2AT0'  ; VALUE(21) = Ndays_LT0(-2)
+      LABEL(22) = 'S2AT2'  ; VALUE(22) = Ndays_LT2(-2)
+      LABEL(23) = 'S2AT30' ; VALUE(23) = Ndays_GT30(-2)
+      LABEL(24) = 'S2AT32' ; VALUE(24) = Ndays_GT32(-2)
+      LABEL(25) = 'S2AT34' ; VALUE(25) = Ndays_GT34(-2)
+      LABEL(26) = 'S2ATME' ; VALUE(26) = TMEANR(-2)
+      LABEL(27) = 'S2ACRN' ; VALUE(27) = RAINR(-2)
+      LABEL(28) = 'S2A#RN' ; VALUE(28) = Ndays_RAIN(-2)
+
+      LABEL(29) = 'A2MT30' ; VALUE(29) = Ndays_GT30(-1)
+      LABEL(30) = 'A2MT32' ; VALUE(30) = Ndays_GT32(-1)
+      LABEL(31) = 'A2MT34' ; VALUE(31) = Ndays_GT34(-1)
+      LABEL(32) = 'A2MTME' ; VALUE(32) = TMEANR(-1)
+      LABEL(33) = 'A2MCRN' ; VALUE(33) = RAINR(-1)
+      LABEL(34) = 'A2M#RN' ; VALUE(34) = Ndays_RAIN(-1)
+
+      LABEL(35) = 'S2AND'  ; VALUE(35) = S2AND
+      LABEL(36) = 'A2MND'  ; VALUE(36) = A2MND
 
 !     Send labels and values to OPSUM
       CALL SUMVALS (SUMNUM, LABEL, VALUE) 

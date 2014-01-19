@@ -362,10 +362,10 @@ C             CHP Added TRTNUM to CONTROL variable.
 !     Plant stresses for environmental stress summary
       Type PlStresType
         INTEGER NSTAGES   !# of stages (max 5)
-        CHARACTER(len=23) StageName(0:5)
+        CHARACTER(len=23) StageName(-2:5)
         REAL W_grow, W_phot, N_grow, N_phot
         REAL P_grow, P_phot
-        LOGICAL ACTIVE(0:5)
+        LOGICAL ACTIVE(-2:5)
       End Type PlStresType
 
 !======================================================================
