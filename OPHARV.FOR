@@ -19,7 +19,8 @@ C  08/12/2003 CHP Added I/O error checking and changed call to READA
 !  10/24/2005 CHP Added environmental & stress factors to Overview.OUT
 C  02/09/2007 GH  Add path for FileA
 !  08/28/2009 CHP added EDAT, EDAP 
-C=======================================================================
+!  01/20/2014 CHP added abiotic stress calcs for Overview & Summary
+!=======================================================================
 
       SUBROUTINE OPHARV(CONTROL, ISWITCH, 
      &    AGEFAC, CANHT, CANNAA, CANWAA, CROP,            !Input
@@ -245,6 +246,8 @@ C-----------------------------------------------------------------------
       END SELECT
 
       PlantStres % StageName(0) = 'Planting to Harvest    '
+      PlantStres % StageName(-2)= 'Planting to Anthesis   '
+      PlantStres % StageName(-1)= 'Anthesis to Maturity   '
 
       CALL OPVIEW(CONTROL, 
      &    BIOMAS, ACOUNT, DESCRIP, IDETO, VSTAGE, 
@@ -271,18 +274,27 @@ C-----------------------------------------------------------------------
       SELECT CASE (CROP)
       CASE ('BN','CH','CN','CO','CP','CT','FB','PE',
      &      'PN','PP','PR','SB','TM','VB','GB','LT')
+!       Planting to anthesis
+        IF (YRDOY > STGDOY(15) .AND. YRDOY <= STGDOY(5)) THEN
+          PlantStres % ACTIVE(-2) = .TRUE.
+        ENDIF
+!       Anthesis to maturity
+        IF (YRDOY > STGDOY(5) .AND. YRDOY <= STGDOY(10)) THEN
+          PlantStres % ACTIVE(-1) = .TRUE.
+        ENDIF
+!       Emergence to anthesis
         IF (YRDOY > STGDOY(1) .AND. YRDOY <= STGDOY(5)) THEN
           PlantStres % ACTIVE(1) = .TRUE.
         ENDIF
-
+!       Anthesis to first seed
         IF (YRDOY > STGDOY(5) .AND. YRDOY <= STGDOY(8)) THEN
           PlantStres % ACTIVE(2) = .TRUE.
         ENDIF
-
+!       First seed to maturity
         IF (YRDOY > STGDOY(8) .AND. YRDOY <= STGDOY(10)) THEN
           PlantStres % ACTIVE(3) = .TRUE.
         ENDIF
-
+!       Emergence to maturity
         IF (YRDOY > STGDOY(1) .AND. YRDOY <= STGDOY(10)) THEN
           PlantStres % ACTIVE(4) = .TRUE.
         ENDIF
@@ -293,11 +305,13 @@ C-----------------------------------------------------------------------
         ENDIF
 
       CASE ('BM','BH','BR','NP')
+!       Emergence to harvest
         IF (YRDOY > STGDOY(1) .AND. YRDOY <= STGDOY(16)) THEN
           PlantStres % ACTIVE(1) = .TRUE.
         ENDIF
       END SELECT
 
+!     All crops - planting to harvest
       IF (YRDOY > STGDOY(15) .AND. YRDOY <= STGDOY(16)) THEN
         PlantStres % ACTIVE(0) = .TRUE.
       ENDIF
