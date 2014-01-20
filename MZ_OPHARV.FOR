@@ -15,6 +15,7 @@
 !  07/13/2006 CHP Added P model
 C  02/09/2007 GH  Add path for FileA
 !  08/28/2009 CHP added EDAT, EDAP 
+!  01/19/2014 CHP added abiotic stress calcs for Overview & Summary
 !=======================================================================
 
       SUBROUTINE MZ_OPHARV(CONTROL, 
