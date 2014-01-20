@@ -412,21 +412,21 @@
             ENDIF !ISWNIT == 'Y'
           ENDIF
 
-!         Reset arrays for next run.
-          TMAXR = 0.0
-          TMINR = 0.0
-          RAINR = 0.0
-          DAYLR = 0.0
-          RADR  = 0.0
-          CO2R  = 0.0
-          CETR  = 0.0
-          W_growR = 0.0
-          W_photR = 0.0
-          N_growR = 0.0
-          N_photR = 0.0
-          P_growR = 0.0
-          P_photR = 0.0
-          NNR   = 0
+!!         Reset arrays for next run.
+!          TMAXR = 0.0
+!          TMINR = 0.0
+!          RAINR = 0.0
+!          DAYLR = 0.0
+!          RADR  = 0.0
+!          CO2R  = 0.0
+!          CETR  = 0.0
+!          W_growR = 0.0
+!          W_photR = 0.0
+!          N_growR = 0.0
+!          N_photR = 0.0
+!          P_growR = 0.0
+!          P_photR = 0.0
+!          NNR   = 0
 
         ENDIF
       ENDIF
