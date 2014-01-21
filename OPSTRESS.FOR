@@ -495,24 +495,45 @@
       LABEL(20) = 'ETCP' ; VALUE(20) = ETCP
 
 !     Abiotic stress variables
-      LABEL(21) = 'S2AT0'  ; VALUE(21) = Ndays_LT0(-2)
-      LABEL(22) = 'S2AT2'  ; VALUE(22) = Ndays_LT2(-2)
-      LABEL(23) = 'S2AT30' ; VALUE(23) = Ndays_GT30(-2)
-      LABEL(24) = 'S2AT32' ; VALUE(24) = Ndays_GT32(-2)
-      LABEL(25) = 'S2AT34' ; VALUE(25) = Ndays_GT34(-2)
-      LABEL(26) = 'S2ATME' ; VALUE(26) = TMEANR(-2)
-      LABEL(27) = 'S2ACRN' ; VALUE(27) = RAINR(-2)
-      LABEL(28) = 'S2A#RN' ; VALUE(28) = Ndays_RAIN(-2)
+      LABEL(21) = 'S2AND'  ; VALUE(21) = S2AND
+      LABEL(22) = 'S2AT0'  ; VALUE(22) = Ndays_LT0(-2)
+      LABEL(23) = 'S2AT2'  ; VALUE(23) = Ndays_LT2(-2)
+      LABEL(24) = 'S2AT30' ; VALUE(24) = Ndays_GT30(-2)
+      LABEL(25) = 'S2AT32' ; VALUE(25) = Ndays_GT32(-2)
+      LABEL(26) = 'S2AT34' ; VALUE(26) = Ndays_GT34(-2)
+      LABEL(27) = 'S2ATME' ; VALUE(27) = TMEANR(-2)
+      LABEL(28) = 'S2ACRN' ; VALUE(28) = RAINR(-2)
+      LABEL(29) = 'S2A#RN' ; VALUE(29) = Ndays_RAIN(-2)
 
-      LABEL(29) = 'A2MT30' ; VALUE(29) = Ndays_GT30(-1)
-      LABEL(30) = 'A2MT32' ; VALUE(30) = Ndays_GT32(-1)
-      LABEL(31) = 'A2MT34' ; VALUE(31) = Ndays_GT34(-1)
-      LABEL(32) = 'A2MTME' ; VALUE(32) = TMEANR(-1)
-      LABEL(33) = 'A2MCRN' ; VALUE(33) = RAINR(-1)
-      LABEL(34) = 'A2M#RN' ; VALUE(34) = Ndays_RAIN(-1)
+      IF (S2AND <= 0) THEN
+        VALUE(21) = -99
+        VALUE(22) = -99
+        VALUE(23) = -99
+        VALUE(24) = -99
+        VALUE(25) = -99
+        VALUE(26) = -99
+        VALUE(27) = -99.
+        VALUE(28) = -99.
+        VALUE(29) = -99
+      ENDIF
 
-      LABEL(35) = 'S2AND'  ; VALUE(35) = S2AND
-      LABEL(36) = 'A2MND'  ; VALUE(36) = A2MND
+      LABEL(30) = 'A2MND'  ; VALUE(30) = A2MND
+      LABEL(31) = 'A2MT30' ; VALUE(31) = Ndays_GT30(-1)
+      LABEL(32) = 'A2MT32' ; VALUE(32) = Ndays_GT32(-1)
+      LABEL(33) = 'A2MT34' ; VALUE(33) = Ndays_GT34(-1)
+      LABEL(34) = 'A2MTME' ; VALUE(34) = TMEANR(-1)
+      LABEL(35) = 'A2MCRN' ; VALUE(35) = RAINR(-1)
+      LABEL(36) = 'A2M#RN' ; VALUE(36) = Ndays_RAIN(-1)
+
+      IF (A2MND <= 0) THEN
+        VALUE(30) = -99
+        VALUE(31) = -99
+        VALUE(32) = -99
+        VALUE(33) = -99
+        VALUE(34) = -99.
+        VALUE(35) = -99.
+        VALUE(36) = -99
+      ENDIF
 
 !     Send labels and values to OPSUM
       CALL SUMVALS (SUMNUM, LABEL, VALUE) 
