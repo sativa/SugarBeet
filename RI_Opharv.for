@@ -20,7 +20,8 @@ C  08/12/2003 CHP Added I/O error checking and changed call to READA
 C  02/09/2007 GH  Add path for FileA
 !  04/02/2008 US/CHP Added P model
 !  08/28/2009 CHP added EDAT, EDAP 
-C=======================================================================
+!  01/19/2014 CHP added abiotic stress calcs for Overview & Summary
+!=======================================================================
 
       SUBROUTINE RI_OPHARV (CONTROL, ISWITCH, 
      &    AGEFAC, APTNUP, BIOMAS, CANNAA, CANWAA,         !Input
@@ -197,15 +198,21 @@ C-----------------------------------------------------------------------
       PBIOMS    = 0.0
       WTNCAN    = 0.0
       
-!     Establish #, names of stages for environmental & stress summary
+!     Establish # and names of stages for environmental & stress summary
       PlantStres % ACTIVE = .FALSE.
       PlantStres % NSTAGES = 5
+
+!     Stages 0 through 5 are for Overview.OUT file. 
       PlantStres % StageName(0) = 'Planting to Harvest    '
       PlantStres % StageName(1) = 'Emergence-End Juvenile '
       PlantStres % StageName(2) = 'End Juvenil-Panicl Init'
       PlantStres % StageName(3) = 'Panicl Init-End Lf Grow'
       PlantStres % StageName(4) = 'End Lf Grth-Beg Grn Fil'
       PlantStres % StageName(5) = 'Grain Filling Phase    '
+
+!     Stages -1 and -2 are for AbioticStress.OUT file, a seasonal summary file. 
+      PlantStres % StageName(-2) = 'Planting to Anthesis   '
+      PlantStres % StageName(-1) = 'Anthesis to Maturity   '
 
       CALL OPVIEW(CONTROL, 
      &    PBIOMS, ACOUNT, DESCRIP, IDETO, VSTAGE, 
@@ -234,16 +241,51 @@ C-----------------------------------------------------------------------
       PlantStres % P_phot = PSTRES1
       PlantStres % ACTIVE = .FALSE.
 
+!     PlantStres stages 1-5 align with ISTAGE
       IF (ISTAGE > 0 .AND. ISTAGE < 6) THEN
         PlantStres % ACTIVE(ISTAGE) = .TRUE.
       ENDIF
 
+!     PlantStres stage 0 = planting to harvest
+      YRDOY = CONTROL % YRDOY
       IF (YRDOY >= YRPLT) THEN
-        IF (MDATE < 0 .OR.
-     &     (MDATE > 0 .AND. YRDOY < MDATE)) THEN
-          PlantStres % ACTIVE(0) = .TRUE.
-        ENDIF
+        SELECT CASE(ISTAGE)
+        CASE (7:9, 1:4)
+          PlantStres % ACTIVE(0)  = .TRUE.  !Planting to harvest
+          PlantStres % ACTIVE(-1) = .FALSE. !Anthesis to maturity
+          PlantStres % ACTIVE(-2) = .TRUE.  !Planting to anthesis
+
+        CASE (5:6)
+          PlantStres % ACTIVE(0)  = .TRUE.  !Planting to harvest
+          PlantStres % ACTIVE(-1) = .TRUE.  !Anthesis to maturity
+          PlantStres % ACTIVE(-2) = .FALSE. !Planting to anthesis
+
+        CASE (20)
+          PlantStres % ACTIVE(0)  = .TRUE.  !Planting to harvest
+          PlantStres % ACTIVE(-1) = .FALSE. !Anthesis to maturity
+          PlantStres % ACTIVE(-2) = .FALSE. !Planting to anthesis
+        END SELECT
+
+!        IF (MDATE < 0 .OR.
+!     &     (MDATE > 0 .AND. YRDOY < MDATE)) THEN
+!          PlantStres % ACTIVE(0) = .TRUE.
+!        ENDIF
       ENDIF
+
+!      STNAME(7)  = 'Sowing    '
+!      STNAME(8)  = 'Germinate '
+!      STNAME(9)  = 'Emergence '
+!      STNAME(10) = 'Prgerm Sow'
+!      STNAME(11) = 'Transplant'
+!      STNAME(12) = 'End Ti Fil'
+!      STNAME(1)  = 'End Juveni'
+!      STNAME(2)  = 'Pan Init  '
+!      STNAME(3)  = 'Heading   ' ! Anthesis
+!      STNAME(4)  = 'Beg Gr Fil'
+!      STNAME(5)  = 'End Mn Fil'
+!      STNAME(6)  = 'Maturity  '
+!      STNAME(20) = 'Harvest   '
+
 
 !     Send data to Overview.out data on days where stages occur
       CALL OPVIEW(CONTROL, 
