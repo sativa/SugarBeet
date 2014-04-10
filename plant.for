@@ -1,5 +1,5 @@
 C=======================================================================
-C  COPYRIGHT 1998-2013 DSSAT Foundation
+C  COPYRIGHT 1998-2014 DSSAT Foundation
 C                      University of Florida, Gainesville, Florida
 C                      International Fertilizer Development Center
 C                      Washington State University
@@ -341,7 +341,7 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
 !     Cassava CSCAS
       CASE('CSCAS')
         CALL CSCAS_Interface (CONTROL, ISWITCH,           !Input
-     &    EOP, ES, NH4, NO3, SNOW, SOILPROP, SRFTEMP,     !Input
+     &    EOP, ES, NH4, NO3, SOILPROP, SRFTEMP,           !Input
      &    ST, SW, TRWUP, WEATHER, YREND, YRPLT, HARVFRAC, !Input
      &    CANHT, HARVRES, KCAN, KEP, MDATE, NSTRES,       !Output
      &    PORMIN, RLV, RWUMX, SENESCE, STGDOY,            !Output
@@ -496,12 +496,12 @@ c     Total LAI must exceed or be equal to healthy LAI:
 !     Sorghum 
       CASE('SGCER')
         CALL SG_CERES (CONTROL, ISWITCH, 
-     &     CO2, DAYL, EOP, HARVFRAC, NH4, NO3,            !Input
-     &     SNOW, SOILPROP, SRAD, SW, TMAX, TMIN,          !Input
-     &     TRWUP, TWILEN, YREND, YRPLT,                   !Input
-     $     CANHT, HARVRES, MDATE, NSTRES, PORMIN, RLV,    !Output
-     &     RWUMX, SENESCE, STGDOY, UNO3, UNH4, XLAI,      !Output
-     &     KCAN, KEP)                                     !Output
+     &     CO2, DAYL, EOP, HARVFRAC, NH4, NO3,                  !Input
+     &     SNOW, SOILPROP, SPi_AVAIL, SRAD, SW, TMAX, TMIN,     !Input
+     &     TRWUP, TWILEN, YREND, YRPLT,                         !Input
+     &     CANHT, HARVRES, MDATE, NSTRES, PORMIN, PUptake,      !Output
+     &     RLV, RWUMX, SENESCE, STGDOY, UNO3, UNH4,             !Ouput
+     &     XLAI, KCAN, KEP, FracRts)                            !Output
 
         IF (DYNAMIC .EQ. SEASINIT) THEN
 !          KTRANS = KCAN + 0.15        !Or use KEP here??
