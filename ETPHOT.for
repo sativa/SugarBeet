@@ -45,7 +45,7 @@ C========================================================================
       SUBROUTINE ETPHOT (CONTROL, ISWITCH,
      &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
      &    WEATHER, XLAI,                                 !Input
-     &    EOP, EP, ES, RWU, TRWUP)                        !Output
+     &    EOP, EP, ES, PG, RWU, TRWUP)                        !Output
 
 C-----------------------------------------------------------------------
       USE ModuleDefs     !Definitions of constructed variable types, 
@@ -189,7 +189,7 @@ C     MEEVP reset on exit from ETPHOT to maintain input settings.
      &    YSCOND, YSHCAP)                                 !Output
         ENDIF
 
-        IF (MEPHO .EQ. 'L' .AND. CROP .NE. 'FA') THEN
+        IF ((MEPHO .EQ. 'L'  .OR. MEPHO == 'S') .AND. CROP .NE.'FA')THEN
           CALL PGINP(
      &      FILEIO, LUNIO, SALB,                          !Input
      &      AZIR, BETN, FNPGL, FNPGN, LFANGD, LMXREF,     !Output
@@ -246,7 +246,7 @@ C     MEEVP reset on exit from ETPHOT to maintain input settings.
         SLWSHN  = 0.0
         SWFAC   = 1.0
 
-        IF (MEPHO .EQ. 'L') THEN
+        IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
           CALL OpETPhot(CONTROL, ISWITCH,
      &        PCINPD, PG, PGNOON, PCINPN, SLWSLN, SLWSHN,
      &        PNLSLN, PNLSHN, LMXSLN, LMXSHN, TGRO, TGROAV)
@@ -297,7 +297,7 @@ C         instantaeous vs. daily rates and convert to mm/h.
           !RWUH = 5.0 * TRWUP * 10.0/24.0
         ENDIF
 
-        IF (MEPHO .EQ. 'L') THEN
+        IF (MEPHO .EQ. 'L' .OR. MEPHO .EQ. 'S') THEN
           CALL PGIND(
      &      NLAYR, PALBW, DUL2, SW,                   !Input
      &      DAYPAR, DYABSP, DYINTP, FRDFPN, LMXSLN,   !Output
@@ -384,7 +384,7 @@ C         Integrate instantaneous canopy photoynthesis (µmol CO2/m2/s)
 C         and evapotranspiration (mm/h) to get daily values (g CO2/m2/d
 C         and mm/d).
 
-          IF (MEPHO .EQ. 'L') THEN
+          IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
             PGDAY = PGDAY + TINCR*PGHR*44.0*0.0036
           ENDIF
 
@@ -418,7 +418,7 @@ C         Remember noon values (ET in mm/h; PG in mg CO2/m2/s).
 
 C KJB WE COULD, BUT DON'T NEED, TO REMEMBER A MID-DAY WATER STRESS FACTOR?
           IF (H .EQ. 12) THEN
-            IF (MEPHO .EQ. 'L') THEN
+            IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
               FRDFPN = FRDIFP(H)
               LMXSLN = LFMXSL * 0.044
               LMXSHN = LFMXSH * 0.044
@@ -486,7 +486,7 @@ C       Assign daily values.
           ES = MAX(MIN(EDAY,AWEV1),0.0)
         ENDIF
 
-        IF (MEPHO .EQ. 'L') THEN
+        IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
           IF (XLAI .GT. 1.E-4) THEN
             DAYKP = -LOG((DAYPAR-DYINTP)/DAYPAR) / XLAI
           ELSE
@@ -502,9 +502,12 @@ C       Assign daily values.
 !*****************************************
 !         Calculate daily water stess factors (from SWFACS)
           SWFAC = 1.0
-          IF (EOP .GT. 1.E-4 .AND. ISWWAT .EQ. 'Y') THEN
-            IF ((EOP * 0.1) .GE. TRWUP) THEN
-              SWFAC = TRWUP / (EOP * 0.1)
+
+          IF (MEPHO /= 'S') THEN
+            IF (EOP .GT. 1.E-4 .AND. ISWWAT .EQ. 'Y') THEN
+              IF ((EOP * 0.1) .GE. TRWUP) THEN
+                SWFAC = TRWUP / (EOP * 0.1)
+              ENDIF
             ENDIF
           ENDIF
 !*****************************************
@@ -544,7 +547,7 @@ C         Post-processing for some stress effects (duplicated in PHOTO).
 !***********************************************************************
       ELSEIF (DYNAMIC .EQ. SEASEND .OR. DYNAMIC .EQ. OUTPUT) THEN
 !-----------------------------------------------------------------------
-        IF (MEPHO .EQ. 'L') THEN
+        IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
                 CALL OpETPhot(CONTROL, ISWITCH,
      &        PCINPD, PG, PGNOON, PCINPN, SLWSLN, SLWSHN,
      &        PNLSLN, PNLSHN, LMXSLN, LMXSHN, TGRO, TGROAV)
@@ -1207,7 +1210,7 @@ C         Calculate fraction shaded, leaf extinction and LAI's.
 
 C         Calculate PAR absorbed by canopy during day.
 
-          IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z') THEN
+          IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z' .OR. MEPHO == 'S') THEN
             CALL CANABS(
      &        PALB, BETA, BETN, CANHT, CANWH, FRACSH,     !Input
      &        FRDIFP, KDIFBL, KDIRBL, LAISH, LAISL, PARHR,!Input
@@ -1266,7 +1269,7 @@ C         Night time with canopy.
 
 C       Bare soil (day or night).
 
-        IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z') THEN
+        IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z' .OR. MEPHO == 'S') THEN
           PCABSP = (1.0-PALB) * 100.0
           PCREFP = PALB * 100.0
           PARSS = (1.0-PALB) * PARHR

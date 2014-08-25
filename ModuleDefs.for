@@ -518,7 +518,8 @@ D       STDPATH = 'D:\DSSAT46\'
 !     Data transferred from CROPGRO routine 
       TYPE PlantType
         REAL CANHT, CANWH, DXR57, EXCESS,
-     &    PLTPOP, RNITP, SLAAD, XPOD
+     &    PLTPOP, RNITP, SLAAD, XPOD, 
+     &    R30C2, RES30C, WTMAIN, AGRVG2
         REAL BIOMAS
         INTEGER NR5
       END TYPE PlantType
@@ -738,6 +739,10 @@ D       STDPATH = 'D:\DSSAT46\'
         Case ('RNITP') ; Value = SAVE_data % PLANT % RNITP
         Case ('SLAAD') ; Value = SAVE_data % PLANT % SLAAD
         Case ('XPOD')  ; Value = SAVE_data % PLANT % XPOD
+        Case ('R30C2') ; Value = SAVE_data % PLANT % R30C2
+        Case ('RES30C'); Value = SAVE_data % PLANT % RES30C
+        Case ('WTMAIN'); Value = SAVE_data % PLANT % WTMAIN
+        Case ('AGRVG2'); Value = SAVE_data % PLANT % AGRVG2
         Case DEFAULT; ERR = .TRUE.
         END SELECT
 
@@ -850,6 +855,10 @@ D       STDPATH = 'D:\DSSAT46\'
         Case ('RNITP');  SAVE_data % PLANT % RNITP  = Value
         Case ('SLAAD');  SAVE_data % PLANT % SLAAD  = Value
         Case ('XPOD');   SAVE_data % PLANT % XPOD   = Value
+        Case ('R30C2') ; SAVE_data % PLANT % R30C2  = Value
+        Case ('RES30C'); SAVE_data % PLANT % RES30C = Value
+        Case ('WTMAIN'); SAVE_data % PLANT % WTMAIN = Value
+        Case ('AGRVG2'); SAVE_data % PLANT % AGRVG2 = Value
         Case DEFAULT; ERR = .TRUE.
         END SELECT
 

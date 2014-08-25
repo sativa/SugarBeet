@@ -703,7 +703,7 @@ C-----------------------------------------------------------------------
       ENDIF
 
       IF (CROP .NE. 'FA' .AND. DAS .GT. NVEG0) THEN
-        IF (MEPHO .EQ. 'L') THEN
+        IF (MEPHO .EQ. 'L' .OR. MEPHO .EQ. 'S') THEN
           !Retrieve AGEFAC and PG from ETPHOT routine.
           CALL GET('SPAM', 'AGEFAC', AGEFAC)
           CALL GET('SPAM', 'PG'    , PG)
@@ -1347,6 +1347,10 @@ C-----------------------------------------------------------------------
       Call PUT('PLANT', 'RNITP',  RNITP) 
       Call PUT('PLANT', 'SLAAD',  SLAAD) 
       Call PUT('PLANT', 'XPOD',   XPOD)
+      Call PUT('PLANT', 'R30C2',  R30C2)
+      Call PUT('PLANT', 'RES30C', RES30C)
+      Call PUT('PLANT', 'WTMAIN', WTMAIN)
+      Call PUT('PLANT', 'AGRVG2', AGRVG2)
 
       RETURN
       END SUBROUTINE CROPGRO

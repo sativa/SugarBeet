@@ -81,6 +81,10 @@ C=======================================================================
 !     P Stress on photosynthesis
       REAL PSTRES1
 
+!     Water use efficiency changes
+      REAL PG, R30C2, RES30C, TGRO(TS), WTMAIN, 
+     &        RO, RP, MAINR, VPSAT, AGRVG2, PCGR, VPDDAY, WUE 
+
 !-----------------------------------------------------------------------
 !     Define constructed variable types based on definitions in
 !     ModuleDefs.for.
@@ -129,11 +133,11 @@ C=======================================================================
 !***********************************************************************
       IF (DYNAMIC .EQ. RUNINIT) THEN
 !-----------------------------------------------------------------------
-      IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z') THEN
+      IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S' .OR. MEEVP .EQ. 'Z') THEN
         CALL ETPHOT(CONTROL, ISWITCH,
      &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
      &    WEATHER, XLAI,                                 !Input
-     &    EOP, EP, ES, RWU, TRWUP)                        !Output
+     &    EOP, EP, ES, PG, RWU, TRWUP)                        !Output
       ENDIF
 
 !***********************************************************************
@@ -198,11 +202,11 @@ C=======================================================================
 
 !     ---------------------------------------------------------
       IF (CROP .NE. 'FA') THEN
-        IF (MEPHO .EQ. 'L' .OR. MEEVP .EQ. 'Z') THEN
+        IF (MEPHO .EQ. 'L'  .OR. MEPHO == 'S' .OR. MEEVP .EQ. 'Z') THEN
           CALL ETPHOT(CONTROL, ISWITCH,
      &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
      &    WEATHER, XLAI,                                 !Input
-     &    EOP, EP, ES, RWU, TRWUP)                        !Output
+     &    EOP, EP, ES, PG, RWU, TRWUP)                        !Output
         ENDIF
       ENDIF
 
@@ -410,9 +414,39 @@ C       and total potential water uptake rate.
           !   (MEPHO = 'L' and MEEVP = 'Z').
           CALL ETPHOT(CONTROL, ISWITCH,
      &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
-     &    WEATHER, XLAI,                                 !Input
-     &    EOP, EP, ES, RWU, TRWUP)                        !Output
-        ENDIF
+     &    WEATHER, XLAI,                                  !Input
+     &    EOP, EP, ES, PG, RWU, TRWUP)                    !Output
+
+        ELSEIF (MEPHO .EQ. 'S' .AND. XHLAI .GT. 0.0) THEN
+
+          CALL ETPHOT(CONTROL, ISWITCH,
+     &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
+     &    WEATHER, XLAI,                                  !Input
+     &    EOP, EP, ES, PG, RWU, TRWUP)                    !Output
+
+          Call GET('PLANT', 'R30C2',  R30C2)
+          Call GET('PLANT', 'RES30C', RES30C)
+          Call GET('PLANT', 'WTMAIN', WTMAIN)
+          Call GET('PLANT', 'AGRVG2', AGRVG2)
+          TGRO = WEATHER % TGRO
+
+          CALL RESPIR(
+     &        PG, R30C2, RES30C, TGRO, WTMAIN,                !Input
+     &        RO, RP,                                         !Input/Output
+     &        MAINR)                                          !Output
+
+          PCGR = (PG - MAINR) / AGRVG2
+          VPDDAY = 0.75 * (VPSAT(TMAX) - VPSAT(TMIN)) / 1000.
+          WUE = 4.78 * VPDDAY ** (-0.57)
+
+!         Water required for transpiration
+          EOP = PCGR * 0.1 / WUE
+          EP = MIN(EOP, TRWUP*10.)
+          PG = PG * EP / EOP
+          CALL PUT('SPAM', 'PG',  PG)
+       ENDIF
+
+      
 
 !-----------------------------------------------------------------------
 !       ACTUAL ROOT WATER EXTRACTION
@@ -480,6 +514,7 @@ C       and total potential water uptake rate.
       CALL PUT('SPAM', 'CES', CES)
       CALL PUT('SPAM', 'CET', CET)
       CALL PUT('SPAM', 'ET',  ET)
+      CALL PUT('SPAM', 'PG',  PG)
 
 !***********************************************************************
 !***********************************************************************
@@ -508,11 +543,11 @@ C-----------------------------------------------------------------------
      &    EO, EOP, EOS, EP, ES, ET, TMAX, TMIN, SRAD,
      &    ES_LYR, SOILPROP)
 
-      IF (CROP .NE. 'FA' .AND. MEPHO .EQ. 'L') THEN
+      IF (CROP .NE. 'FA' .AND. MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
         CALL ETPHOT(CONTROL, ISWITCH,
      &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
      &    WEATHER, XLAI,                                 !Input
-     &    EOP, EP, ES, RWU, TRWUP)                        !Output
+     &    EOP, EP, ES, PG, RWU, TRWUP)                        !Output
       ENDIF
 
 !      CALL OPSTRESS(CONTROL, ET=ET, EP=EP)
@@ -540,11 +575,11 @@ C-----------------------------------------------------------------------
      &    SRFTEMP, ST)                                    !Output
       END SELECT
 
-      IF (MEPHO .EQ. 'L') THEN
+      IF (MEPHO .EQ. 'L' .OR. MEPHO == 'S') THEN
         CALL ETPHOT(CONTROL, ISWITCH,
      &    PORMIN, PSTRES1, RLV, RWUMX, SOILPROP, ST, SW,  !Input
      &    WEATHER, XLAI,                                 !Input
-     &    EOP, EP, ES, RWU, TRWUP)                        !Output
+     &    EOP, EP, ES, PG, RWU, TRWUP)                        !Output
       ENDIF
 
 !     Transfer data to storage routine

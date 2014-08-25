@@ -86,7 +86,7 @@ C     Daylight hours with canopy.
 
 C       Loop until evapotranspiration and photosynthesis are stable.
 
-        IF (MEEVP.EQ.'Z' .AND. MEPHO.EQ.'L') THEN
+        IF (MEEVP.EQ.'Z' .AND. (MEPHO.EQ.'L' .OR. MEPHO == 'S')) THEN
           DO WHILE (REPEAT .AND. ITER .LE. 5)
             TCPREV = TCAN
             CALL CANOPG(

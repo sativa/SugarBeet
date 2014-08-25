@@ -451,7 +451,8 @@ C-----------------------------------------------------------------------
         CALL MODEL_NAME (CROP, DSSATP, MODELARG, MODEL)
       ENDIF
 
-      IF (MEPHO .EQ. 'L' .AND. MODEL(1:5) .NE. 'CRGRO') THEN
+      IF ((MEPHO .EQ. 'L' .OR. MEPHO .EQ. 'S') .AND. 
+     &     MODEL(1:5) .NE. 'CRGRO') THEN
         MEPHO = 'C'
         WRITE(MSG(1),80)
         WRITE (MSG(2),81) MODEL(1:5)
@@ -1313,7 +1314,8 @@ C-----------------------------------------------------------------------
       ENDIF
 
       MEPHO_SAVE = MEPHO
-      IF (MEPHO .EQ. 'L' .AND. CTRMODEL(1:5) .NE. 'CRGRO') THEN
+      IF ((MEPHO .EQ. 'L' .OR. MEPHO .EQ. 'S') .AND. 
+     &     CTRMODEL(1:5) .NE. 'CRGRO') THEN
         MEPHO = 'C'
         MSG(1)='Photosynthesis method (PHOTO in FILEX) has been changed'
         WRITE (MSG(2),81) CTRMODEL(1:5)
