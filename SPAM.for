@@ -440,7 +440,7 @@ C       and total potential water uptake rate.
           WUE = 4.78 * VPDDAY ** (-0.57)
 
 !         Water required for transpiration
-          EOP = PCGR * 0.1 / WUE
+          EOP = PCGR / WUE
           EP = MIN(EOP, TRWUP*10.)
           PG = PG * EP / EOP
           CALL PUT('SPAM', 'PG',  PG)
