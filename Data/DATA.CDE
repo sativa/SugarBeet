@@ -152,8 +152,8 @@ T#AM   Tiller no #/m2  Tiller number at maturity (no/m2)                        
 TDAP   Tuber init day  Tuber initiation day (dap)                               .
 TDAT   Tuber init date Tuber initiation date (YrDoy)                            .
 THAM   Threshing %     Threshing % at maturity                                  .
-TMINA  Minimum temp °C Avg minimum air temperature (°C)                         TMNA
-TMAXA  Maximum temp °C Avg maximum air temperature (°C)                         TMXA
+TMINA  Minimum temp °C Avg minimum air temperature, planting to harvest (°C)    TMNA
+TMAXA  Maximum temp °C Avg maximum air temperature, planting to harvest (°C)    TMXA
 TN%H   Tuber N %       Tuber N at harvest (%)                                   .
 TNAH   Biomass N kg/ha Tuber+stem+leaf N at harvest (kg/ha)                     .
 TNAM   Treatment name  Treatment title                                          .
@@ -170,6 +170,25 @@ YPNAM  Yd-N fert Prod  Yield-N fertilizer productivity (kg[yield]/kg[N fert]    
 YPNUM  Yd-N upt Prod   Yield-N uptake productivity (kg[yield]/kg[N uptake]      .
 YPPM   Yd-Rain Prod    Yield-rainfall productivity (kg[yield]/ha/mm[rain])      .
 YPTM   Yd-EP Prod      Yield-transpiration productivity (kg[yield]/ha/mm[EP])   .
+
+!Abiotic stress variables added CHP 1/19/2014
+S2AND   Days to Anth   Number of days, sowing to anthesis
+S2AT0   Anth T<0 days  # days with temperature below 0oC, sowing to anthesis    .
+S2AT2   Anth T<2 days  # days with temperature below 2oC, sowing to anthesis    .
+S2AT30  Anth T>30 days # days with temperature above 30oC, sowing to anthesis   .
+S2AT32  Anth T>32 days # days with temperature above 32oC, sowing to anthesis   .
+S2AT34  Anth T>34 days # days with temperature above 34oC, sowing to anthesis   .
+S2ATME  Anth TMEAN     Average daily mean air temperature, sowing to anthesis   .
+S2ACRN  Anth RAIN      Cumulative precipitation, sowing to anthesis             .
+S2A#RN  Anth Rain days Number of days with precipitation, sowing to anthesis    .
+
+A2MND   Days An to Mat # of days, anthesis to maturity                          .
+A2MT30  Mat T>30 days  # days with temperature > 30oC, anthesis to maturity     .
+A2MT32  Mat T>32 days  # days with temperature > 32oC, anthesis to maturity     .
+A2MT34  Mat T>34 days  # days with temperature > 34oC, anthesis to maturity     .
+A2MTME  Mat TMEAN      Average daily mean air temperature, anthesis to matur    .
+A2MCRN  Mat RAIN       Cumulative precipitation, anthesis to maturity           .
+A2M#RN  Mat Rain days  Number of days with precipitation, anthesis to maturity  .
 
 *GROWTH
 @CDE   LABEL           DESCRIPTION............................................  SYNONYMS
