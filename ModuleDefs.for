@@ -61,12 +61,23 @@ C             CHP Added TRTNUM to CONTROL variable.
         INTEGER :: Major = 4
         INTEGER :: Minor = 6
         INTEGER :: Model = 0
-        INTEGER :: Build = 35
+        INTEGER :: Build = 42
       END TYPE VersionType
       TYPE (VersionType) Version
       CHARACTER(len=10) :: VBranch = '-abiotic_s'
 
 !     Version history:  
+!       4.6.0.42 chp 12/05/2014 DSSAT sprint -1st batch of changes
+!                               Dates and headers, JDATE.CDE fix, portability fixes, 
+!                               "F" forced auto-planting date option, minor changes
+!       4.6.0.42 chp 12/05/2014 Dates and headers, JDATE.CDE fix, more portability fixes, minor changes
+!       4.6.0.41 chp 11/04/2014 KThorp changes for portability
+!       4.6.0.40 chp 09/19/2014 Minor changes
+!       4.6.0.39 chp 07/25/2014 Allow daily input of CO2 in weather file (header CO2 or DCO2)
+!                               Move PI and RAD to global constants
+!       4.6.0.38 chp 07/17/2014 Fixed output switches
+!       4.6.0.37 chp 06/05/2014 ORYZA code updated to ORYZA3 (Tao Li)
+!       4.6.0.36 chp 05/07/2014 SALUS model updates, ESCP, EPCP added to Summary.OUT
 !       4.6.0.35 chp 03/28/2014 Taro initialization fixed - RO
 !       4.6.0.34 chp 03/28/2014 Minor changes Weather, CSCER, sorghum
 !       4.6.0.33 chp 03/26/2014 Y2K crossover at 2020
@@ -130,6 +141,10 @@ C             CHP Added TRTNUM to CONTROL variable.
      &    NumOfStalks = 42, !Maximum stalks per sugarcane stubble (FSR)
      &    EvaluateNum = 40, !Number of evaluation variables
      &    MaxFiles = 100    !Maximum number of output files
+
+      REAL, PARAMETER :: 
+     &    PI = 3.141586, 
+     &    RAD=PI/180.0
 
       INTEGER, PARAMETER :: 
          !Dynamic variable values
@@ -208,8 +223,8 @@ C             CHP Added TRTNUM to CONTROL variable.
         REAL REFHT, WINDHT, XLAT
 
 !       Daily weather data.
-        REAL CLOUDS, CO2, DAYL, PAR, RAIN, RHUM, SNDN, SNUP, SRAD, 
-     &    TAMP, TA, TAV, TAVG, TDAY, TDEW, TGROAV, TGRODY,      
+        REAL CLOUDS, CO2, DAYL, DCO2, PAR, RAIN, RHUM, SNDN, SNUP, 
+     &    SRAD, TAMP, TA, TAV, TAVG, TDAY, TDEW, TGROAV, TGRODY,      
      &    TMAX, TMIN, TWILEN, VAPR, WINDSP
 
 !       Hourly weather data
