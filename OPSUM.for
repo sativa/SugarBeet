@@ -535,8 +535,8 @@ C-------------------------------------------------------------------
      &'................    ',
      &'NITROGEN PRODUCTIVITY...........  ',
      &'SEASONAL ENVIRONMENTAL DATA (Planting to harvest)..............',
-     &'ABIOTIC STRESSES - Sowing to anthesis........................  ',
-     &'ABIOTIC STRESSES - Anthesis to maturity........')
+     &'  ABIOTIC STRESSES - Sowing to anthesis........................',
+     &'  ABIOTIC STRESSES - Anthesis to maturity........')
 
           WRITE (NOUTDS,400)
   400 FORMAT ('@   RUNNO   TRNO R# O# C# CR MODEL    ',

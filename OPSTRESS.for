@@ -206,11 +206,11 @@
         DO I = -2, PlantStres % NSTAGES
           IF (PlantStres % ACTIVE(I)) THEN
             NNR(I) = NNR(I) + 1
-
             TMAXR(I) = TMAXR(I) + TMAX
             TMINR(I) = TMINR(I) + TMIN
             TMEANR(I)= TMEANR(I)+ (TMAX + TMIN) / 2.0
             RAINR(I) = RAINR(I) + RAIN
+
 !           CumIrr(I)= CumIrr(I)+ DEPIR
             DAYLR(I) = DAYLR(I) + DAYL
             RADR (I) = RADR (I) + SRAD 
@@ -422,23 +422,6 @@
             ENDIF !ISWNIT == 'Y'
           ENDIF
 
-!         Reset arrays for next run.
-          TMAXR = 0.0
-          TMINR = 0.0
-          RAINR = 0.0
-          DAYLR = 0.0
-          RADR  = 0.0
-          CO2R  = 0.0
-          CETR  = 0.0
-          CESR  = 0.0
-          CEPR  = 0.0
-          W_growR = 0.0
-          W_photR = 0.0
-          N_growR = 0.0
-          N_photR = 0.0
-          P_growR = 0.0
-          P_photR = 0.0
-          NNR   = 0
         ENDIF
       ENDIF
 
@@ -508,15 +491,15 @@
       LABEL(22) = 'EPCP' ; VALUE(22) = EPCP
 
 !     Abiotic stress variables
-      LABEL(23) = 'S2AND'  ; VALUE(21) = S2AND
-      LABEL(24) = 'S2AT0'  ; VALUE(22) = Ndays_LT0(-2)
-      LABEL(25) = 'S2AT2'  ; VALUE(23) = Ndays_LT2(-2)
-      LABEL(26) = 'S2AT30' ; VALUE(24) = Ndays_GT30(-2)
-      LABEL(27) = 'S2AT32' ; VALUE(25) = Ndays_GT32(-2)
-      LABEL(28) = 'S2AT34' ; VALUE(26) = Ndays_GT34(-2)
-      LABEL(29) = 'S2ATME' ; VALUE(27) = TMEANR(-2)
-      LABEL(30) = 'S2ACRN' ; VALUE(28) = RAINR(-2)
-      LABEL(31) = 'S2A#RN' ; VALUE(29) = Ndays_RAIN(-2)
+      LABEL(23) = 'S2AND'  ; VALUE(23) = S2AND
+      LABEL(24) = 'S2AT0'  ; VALUE(24) = Ndays_LT0(-2)
+      LABEL(25) = 'S2AT2'  ; VALUE(25) = Ndays_LT2(-2)
+      LABEL(26) = 'S2AT30' ; VALUE(26) = Ndays_GT30(-2)
+      LABEL(27) = 'S2AT32' ; VALUE(27) = Ndays_GT32(-2)
+      LABEL(28) = 'S2AT34' ; VALUE(28) = Ndays_GT34(-2)
+      LABEL(29) = 'S2ATME' ; VALUE(29) = TMEANR(-2)
+      LABEL(30) = 'S2ACRN' ; VALUE(30) = RAINR(-2)
+      LABEL(31) = 'S2A#RN' ; VALUE(31) = Ndays_RAIN(-2)
 
       IF (S2AND <= 0) THEN
         VALUE(23) = -99
@@ -530,13 +513,13 @@
         VALUE(31) = -99
       ENDIF
 
-      LABEL(32) = 'A2MND'  ; VALUE(30) = A2MND
-      LABEL(33) = 'A2MT30' ; VALUE(31) = Ndays_GT30(-1)
-      LABEL(34) = 'A2MT32' ; VALUE(32) = Ndays_GT32(-1)
-      LABEL(35) = 'A2MT34' ; VALUE(33) = Ndays_GT34(-1)
-      LABEL(36) = 'A2MTME' ; VALUE(34) = TMEANR(-1)
-      LABEL(37) = 'A2MCRN' ; VALUE(35) = RAINR(-1)
-      LABEL(38) = 'A2M#RN' ; VALUE(36) = Ndays_RAIN(-1)
+      LABEL(32) = 'A2MND'  ; VALUE(32) = A2MND
+      LABEL(33) = 'A2MT30' ; VALUE(33) = Ndays_GT30(-1)
+      LABEL(34) = 'A2MT32' ; VALUE(34) = Ndays_GT32(-1)
+      LABEL(35) = 'A2MT34' ; VALUE(35) = Ndays_GT34(-1)
+      LABEL(36) = 'A2MTME' ; VALUE(36) = TMEANR(-1)
+      LABEL(37) = 'A2MCRN' ; VALUE(37) = RAINR(-1)
+      LABEL(38) = 'A2M#RN' ; VALUE(38) = Ndays_RAIN(-1)
 
       IF (A2MND <= 0) THEN
         VALUE(32) = -99
