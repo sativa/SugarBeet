@@ -391,6 +391,23 @@ C         Variables to run CASUPRO from Alt_PLANT.  FSR 07-23-03
         ENDIF
 
 !     -------------------------------------------------
+!     Sugarbeet
+      CASE('BSCER')
+        CALL BS_CERES (CONTROL, ISWITCH,              !Input
+     &     EOP, HARVFRAC, NH4, NO3, SKi_Avail,            !Input
+     &     SPi_AVAIL, SNOW,                               !Input
+     &     SOILPROP, SW, TRWUP, WEATHER, YREND, YRPLT,    !Input
+     &     CANHT, HARVRES, KCAN, KEP, MDATE,              !Output
+     &     NSTRES, PORMIN, PUptake, RLV, RWUMX, SENESCE,  !Output
+     &     STGDOY, FracRts, XLAI, XHLAI)                  !Output
+
+        
+        IF (DYNAMIC < RATE) THEN
+          KTRANS = KEP        !KJB/WDB/CHP 10/22/2003
+          KSEVAP = KEP        
+        ENDIF
+
+!     -------------------------------------------------
 !     Potato 
       CASE('PTSUB') 
         CALL PT_SUBSTOR(CONTROL, ISWITCH, 
