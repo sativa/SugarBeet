@@ -28,7 +28,7 @@
 !
 @VAR#  VRNAME.......... EXPNO   ECO#    P1    P2    P5    G2    G3 PHINT   
 !                                        1     2     3     4     5     6      
-CR0001 crec-sugb GDD        . BS0001 900.0 0.200 700.0 900.0   140 38.90 
+CR0001 SVRR1142E GDD        . BS0001 900.0 0.200 700.0 900.0   140 38.90 
 
 
 
