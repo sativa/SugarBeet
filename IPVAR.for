@@ -207,7 +207,9 @@ C-GH &      SNFX, SRNWT, SRFR, HMPC, PHINT, LA1S, LAXS, LAXND, LAXN2,
      &            P1V,P1D,P5,G1,G2,G3,PHINT, PLAINTXT
 
 !     Ceres Maize: maize, sweet corn **
-      CASE ('MZCER','SWCER')
+!     VSH
+!     CASE ('MZCER','SWCER')
+      CASE ('MZCER','SWCER','BSCER')
         READ (C360,'(A6,1X,A16,7X,A6,6F6.0)',IOSTAT=ERRNUM) 
      &            VARTY,VRNAME,ECONO,P1,P2,P5,G2,G3,PHINT
      
