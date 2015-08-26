@@ -614,7 +614,9 @@ C-----------------------------------------------------------------------
 !       Do nothing - these models read the INH file written by OPTEMPXY2K
 
 !       Ceres Maize, sweetcorn
-        CASE('MZCER','SWCER')
+!       VSH Sugarbeet
+!       CASE('MZCER','SWCER')
+        CASE('MZCER','SWCER','BSCER')
 		  WRITE (LUNIO,1800,IOSTAT=ERRNUM) VARNO,VRNAME,ECONO,
      &                    P1,P2,P5,G2,G3,PHINT     
      
@@ -812,4 +814,3 @@ c1960 FORMAT (A6,1X,A16,1X,A6,1X,F6.2,F8.4,F7.2,F8.2,F7.3,F4.0)
  3000 FORMAT (A6,1X,A16,1X,A255)
 
       END SUBROUTINE OPTEMPY2K
-      
