@@ -590,21 +590,6 @@
 	        ENDIF
               ! If GDD's pass a threshold, terminate model run
 
-!              IF (P9 .GT. DGET) THEN
-!                  ISTAGE = 6
-!                  PLTPOP = 0.00
-!                  GPP    = 1.0
-
-!                  WRITE(MESSAGE(1),1399)
-!                  CALL WARNING(1,'BSPHEN',MESSAGE)
-
-!                  WRITE (     *,1399)
-!                  IF (IDETO .EQ. 'Y') THEN
-!                      WRITE (NOUTDO,1399)
-!                  ENDIF
-!                  MDATE = YRDOY
-!                  RETURN
-!              ENDIF
 
               !---------------------------------------------------------
               !   New Growth Stage Occurred Today. Initialize Some Varia
@@ -672,7 +657,7 @@
               PDTT   = 1.0   
               SIND = SIND + RATEIN
               !Return if panicle initiation has not been reached
-              IF (SIND .LT. 1.0) RETURN           
+              IF (SIND .LT. 2.0) RETURN           
 
 
               !---------------------------------------------------------
@@ -698,11 +683,11 @@
           ELSEIF (ISTAGE .EQ. 3) THEN
               ! NDAS - number of days after sowing
               NDAS   = NDAS + 1            
-              XSTAGE = 1.5 + 3.0*SUMDTT/P3 
+              XSTAGE = 1.5 + 4.0*SUMDTT/P3 
 
               VegFrac = MAX(VegFrac,(SUMDTT + SUMDTT_2) / (SUMDTT_2+P3))
 
-              IF (SUMDTT .LT. P3) RETURN
+              IF (SUMDTT .LT. 0.8*P3) RETURN
 
               !---------------------------------------------------------
               !   New Growth Stage Occurred Today. Initialize Some Varia
@@ -918,4 +903,3 @@
 ! YRDOY      Year and day of year
 ! YREMRG     Year and day of year of emergence (passed back to water bal
 ! YRSIM      Year and day of year of first day of simulation
-
