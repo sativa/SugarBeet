@@ -636,8 +636,7 @@
           CumLeafSenes = 0.0
           CumLeafSenesY = 0.0
           CumLfNSenes = 0.0
-          CUMPH  = 0.0
-!          DM     = 0.0
+          CUMPH  = 0.333
           DUMMY  = 0.0
           EARS   = 0.0 
           EARWT  = 0.0
@@ -875,7 +874,6 @@
               PLA     = PLAE
               SENLA  = 0.0
               LAI    = PLTPOP*PLA*0.0001 
-              CUMPH   = 0.514
               IF (ISWNIT .NE. 'N') THEN
                   GRAINN = 0.000
                   TANC = TANCE
@@ -1034,7 +1032,7 @@
           CARBO = MAX(CARBO,0.0)
 
           IF (ISTAGE .EQ. 1 .OR. ISTAGE .EQ. 2 .OR. ISTAGE .EQ. 3) THEN
-              PC     = 1.0
+              PC     = 2.0
               IF (CUMPH .LT. 5.0) THEN
                   PC  = 0.66+0.068*CUMPH      
               ENDIF
@@ -1052,9 +1050,13 @@
           !-------------------------------------------------------------
           IF (ISTAGE .EQ. 1) THEN
               
-              PLAG   = XN*TI*
+              PLAG   =XN*TI*
      &              AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
-              PLA = PLA + PLAG 
+              if (XN.LT.4) Then
+                  PLAG = XN*AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
+              Endif
+!              PLA = PLA + PLAG 
+              PLA = PLA+PLAG-PLAS
               XLFWT  = (PLA/267.0)**1.25      
               GROLF  = 50.*PLAG/10000.
               GROSTM = 0.80*GROLF
@@ -1062,8 +1064,8 @@
                   GROLF  = CARBO/1.8
                   GROSTM = 0.80*GROLF
               ENDIF
-              GRORT = 0.85*(CARBO-GROLF-GROSTM)
-              GROEAR = 0.15*(CARBO-GROLF-GROSTM)
+              GRORT = 0.80*(CARBO-GROLF-GROSTM)
+              GROEAR = 0.20*(CARBO-GROLF-GROSTM)
               GROLF = GROLF-50.0*PLAS/10000.
               GROSTM=GROSTM-0.80*50.*PLAS/10000.
 
@@ -1073,100 +1075,91 @@
 
           ELSEIF (ISTAGE .EQ. 2) THEN
 
-              PLAG   = 3.5*XN*XN*TI
+              PLAG   = XN*XN*TI
      &                *AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
               PLA    = PLA   + PLAG 
               XLFWT  = (PLA/267.0)**1.25
               GROLF  = XLFWT - LFWT
-
+              GROSTM = GROLF*0.80
               IF (GROLF .GE. CARBO*0.75) THEN
                   GROLF = CARBO*0.75
+                  GROSTM = GROLF*0.80
                   PLA   = (LFWT+GROLF)**0.8*267.0
               ENDIF
 
-              GRORT  = CARBO - GROLF
+              STMWT  = STMWT + GROSTM
+              GRORT  = CARBO - GROLF - GROSTM
               LFWT   = LFWT  + GROLF
-!              SLAN   = SUMDTT*PLA/10000.0
+              SLAN   = SUMDTT*PLA/10000.0
 
 !          -------------------------------------------------------------------
-!             ISTAGE=3 (Tassel Initiation to End of Leaf Growth and Silking)
+!             ISTAGE=3 (Tassel Initiation to End of Leaf Growth)
 !          -------------------------------------------------------------------
 
           ELSEIF (ISTAGE .EQ. 3) THEN
 
 
 !              IF (XN .LT. 12.0) THEN
-!                  PLAG   = 3.5*XN*XN*TI
-!     &                *AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
-!                  GROLF  = 0.00116*PLAG*PLA**0.25
-!                  GROSTM = GROLF*0.0182*(XN-XNTI)**2
-!              ELSEIF (XN .LT. TLNO-3.0) THEN
-                  PLAG   = 3.5*170.0*TI
+                  PLAG   = 3.0*XN*XN*TI
      &                *AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
                   GROLF  = 0.00116*PLAG*PLA**0.25
-                  GROSTM = GROLF*0.0182*(XN-XNTI)**2
-!              ELSE
-!                  PLAG   = 170.0*3.5/((XN+5.0-TLNO)**0.5)*TI*
-!     &                     AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
+                  GRORT = GROLF*0.08*(XN-XNTI)**2
+              ELSEIF (XN .LT. TLNO-3.0) THEN
+                  PLAG   = 3.0*170.0*TI
+     &                *AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
+                  GROLF  = 0.00116*PLAG*PLA**0.25
+                  GRORT = GROLF*0.08*(XN-XNTI)**2
+              ELSE
+                  PLAG   = 170.0*3.5/((XN+5.0-TLNO)**0.5)*TI*
+     &                     AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
 !     &                 AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
-!                  GROLF  = 0.00116*PLAG*PLA**0.25
-!                  GROSTM = 3.000*3.1*TI*AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
-!                  GROSTM = 3.5*3.1*TI
-!     &                *AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
-!              ENDIF         
-                  GRORT  = CARBO - GROLF - GROSTM 
+                  GROLF  = 0.00116*PLAG*PLA**0.25
+                  GRORT = 3.5*3.1*TI*AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
 
+              ENDIF         
+                  GROSTM  = CARBO - GROLF - GRORT 
 
-!JIL 08/11/2005 IF (GRORT .LE. 0.08*CARBO .AND. TURFAC .GT. 0.0) THEN
-!              IF (GRORT .LT. 0.30*CARBO .AND. TURFAC .GE. 0.0) THEN
-              IF (GRORT .LT. 0.30*CARBO) THEN
-!                  IF (ISTAGE .EQ.3) THEN
-                  GRF   = CARBO*0.30/(GROSTM+GROLF)                  
+              IF (GROSTM .LT. 0.10*CARBO .AND. TURFAC .GE. 0.0) THEN
+                  GRF   = CARBO*0.90/(GRORT+GROLF)                  
                   GROLF  = GROLF*GRF
-                  GROSTM = GROSTM*GRF
-                  GRORT = CARBO*1.2*0.70
+                  GRORT = GRORT*GRF
+                  GROSTM = CARBO*0.10
                   
               ENDIF
-                  PLA    = (LFWT+GROLF)**0.92*267.0
+                  PLA    = (LFWT+GROLF)**0.88*267.0
                   LFWT   = LFWT  + GROLF 
-!                  SLAN   = PLA/1000.0
-!                 LFWT   = LFWT  - SLAN/600.0    !g/plant
                   STMWT  = STMWT + GROSTM
-             
-!              CumLeafSenes = SLAN / 600. * PLTPOP * 10. + Stg2CLS
-!                kg/ha     =  g/plant * plants/m2 * (kg/ha)/(g/m2)
+                  SLAN   = PLA/1000.0
+                  RTWT  = RTWT + GRORT
+                  CumLeafSenes = SLAN / 600. * PLTPOP * 10.
 
 !      --------------------------------------------------------------------
-!         ISTAGE = 4 (Silking to beginning of effective grain filling period)
+!         ISTAGE = 4 (Silking to beginning of effective filling period)
 !      --------------------------------------------------------------------
 
           ELSEIF (ISTAGE .EQ. 4) THEN
 
               GROEAR = 0.10*DTT*AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
-              GROSTM = GROEAR*0.10
+              GROSTM = GROEAR*0.40
               GRORT = CARBO-GROEAR-GROSTM
               
               IF (GRORT .LE. CARBO*0.85) THEN
                   GRF   = CARBO*0.15/(GROSTM+GROEAR)                  
-                  GROLF  = GROLF*GRF
+                  GROEAR  = GROLF*GRF
                   GROSTM = GROSTM*GRF
                   GRORT = CARBO*0.85
-!                  GROEAR = CARBO*0.15
-!                  GROSTM = CARBO*0.01
               ENDIF
 
-              SLAN   = PLA*(0.05+SUMDTT/180.0*0.05)
+              SLAN   = PLA*(0.08+SUMDTT/170.0*0.05)
               LFWT   = LFWT  - SLAN/1000.0
               EARWT  = EARWT + GROEAR
               STMWT  = STMWT + GROSTM
               SUMP   = SUMP  + CARBO
-
-!             5/11/2005 CHP Added cumulative leaf senescence
-!              CumLeafSenes = SLAN / 600. * PLTPOP * 10. !+ Stg2CLS 
+              CumLeafSenes = SLAN / 600. * PLTPOP * 10. 
 !                kg/ha     =  g/plant * plants/m2 * (kg/ha)/(g/m2)
 
           !-------------------------------------------------------------
-          !   ISTAGE = 5 Effective Grain Filling Period
+          !   ISTAGE = 5 Effective Filling Period
           !-------------------------------------------------------------
 
           ELSEIF (ISTAGE .EQ. 5) THEN
@@ -1175,7 +1168,7 @@
 
               IF (ABS(CARBO) .GT. 0.0001) THEN        !<--------------!
                   CMAT = 0
-                  SLAN   = PLA*(0.1+0.80*(SUMDTT/P5)**3)              !
+                  SLAN   = PLA*(0.15+0.80*(SUMDTT/P5)**3)              !
 
 
 !**************************************************************************
@@ -1327,7 +1320,7 @@
 
       !----------------------------------------------------------------
       !ISTAGE = 6 
-      !(End effective grain filling period to physiological maturity)
+      !(End effective filling period to physiological maturity)
       !----------------------------------------------------------------
           ELSEIF (ISTAGE .EQ. 6) THEN
               RETURN
@@ -1349,10 +1342,6 @@
 !         Senescence due to nitrogen stress
           SLFN   = (1-FSLFN) + FSLFN*AGEFAC 
 
-!         Senescence due to phosphorus stress
-!         5/9/07 CHP, JIL, KJB change from PStres2 to PStres1
-!          SLFP   = (1-FSLFP) + FSLFP*PSTRES1 
-
 !         Senescence due to light competition
           SLFC   = 1.00        
           IF (LAI .GT. 4.0) THEN
@@ -1368,15 +1357,8 @@
           SLFT  = AMAX1 (SLFT,0.0)
 
           PLAS  = (PLA-SENLA)*(1.0-AMIN1(SLFW,SLFC,SLFT,SLFN)) 
-!          PLAS  = (PLA-SENLA)*(1.0-AMIN1(SLFW,SLFC,SLFT,SLFN,SLFP)) 
-!         Daily rate of leaf senescence
-!          IF (ISTAGE .GE. 4) THEN  
           SENLA = SENLA + PLAS
-          SENLA = AMAX1 (SENLA,SLAN)
-          SENLA = AMIN1 (SENLA,PLA)
-!          ELSE
-!          SENLA = 0
-!          ENDIF
+          SENLA = AMIN1 (SENLA,SLAN)
           
           LAI   = (PLA-SENLA)*PLTPOP*0.0001
 
