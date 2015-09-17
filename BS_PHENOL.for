@@ -6,7 +6,7 @@
 !  Revision history
 !
 !                 Written
-!  04/15/2015 Model developed                 
+!  04/15/2015 Model developed by Mohammad J Anar based on CERES-Beet model developed by Leviel et al. 2000                
 
 !----------------------------------------------------------------------
       SUBROUTINE BS_PHENOL(DYNAMIC,ISWWAT,FILEIO,IDETO,    !C
@@ -302,22 +302,6 @@
             ELSEIF (ISECT .EQ. 0) THEN
               CALL ERROR(ERRKEY,7,FILEE,LNUM)
 
-! CHP 1/4/2004
-! IMPLEMENT THIS SECTION OF CODE WHEN A DEFAULT ECOTYPE HAS BEEN ADDED
-!    TO THE ECOTYPE FILE.
-!            IF (ECONO .EQ. 'DFAULT') CALL ERROR(ERRKEY,35,FILEGC,LNUM)
-!
-!!           Write message to WARNING.OUT file that default ecotype 
-!!             will be used.
-!            WRITE(MESSAGE(1),5000) ECONO, FILEE
-!            WRITE(MESSAGE(2),5001) 
-! 5000       FORMAT('Ecotype ',A6,' not found in file: ',A12)
-! 5001       FORMAT('Default ecotype parameters will be used.')
-!            CALL WARNING(2, ERRKEY, MESSAGE)
-!
-!            ECONO = 'DFAULT'
-!            REWIND(LUNECO)
-!            LNUM = 0
             ENDIF
           ENDDO
 
@@ -505,8 +489,8 @@
 !             1 - End juvenile
 !             2 - Pannicle initiation
 !             3 - End leaf growth
-!             4 - End pannicle growth
-!             5 - Grain fill
+!             4 - Beginning effective growth
+!             5 - Effective Growth
 !             6 - Maturity
 !     ----------------------------------------------------------
 
@@ -588,8 +572,21 @@
 	        ELSE
 	          IF (YRDOY .LT. YREMRG) RETURN
 	        ENDIF
-              ! If GDD's pass a threshold, terminate model run
+            IF (P9 .GT. DGET) THEN
+                  ISTAGE = 6
+                  PLTPOP = 0.00
+                  GPP    = 1.0
 
+                  WRITE(MESSAGE(1),1399)
+                  CALL WARNING(1,'BSPHEN',MESSAGE)
+
+                  WRITE (     *,1399)
+                  IF (IDETO .EQ. 'Y') THEN
+                      WRITE (NOUTDO,1399)
+                  ENDIF
+                  MDATE = YRDOY
+                  RETURN
+              ENDIF
 
               !---------------------------------------------------------
               !   New Growth Stage Occurred Today. Initialize Some Varia
@@ -598,7 +595,6 @@
               ISTAGE = 1
               SUMDTT = SUMDTT - P9
               P3     = 400.
-              TLNO   = 30.0
               YREMRG = STGDOY(9)   !Passed back into water balance routi
               RETURN
 
@@ -608,9 +604,6 @@
           ELSEIF (ISTAGE .EQ. 1) THEN
               NDAS   = NDAS + 1   !NDAS - number of days after sowing
               XSTAGE = SUMDTT/P1  !XSTAGE - noninteger growth stage (0-1
-                                  !   Used to compute N demand
-              ! Stage occurs when GDD threshold reached
-              !Return if end of juvenile stage is not reached
 
               VegFrac = SUMDTT / (P1 + 25. * (DOPT - TBASE))
 
@@ -630,7 +623,6 @@
           ELSEIF (ISTAGE .EQ. 2) THEN
               !NDAS - number of days after sowing
               NDAS   = NDAS + 1       
-              !XSTAGE - noninteger growth stage (1-1.5)
               XSTAGE = 1.0 + 0.5*SIND !      Used to compute N demand.
 
               PDTT = DTT
@@ -657,7 +649,7 @@
               PDTT   = 1.0   
               SIND = SIND + RATEIN
               !Return if panicle initiation has not been reached
-              IF (SIND .LT. 2.0) RETURN           
+              IF (SIND .LT. 1.0) RETURN           
 
 
               !---------------------------------------------------------
@@ -683,7 +675,7 @@
           ELSEIF (ISTAGE .EQ. 3) THEN
               ! NDAS - number of days after sowing
               NDAS   = NDAS + 1            
-              XSTAGE = 1.5 + 4.0*SUMDTT/P3 
+              XSTAGE = 1.5 + 3.0*SUMDTT/P3 
 
               VegFrac = MAX(VegFrac,(SUMDTT + SUMDTT_2) / (SUMDTT_2+P3))
 
@@ -702,7 +694,7 @@
               VegFrac = 1.0
 
       !-----------------------------------------------------------------
-      !       ISTAGE = 4 - End of Leaf Growth to Beginning Effective Gra
+      !       ISTAGE = 4:End of Leaf Growth to Beginning Effective Growth
       !-----------------------------------------------------------------
           ELSEIF (ISTAGE .EQ. 4) THEN
               NDAS = NDAS + 1
@@ -718,8 +710,8 @@
               !   New Growth Stage Occurred Today. Initialize Some Varia
               !---------------------------------------------------------
 
-              ! When Silking phase ends and beginning of effective grain
-              !  filling begins.  Compute grains per plant, ears per pla
+              ! When Silking phase ends and beginning of effective growth
+              !  begins.  Compute grains per plant, ears per pla
               !  and barrenness
 
               PSKER = SUMP*1000.0/IDURP*3.4/5.0
@@ -728,7 +720,6 @@
               GPP   = AMAX1 (GPP,0.0)
               EARS  = PLTPOP
 
-              !Determine barrenness for maize
               GPP = AMAX1 (GPP,51.0)
  
                   !
@@ -740,7 +731,7 @@
               STGDOY(ISTAGE) = YRDOY
               ISTAGE = 5
       !-----------------------------------------------------------------
-      !       ISTAGE = 5 - Beginning to end of effective grain filling p
+      !       ISTAGE = 5 - Effective Growth Period
       !-----------------------------------------------------------------
 
           ELSEIF (ISTAGE .EQ. 5) THEN
@@ -756,12 +747,10 @@
               ISTAGE = 6
 
       !-----------------------------------------------------------------
-      !       ISTAGE = 6 - End Effective Grain Filling to Physiological 
+      !       ISTAGE = 6 - Physiological Maturity
       !-----------------------------------------------------------------
           ELSEIF (ISTAGE .EQ. 6) THEN
               IF (DTT .LT. 2.0) SUMDTT = P5
-              SeedFrac = (SUMDTT - DSGFT) / (P5 - DSGFT)
-              SeedFrac = SUMDTT / P5
 
               IF (SUMDTT .LT. P5)  RETURN
               !---------------------------------------------------------
