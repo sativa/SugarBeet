@@ -6,7 +6,7 @@
 !  Revision history
 !
 !                 Written
-!  04/15/2015 Model developed from CERES beet model developed by Leviel et al. (2000)   
+!  04/15/2015 Model developed by Mohammad J Anar based on CERES beet model developed by Leviel et al. (2000)   
 ! 
 !----------------------------------------------------------------------
 !
@@ -841,9 +841,6 @@
 
 
           IF(YRDOY.EQ.STGDOY(3)) THEN
-! JIL 03/07/2006 remove ear DW initialization
-!              EARWT  = 0.167*STMWT    
-!              STMWT  = STMWT - EARWT      
 
               SWMIN  = STMWT*0.8         
               SUMP   = 0.0
@@ -1039,7 +1036,6 @@
 
               TI     = DTT/(PHINT*PC)
               CUMPH  = CUMPH + DTT/(PHINT*PC)
-!              CUMPH  = CUMPH + TI
               XN     = CUMPH + 1.0
               LEAFNO = INT(XN)
           ENDIF
@@ -1099,7 +1095,7 @@
           ELSEIF (ISTAGE .EQ. 3) THEN
 
 
-!              IF (XN .LT. 12.0) THEN
+               IF (XN .LT. 12.0) THEN
                   PLAG   = 3.0*XN*XN*TI
      &                *AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
                   GROLF  = 0.00116*PLAG*PLA**0.25
@@ -1112,7 +1108,6 @@
               ELSE
                   PLAG   = 170.0*3.5/((XN+5.0-TLNO)**0.5)*TI*
      &                     AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
-!     &                 AMIN1(AGEFAC,TURFAC,(1.0-SATFAC))
                   GROLF  = 0.00116*PLAG*PLA**0.25
                   GRORT = 3.5*3.1*TI*AMIN1(AGEFAC,TURFAC,(1.-SATFAC))
 
@@ -1134,7 +1129,7 @@
                   CumLeafSenes = SLAN / 600. * PLTPOP * 10.
 
 !      --------------------------------------------------------------------
-!         ISTAGE = 4 (Silking to beginning of effective filling period)
+!         ISTAGE = 4 (End of Leaf Growth to Beginning Effective Growth)
 !      --------------------------------------------------------------------
 
           ELSEIF (ISTAGE .EQ. 4) THEN
@@ -1159,7 +1154,7 @@
 !                kg/ha     =  g/plant * plants/m2 * (kg/ha)/(g/m2)
 
           !-------------------------------------------------------------
-          !   ISTAGE = 5 Effective Filling Period
+          !   ISTAGE = 5 Effective Growth Period
           !-------------------------------------------------------------
 
           ELSEIF (ISTAGE .EQ. 5) THEN
@@ -1320,7 +1315,7 @@
 
       !----------------------------------------------------------------
       !ISTAGE = 6 
-      !(End effective filling period to physiological maturity)
+      !(Physiological maturity)
       !----------------------------------------------------------------
           ELSEIF (ISTAGE .EQ. 6) THEN
               RETURN
