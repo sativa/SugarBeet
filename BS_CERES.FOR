@@ -252,10 +252,10 @@ C      REAL            PRLF
 
       DATA BSSTGNAM /
      &  'End Juveni',   !1
-     &  'Floral Ini',   !2
-     &  '75% Silkin',   !3
-     &  'Beg Gr Fil',   !4
-     &  'End Gr Fil',   !5
+     &  'Pannic Ini',   !2
+     &  'End lef gr',   !3
+     &  'Beg ef gro',   !4
+     &  'Effect Gro',   !5
      &  'Maturity  ',   !6
      &  'Sowing    ',   !7
      &  'Germinate ',   !8
